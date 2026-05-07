@@ -1,2 +1,2 @@
-# ELISA
-MATLAB Toolbox for Efficient Lie-Group Integration for Simulation And Control of Flexible Systems
+# MATLAB Toolbox ELARA
+Efficient Lie-group Algorithms for Flexible Robotic Analysis and Control
