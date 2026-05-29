@@ -1,0 +1,38 @@
+function DEL_res_N = computeDELResiduumFinalStep_casadi( ...
+        MBSys, simPars, q_N0, q_N, u_N, qDotEnd, h, a)
+    %% Compute Residuum of DEL Equation
+    arguments
+        % Multibody system
+        MBSys   (1,1) MBSystemSym
+
+        simPars (1,1) MBSimPars
+
+        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        q_N0    (:,1)
+        q_N     (:,1)
+
+        % Vector of inputs (1,nInputs)
+        u_N       (:,1)
+
+        % Generalized velocity at the end
+        qDotEnd   (:,1)
+
+        % Time step
+        h       (1,1)
+
+        % Weighting factor in the generalized trapezoidal rule
+        a       (1,1)
+    end
+
+    %% Forward Kinematics and Jacobians
+    [g_N, g_rel_N]  = MBSys.computeFwdKin(q_N);
+    [~,   g_rel_N0] = MBSys.computeFwdKin(q_N0);
+
+    % Compute absolute velocities
+    eta_N0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_N0, g_rel_N, h);
+
+    %% Get residual
+    DEL_res_N = computeDELResiduumFinalStep_casadi_extKin( ...
+        MBSys, simPars, q_N0, q_N, g_N, g_rel_N, eta_N0, u_N, ...
+        qDotEnd, h, a);
+end
