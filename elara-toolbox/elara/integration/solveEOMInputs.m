@@ -1,5 +1,5 @@
 function [u, solInfo] = solveEOMInputs(MBSys, res_k, q_k, lb, ub)
-    %% Solve (Underactuated) Equations of Motion for System Onputs u
+    %% Solve (Underactuated) Equations of Motion for System Inputs u
     % with u inside lower and upper bounds lb, ub
     %
     % Maximilian Herrmann
