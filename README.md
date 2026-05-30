@@ -30,44 +30,34 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 
 Optional dependencies:
 
-- CasADi for MATLAB: required for optimal control (or other optimization-related tasks)
-- MATLAB Coder and suitable C++ compiler for optional MEX generation
+- CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with `3.7.2`)
+- MATLAB Coder and C++ compiler for optional MEX generation
 
 ## Installation
+### Toolbox installation
+- Recommended: Installation via the packaged toolbox file 
+Double-click on `elara-toolbox.mltbx` or run `matlab.addons.install("elara-toolbox.mltbx")`
 
-- Recommended: Installation via the packaged toolbox file
-```matlab
-matlab.addons.install("elara-toolbox.mltbx")
-```
+- Alternatively, clone the repository locally and add the folder `elara-toolbox` (including subfolders) to your MATLAB path
 
-Alternatively, use the source checkout directly from the repository root:
+### Optional components
+- For optimal control, install CasADi from <https://web.casadi.org/> and add it to the MATLAB path
+- For code generation (to generate MEX files), install a compatible C++ compiler and setup MATLAB Coder using `mex -setup C++`
 
-```matlab
-addpath(genpath(fullfile(pwd, "elara-toolbox")))
-```
-
-For optimal control, install CasADi from <https://web.casadi.org/> and add it to the MATLAB path.
+### Verify installation and compile MEX functions
+1. In the MATLAB console, run `elara.setup` to validate the installation of the toolbox and the optional components. The command displays, whether all components are installed correctly.
+2. If you have MATLAB Coder and a compatible C++ compiler installed, run `elara.build`, which will compile all required MEX files. The compiled files are stored in the `/build` directory.
+3. You can again run `elara.setup` to verify that the MEX files are available on the path. The toolbox will now automatically use the compiled functions instead of the slower MATLAB functions.
 
 ## Quick Start
+A quick start guide is available under `doc/QuickStart.mlx`, explaining the installation steps and core functionality.
 
-Run one of the included examples:
+### Examples
+The toolbox includes several examples for the simulation and optimal control of mechanical systems available in the `examples` folder.
+The simulation examples demonstrate the standard workflow to simulate the dynamical behavior of mechanical systems:
 
-```matlab
-cd elara-toolbox/examples
-simulation_rigid_robot
-```
-
-For optimal control:
-
-```matlab
-cd elara-toolbox/examples
-optimal_control_planar_robot
-```
-
-The simulation examples demonstrate the standard workflow:
-
-1. Define links with an example system function or custom `MBLinkDefinition` objects.
-2. Create an `MBSimulation`.
+1. Define the system's links using `MBLinkDefinition` objects.
+2. Create an `MBSimulation` object that stores the system definition and all simulation parameters.
 3. Set `MBSim.simPars` for initial conditions, inputs, gravity, and final time.
 4. Select a solver such as `MBSimIntegratorVarIntBroyden` or `MBSimIntegratorODEDirect`.
 5. Run `simulateSystem`, then use plotting or animation helpers for post-processing.
@@ -79,54 +69,6 @@ The optimal-control examples demonstrate:
 3. Selecting an OCP discretization such as `OCPIntegratorVI` or `OCPIntegratorRK`.
 4. Initializing the NLP solver with `initSolver`.
 5. Solving with `solve` and post-processing the resulting trajectory.
-
-## Repository Layout
-
-```text
-elara-toolbox/
-|-- build.m
-|-- doc/
-|-- elara/
-|   |-- equations/
-|   |-- initial_guess/
-|   |-- integration/
-|   |-- internal/
-|   |-- math/
-|   |-- optimal-control/
-|   |-- plotting/
-|   |-- system-definition/
-|   `-- visualization/
-`-- examples/
-    `-- exampleSystems/
-
-tests/
-```
-
-The most important subpackages are:
-
-- `system-definition`: link, beam, frame, and multibody-system classes.
-- `equations`: continuous and discrete equations of motion.
-- `integration`: simulation classes, integrators, parameters, external wrenches, and result containers.
-- `optimal-control`: CasADi OCP definition, discretizations, NLP construction, solver interface, B-spline helpers, and workspace utilities.
-- `math`: SE(3)/SO(3), exponential and Cayley maps, adjoint maps, and CasADi-compatible variants.
-- `plotting` and `visualization`: post-processing, 3D visualization, snapshots, and animation.
-
-## Examples
-
-Forward simulation:
-
-- `simulation_rigid_robot.m`: three-link rigid robot.
-- `simulation_rigid_flexible_system.m`: cantilever beam with attached rigid links.
-- `simulation_rigid_flexible_robot_PD_control.m`: rigid-soft manipulator with stiffness/damping based pseudo-PD control.
-- `simulation_continuum_manipulator.m`: tendon-actuated one-link continuum manipulator.
-
-Optimal control:
-
-- `optimal_control_planar_robot.m`: planar rigid-manipulator trajectory generation with ODE and variational discretizations.
-- `optimal_control_continuum_manipulator.m`: tendon-actuated continuum-manipulator trajectory generation with B-spline input parameterization.
-- `optimal_control_rigid_robot.m`: rigid-lab-robot trajectory generation. This script currently expects a lab-specific `systemDefLabRobotRigid` function; adapt it to an available system definition if that function is not on your MATLAB path.
-
-Reusable model definitions are in `elara-toolbox/examples/exampleSystems`, including `systemDef_rigid_robot`, `systemDef_rigid_flexible_robot`, `systemDef_planarNLinkPendulum`, `systemDef_continuum_manipulator`, and `systemDef_cantilever_system`.
 
 ## Core Concepts
 
@@ -167,56 +109,54 @@ Available OCP discretizations include:
 
 The helper `OCPComputeInitialGuess_InvDyn` can generate inverse-dynamics-based initial guesses for trajectory-optimization problems.
 
-## Optional Code Generation
 
-The toolbox runs with plain MATLAB `.m` files. To generate optional MEX files, run from the repository root:
 
-```matlab
-mex -setup C++
-addpath(genpath(fullfile(pwd, "elara-toolbox")))
-build
-```
 
-The simulation code automatically uses generated MEX functions when they are available on the MATLAB path and otherwise falls back to the MATLAB implementations.
+## Citation
 
-## Testing
+If you use the Elara toolbox in your research, please cite the following papers:
 
-The repository includes script-based tests for exponential and Cayley map utilities:
-
-```matlab
-addpath(genpath("elara-toolbox"))
-results = [
-    runtests("tests/ExpMapTests.m")
-    runtests("tests/CayleyMapTests.m")
-];
-disp(table(results))
-```
-
-The runner scripts in `tests/` refer to a local `pathdef_local` helper; if that helper is unavailable, use the direct `runtests` commands above.
-
-## Limitations and Future Work
-
-Planned or possible future extensions include recursive continuous and discrete dynamics algorithms, contact forces, closed-chain constraints, floating-base systems, URDF import, richer workspace/collision geometry, and broader automated tests for complete simulation and optimal-control workflows.
-
-## License and Citation
-
-ELARA is distributed under the MIT License. See [LICENSE](LICENSE).
-
-If you use ELARA in academic work, please cite the toolbox release or repository version you used, including the version number or commit hash, and cite the associated method papers relevant to your use case.
-
-Suggested software citation:
+**BibTeX:**
 
 ```bibtex
-@software{herrmann_elara_2026,
-  author  = {Herrmann, Maximilian},
-  title   = {ELARA Simulation and Optimal Control Toolbox},
-  year    = {2026},
-  version = {0.1.0},
-  license = {MIT}
+@article{HK24,
+  title = {Relative-Kinematic Formulation of Geometrically Exact Beam Dynamics Based on {{Lie}} Group Variational Integrators},
+  author = {Herrmann, Maximilian and Kotyczka, Paul},
+  year = 2024,
+  month = dec,
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  volume = {432},
+  pages = {117367},
+  issn = {00457825},
+  doi = {10.1016/j.cma.2024.117367},
 }
+@inproceedings{HPK26,
+  title = {Discrete {{Geometric Modeling}} and {{Extended State Estimation}} of {{Continuum Robots}}},
+  booktitle = {IFAC World Congress},
+  author = {Herrmann, Maximilian and Pfeiffer, Leander and Kotyczka, Paul},
+  year = 2026,
+  address = {Busan},
+  }
 ```
 
-Useful background references include:
+**APA:**
 
-- Murray, R. M., Li, Z., and Sastry, S. S. (1994). *A Mathematical Introduction to Robotic Manipulation*. CRC Press.
-- Brudigam, J., Sosnowski, S., Manchester, Z., and Hirche, S. (2024). "Variational integrators and graph-based solvers for multibody dynamics in maximal coordinates." *Multibody System Dynamics*, 61(3), 381-414. DOI: `10.1007/s11044-023-09949-x`.
+> Herrmann, M., & Kotyczka, P. (2024). Relative-kinematic formulation of geometrically exact beam dynamics based on Lie group variational integrators. Computer Methods in Applied Mechanics and Engineering, 432, 117367. https://doi.org/10.1016/j.cma.2024.117367
+
+> Herrmann, M., Pfeiffer, L., & Kotyczka, P. (2026). Discrete Geometric Modeling and Extended State Estimation of Continuum Robots. IFAC World Congress.
+
+## License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
+
+## Authors
+
+- Maximilian Herrmann (TUM, Chair of Automatic Control)
+- Leander Pfeiffer (TUM, Chair of Automatic Control)
+
+## Contact & Support
+
+For questions, issues, or feature requests:
+
+- Open an issue on GitHub
+- Contact: [maximilian.herrmann@tum.de, leander.pfeiffer@tum.de]
