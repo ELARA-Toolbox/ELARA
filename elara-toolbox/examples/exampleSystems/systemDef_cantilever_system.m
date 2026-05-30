@@ -13,7 +13,7 @@ function links = systemDef_cantilever_system
     links(1).Ba = [ eye(3); zeros(3)];
     links(1).Bc = [ zeros(3); eye(3)];
     links(1).xiRef = repmat([0;0;0;0;0;1], [1,links(1).nSeg]);
-    links(1).beamPars = beamParams_ASA_Round("radius",0.006);
+    links(1).beamPars = beamParams_ASA_round("radius",0.006);
     links(1).beamPars.d = ones(6,1)*1e-3;
 
 

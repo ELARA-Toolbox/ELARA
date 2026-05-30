@@ -17,7 +17,7 @@ COMPUTE_IG = 1;
 
 %% Define System
 
-links = systemDefLabRobotRigid("d", 0);
+links = systemDef_rigid_robot("d", 0);
 MBSim = MBSimulation(links, "displayInfo", false);
 
 

@@ -153,6 +153,10 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 - Maximilian Herrmann (TUM, Chair of Automatic Control)
 - Leander Pfeiffer (TUM, Chair of Automatic Control)
 
+The core toolbox was developed by Maximilian Herrmann. Leander Pfeiffer provided helpful input and contributions in the final development stages.
+Moreover, Philipp Tarbiat, Tobias Farger, and Akash Cheriath contributed helpful input and code snippets during their student projects at the chair.
+These contributions are marked in the comments.
+
 ## Contact & Support
 
 For questions, issues, or feature requests:

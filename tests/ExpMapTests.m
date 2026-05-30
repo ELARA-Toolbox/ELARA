@@ -1,21 +1,12 @@
 % Unit tests for the Exponential map functions
 %
-%
 % Maximilian Herrmann
 % Chair of Automatic Control
 % TUM School of Engineering and Design
 % Technical University of Munich
 
-% clear
-% close all
-% 
-% addpath('../')
-% addpath('../../')
-% addpath(pathdef_local)
-
 % Test tolerance
 tol = 1e-12;
-
 
 %% Exponential map SO3 / Test 1
 omega = rand(3,1);

@@ -1,4 +1,4 @@
-function pars = beamParams_ASA_Round(options)
+function pars = beamParams_ASA_round(options)
     %% Beam parameters for ASA Rod with Circular Cross-Section
     % As identified in Semesterarbeit Tobias Farger (WS23/24, #563)
     %
