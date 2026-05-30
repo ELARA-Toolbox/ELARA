@@ -36,7 +36,9 @@ functionNames = [
     ];
 
 parfor iFun = 1:numel(functionNames)
-    codegen("-d", targetDir, "-config", cfg, functionNames(iFun));
+    codegen("-d", targetDir, "-o", ...
+        fullfile(targetDir, functionNames(iFun) + "_mex"), ...
+        "-config", cfg, functionNames(iFun));
 end
 
 fprintf("MEX function compilation finished.\n");
