@@ -32,8 +32,7 @@ Optional dependencies:
 
 - CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with `3.7.2`)
 - MATLAB Coder and C++ compiler for optional MEX generation
-
-## Installation
+
 ### Toolbox installation
 - Recommended: Installation via the packaged toolbox file 
 Double-click on `elara-toolbox.mltbx` or run `matlab.addons.install("elara-toolbox.mltbx")`
