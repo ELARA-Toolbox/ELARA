@@ -8,9 +8,5 @@
 % TUM School of Engineering and Design
 % Technical University of Munich
 
-addpath('../')
-addpath('../../')
-addpath(pathdef_local)
-
 result = runtests('ExpMapTests');
 disp( table(result) ); 

@@ -8,9 +8,5 @@
 % TUM School of Engineering and Design
 % Technical University of Munich
 
-addpath('../')
-addpath('../../')
-addpath(pathdef_local)
-
 result = runtests('CayleyMapTests');
 disp( table(result) ); 
