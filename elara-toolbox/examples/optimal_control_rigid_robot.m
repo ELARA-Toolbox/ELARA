@@ -8,7 +8,9 @@
 
 clear
 close all
-addpath("exampleSystems");
+
+% Add example system folder if it's not on the path
+% addpath("exampleSystems");
 
 %% Script settings
 
@@ -44,18 +46,18 @@ OCP.R_TCP_F = []; % Rotation arbitrary
 
 OCP.simPars = MBSim.simPars;
 
-% Cost function weights
-OCP.wRC = [
-    1e-2/2  % Norm u
-    0   % Norm u_dot
-    0   % Norm u_ddot
-    0   % Norm q_ddot
-    1e3 % Final TCP error
+% Running cost
+OCP.wRC = [ % weights
+    1e-2/2 % Norm u
+    0      % Norm u_dot
+    0      % Norm u_ddot
+    0      % Norm q_ddot
+    1e3    % TCP error
     ];
-OCP.iRC = logical(OCP.wRC);
+OCP.iRC = logical(OCP.wRC); % Defines which cost terms are active
 
 % No final time cost term
-OCP.iFC = zeros(3,1);
+OCP.iFC = zeros(3,1); % Defines which cost terms are active
 
 OCP.addTCPFinalTimeConstraint = false;
 OCP.tPreAct  = 5*2^-5;
@@ -71,8 +73,6 @@ OCP.inputSplineOrder = 3;
 
 % NLP object / solver options
 OCP.nlpOpts.expand = false;
-OCP.nlpOpts.ipopt.warm_start_init_point = 'no';
-OCP.nlpOpts.ipopt.fixed_variable_treatment = 'relax_bounds';
 
 
 %% Visualize reference configuration and target position
@@ -102,7 +102,7 @@ if COMPUTE_IG
     fh_IG = plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
 
     % Animate results
-    fig = init3Dplot('Name', "Animation Initial Guess");%, "WindowStyle","normal");
+    fig = init3Dplot('Name', "Animation Initial Guess");
     coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
     drawWorkspace(OCP.workSpaceDef, "createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
@@ -185,7 +185,9 @@ OCP_DEL = OCP_DEL.initSolver;
 % Initial guess objective components
 if ~OCP_DEL.useSplineInputs
     disp("Objective function components initial guess:")
-    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call({quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.wRC}) ))
+    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call( ...
+        {quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.wRC} ...
+        )));
 end
 
 % Plot constraint residuals of the initial guess
@@ -206,7 +208,9 @@ plotOCPqu(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
 
 if ~OCP.useSplineInputs
     disp("Objective function components solution:")
-    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call({quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.wRC}) ))
+    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call( ...
+        {quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.wRC} ...
+        )))
 end
 
 if OCP.iRC(5)
@@ -227,7 +231,7 @@ MBSimCasadi.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCP_DEL.tout, q_s
 MBSimCasadi.plotAll;
 
 % Draw snapshots
-fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");%, "WindowStyle","normal");
+fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
 coordSysSE3(gTCPDes);
 drawWorkspace(OCP_DEL.workSpaceDef, "createFigure", false);
 if OCP_DEL.nSteps < 50
@@ -238,7 +242,7 @@ end
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots",nSnapShots);
 
 % Animate results
-fig = init3Dplot('Name', "Animation Solution");%, "WindowStyle","normal");
+fig = init3Dplot('Name', "Animation Solution");
 coordSysSE3(gTCPDes);
 drawWorkspace(OCP_DEL.workSpaceDef, "createFigure", false);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");

@@ -7,8 +7,9 @@
 
 clear
 close all
-addpath("exampleSystems");
 
+% Add example system folder if it's not on the path
+% addpath("exampleSystems");
 
 %% Script settings
 
@@ -20,7 +21,8 @@ COMPUTE_IG = 0;
 links = systemDef_planarNLinkPendulum("nLinks", 2, "d", 0);
 MBSim = MBSimulation(links, "displayInfo", false);
 
-[~, vis] = MBSim.visualizeSystemRefConf();
+% Visualize system in reference configuration
+MBSim.visualizeSystemRefConf();
 
 
 %% Quick example forward simulation
@@ -60,7 +62,7 @@ OCP.q0    = [pi/2, 0];
 OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
 OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
 
-OCP.u0 = []; %zeros(MBSim.MBSys.nInputs,1);
+OCP.u0 = [];
 
 % End time, sample time
 OCP.h = 1e-2;
@@ -78,18 +80,18 @@ OCP.nInputSplinePoints = 25;
 OCP.simPars = MBSim.simPars;
 
 % Running cost
-OCP.wRC = [
-    1/2  % Norm u
-    0  % Norm u_dot
-    0  % Norm u_ddot
-    0  % Norm q_ddot
-    0  % TCP error
+OCP.wRC = [ % Weights
+    1/2 % Norm u
+    0   % Norm u_dot
+    0   % Norm u_ddot
+    0   % Norm q_ddot
+    0   % TCP error
     ];
-OCP.iRC = logical(OCP.wRC);
+OCP.iRC = logical(OCP.wRC); % Defines which cost terms are active
 
 % Final Cost
-OCP.wFC = zeros(3,1);
-OCP.iFC = zeros(3,1);
+OCP.wFC = zeros(3,1); % Weights
+OCP.iFC = zeros(3,1); % Defines which cost terms are active
 
 OCP.uMin = ones(2,1)*-25;
 OCP.uMax = ones(2,1)*+25;
@@ -98,22 +100,16 @@ OCP.qMin = [-inf, -4];
 OCP.qMax = [inf, 0.1];
 
 
-% NLP object / solver options
-OCP.nlpOpts.ipopt.warm_start_init_point = 'no';
-OCP.nlpOpts.ipopt.fixed_variable_treatment = 'relax_bounds';
-%OCP.nlpOpts.ipopt.linear_solver = 'ma97'; % best for stiff systems!
-
-
 %% Visualize reference configuration and target position
 
 figure("Name", "initial/final config");
 tiledlayout;
 nexttile;
 init3Dplot("createFigure", false);
-[~, vis] = MBSim.visualizeSystemConfig(OCP.q0, "createFigure", false);
+MBSim.visualizeSystemConfig(OCP.q0, "createFigure", false);
 title("Initial Configuration");
 nexttile;
-[~, vis] = MBSim.visualizeSystemConfig(OCP.qF, "createFigure", false);
+MBSim.visualizeSystemConfig(OCP.qF, "createFigure", false);
 title("Final Configuration");
 init3Dplot("createFigure", false);
 
@@ -135,7 +131,7 @@ if COMPUTE_IG
 
     % Animate results
     if ANIMATE_IG
-        fig = init3Dplot('Name', "Animation Initial Guess");%, "WindowStyle","normal");
+        fig = init3Dplot('Name', "Animation Initial Guess");
         if ~isempty(OCP.x_TCP_F)
             coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
         end
@@ -212,7 +208,6 @@ OCP_DEL.discretization = OCPIntegratorVI;
 OCP_DEL = OCP_DEL.initSolver("useCasadiStepFunctions", true);
 
 % Solve DEL OCP
-% with weights and x_TCP specified in OCP object
 
 % Initial guess objective components
 if ~OCP_DEL.useSplineInputs
@@ -255,7 +250,7 @@ MBSimCasadi.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCP_DEL.tout, q_s
 MBSimCasadi.plotAll;
 
 % Draw snapshots
-fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");%, "WindowStyle","normal");
+fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
 coordSysSE3(gTCPDes);
 drawWorkspace(OCP_DEL.workSpaceDef, "createFigure", false);
 if OCP_DEL.nSteps < 50
@@ -268,7 +263,7 @@ TCPTraj = squeeze(MBSimCasadi.simRes.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 %% Animate results
-fig = init3Dplot('Name', "Animation Solution");%, "WindowStyle","normal");
+fig = init3Dplot('Name', "Animation Solution");
 coordSysSE3(gTCPDes);
 drawWorkspace(OCP_DEL.workSpaceDef, "createFigure", false);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
