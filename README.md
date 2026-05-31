@@ -18,6 +18,7 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 
 - Supports general rigid-flexible multibody models with open kinematics consisting of rigid links, flexible beam links, and screw joints (i.e., revolute, prismatic, or screw joints)
 - Actuation via actuated screw joints or tendon actuation for continuum manipulators
+- Fullly analytic kinematics and differential kinematics on SE(3), including forward kinematics, geometric Jacobians, and derivative of Jacobians
 - Time integration with highly efficient Lie-group variational integrator or any standard ODE solver via general interface (including all MATLAB ODE solvers)
 - Fully CasADi-compatible implementation, e.g., for optimal control, parameter identification, or system optimization
 - Direct optimal control with various time discretizations, including variational, Runge-Kutta (2nd and 4th order), and implicit-midpoint discretizations
