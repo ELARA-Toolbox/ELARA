@@ -34,10 +34,9 @@ Optional dependencies:
 - MATLAB Coder and C++ compiler for optional MEX generation
 
 ### Toolbox installation
-- Recommended: Installation via the packaged toolbox file 
-Double-click on `elara-toolbox.mltbx` or run `matlab.addons.install("elara-toolbox.mltbx")`
-
-- Alternatively, clone the repository locally and add the folder `elara-toolbox` (including subfolders) to your MATLAB path
+- Option 1 (recommended): Installation via the MATLAB Add-On explorer. Simply search for "ELARA" in the MATLAB Add-On explorer and install! Alternatively, you can install it via the [MATLAB File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/183990-elara-flexible-robot-simulation-and-control-toolbox).
+- Option 2: Installation via the packaged toolbox file. Download the toolbox file `elara-toolbox.mltbx` from the release page, then double-click on it or run `matlab.addons.install("elara-toolbox.mltbx")`.
+- Option 3: Clone the repository locally and add the folder `elara-toolbox` (including subfolders) to your MATLAB path.
 
 ### Optional components
 - For optimal control, install CasADi from <https://web.casadi.org/> and add it to the MATLAB path
