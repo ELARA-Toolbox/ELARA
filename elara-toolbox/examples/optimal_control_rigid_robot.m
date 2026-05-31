@@ -233,18 +233,11 @@ MBSimCasadi.plotAll;
 % Draw snapshots
 fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
 coordSysSE3(gTCPDes);
-drawWorkspace(OCP_DEL.workSpaceDef, "createFigure", false);
-if OCP_DEL.nSteps < 50
-    nSnapShots = OCP_DEL.nSteps/2+1;
-else
-    nSnapShots = 20;
-end
-MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots",nSnapShots);
+MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
 
 % Animate results
 fig = init3Dplot('Name', "Animation Solution");
 coordSysSE3(gTCPDes);
-drawWorkspace(OCP_DEL.workSpaceDef, "createFigure", false);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 xlim([-0.2, 0.8]);
 ylim([-0.2, 0.3]);
