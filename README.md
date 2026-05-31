@@ -3,7 +3,7 @@
 </div>
 
 [![View Elara Toolbox on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://de.mathworks.com/matlabcentral/fileexchange/) 
-[![GitHub top language](https://img.shields.io/github/languages/top/ELARA-Toolbox/ELARA)](https://matlab.mathworks.com/)  
+[![GitHub top language](https://img.shields.io/github/languages/top/ELARA-Toolbox/ELARA)](https://matlab.mathworks.com/)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ELARA-Toolbox/ELARA?style=social)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MATLAB Version](https://img.shields.io/badge/MATLAB-R2025b%2B-blue)
