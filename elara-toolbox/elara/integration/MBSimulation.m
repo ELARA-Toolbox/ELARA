@@ -241,7 +241,7 @@ classdef MBSimulation
 
             % Add colorbar, if required
             if opts.includeColorbar
-                axSnapShots.Colormap = nebula;
+                axSnapShots.Colormap = opts.snapShotColormap();
                 ch = colorbar;
                 ch.Label.Interpreter = 'latex';
                 ch.TickLabelInterpreter = 'latex';
