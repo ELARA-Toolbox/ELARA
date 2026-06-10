@@ -218,6 +218,15 @@ The core toolbox was developed by Maximilian Herrmann. Leander Pfeiffer provided
 Moreover, Philipp Tarbiat, Tobias Farger, and Akash Cheriath contributed helpful input and code snippets during their student projects at the chair.
 These contributions are marked in the comments.
 
+## Developer documentation
+
+The repository contains a top-level [MATLAB project](https://www.mathworks.com/help/matlab/projects.html).
+If you work on the toolbox directly from the repository, make sure this project is always active.
+The project is also used to package the toolbox.
+
+(More developer details to be added later.)
+
+
 ## Contact & Support
 
 For questions, issues, or feature requests:
