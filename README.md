@@ -110,7 +110,7 @@ The integrator uses Broyden's good method to solve the implicit system of equati
 
 - The primary solver setting is the time step `h`, which determines both the accuracy (integration error) and the computation time of the integrator.
 
-   __Important:__ For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which is required for the solver to run successfully. For larger time steps $h < h_{max}$, the implicit solver will not converge, and the simulation will fail. 
+   __Important:__ For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which can not be exceeded for the solver to run successfully. For larger time steps $h > h_{max}$, the implicit solver will not converge, and the simulation will fail. 
    
    - Hence, if the variational integrator does not run for a specific system, the first thing to try is usually decreasing the time step, e.g., by factors of 2 or 10.
    
@@ -132,11 +132,11 @@ The integrator uses Broyden's good method to solve the implicit system of equati
   
 - For the highest performance and stability, one can additionally tune the parameters `errorMarginLimit`, `maxIterations` and `JacobianIterationThreshold`.
   
-  - If `errorMarginLimit` is set to a different (larger) value than `errorMargin`, the integrator does not abort the simulation if the implicit solver does not converge to the default tolerance specified by `errorMargin` within `maxIterations`, as long as the residual remains below `errorMarginLimit`.
+  - If `errorMarginLimit` is set to a different (larger) value than `errorMargin`, the integrator does not abort the simulation if the implicit solver does not converge to the default tolerance specified by `errorMargin` within `maxIterations`, as long as the residual remains below `errorMarginLimit`.
   
     This setting can be useful to successfully integrate systems with "challenging" numerical properties, but usually results in much larger run times since the solver executes a large number of additional iterations.
     
-  - Correspondingly, `maxIterations` sets the maximum number of iterations of the implicit solver. If the residual does not converge to `errorMarginLimit` within this number, the integration fails.
+  - Correspondingly, `maxIterations` sets the maximum number of iterations of the implicit solver. If the residual does not converge to `errorMarginLimit` within this number, the integration fails.
   
   - `JacobianIterationThreshold`: This setting defines how often the Jacobian of the implicit system of equations (i.e., the DEL Jacobian) is recomputed during integration.
    To increase performance, the Jacobian is not computed in each time step; it is only recomputed if the nr. of iterations in the last time step exceeds `JacobianIterationThreshold`.
