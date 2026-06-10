@@ -60,7 +60,7 @@ OCP.iRC = logical(OCP.wRC);  % Defines which cost terms are active
 OCP.wFC = [ % Weights
     0     % Norm u
     0     % Norm q
-    1e5e   % TCP Error
+    1e5   % TCP Error
     ];
 OCP.iFC = logical(OCP.iFC);  % Defines which cost terms are active
 
