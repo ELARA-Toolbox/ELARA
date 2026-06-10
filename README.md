@@ -23,7 +23,7 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 - Fully CasADi-compatible implementation, e.g., for optimal control, parameter identification, or system optimization
 - Direct optimal control with various time discretizations, including variational, Runge-Kutta (2nd and 4th order), and implicit-midpoint discretizations
 - Extensive plotting, visualization, and animation functionality
-- MEX generation (optional, but recommended) for increased performance
+- Numerical implementation that is optimized for C/C++ code generation, both for MEX generation (optional, but recommended) for increased performance, and to generate C/C++ code for on-line control implementations
 
 ## Requirements
 
@@ -88,13 +88,76 @@ The assembled system object is either:
 
 `MBSimulation` combines a link definition, assembled numeric system, simulation parameters, solver, and result object. Initial conditions, inputs, gravity, external wrenches, and final time are stored in `MBSimPars`.
 
-Available simulation integrators include:
+Moreover, it stores the selected solver (numerical integrator) along with all required solver settings.
+
+After simulation, use `plotAll`, `computeEnergies`, `drawSnapshots`, and `animateSimResults` for post-processing.
+
+#### Numerical Integrators
+
+Currently, the following integrators are implemented:
 
 - `MBSimIntegratorVarIntBroyden`: Lie-group variational integrator with fixed step size `h`.
 - `MBSimIntegratorODEDirect`: MATLAB `ode` object interface.
-- `MBSimIntegratorODEDirectFunctionBased`: function-handle interface for solvers such as `ode45`.
+- `MBSimIntegratorODEDirectFunctionBased`: function-handle interface for solvers such as `ode45()`.
 
-After simulation, use `plotAll`, `computeEnergies`, `drawSnapshots`, and `animateSimResults` for post-processing.
+For numerically stiff systems, use an appropriate stiff solver, e.g., the variatonal integrator, or ODE solvers for stiff systems such as `ode15s`, `ode23t`, or `CVODE-S`.
+See the MATLAB documentation for details on the ODE solvers and the solver settings.
+
+#### Using the Lie-Group Variational integrator
+
+With `MBSimIntegratorVarIntBroyden`, an implementation of an implicit, fixed-step, first/second-order Lie-group variational integrator is available that can be highly efficient both for numerically non-stiff and   stiff systems.
+The integrator uses Broyden's good method to solve the implicit system of equations in each time step.
+
+- The primary solver setting is the time step `h`, which determines both the accuracy (integration error) and the computation time of the integrator.
+
+   __Important:__ For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which is required for the solver to run successfully. For larger time steps $h < h_{max}$, the implicit solver will not converge, and the simulation will fail. 
+   
+   - Hence, if the variational integrator does not run for a specific system, the first thing to try is usually decreasing the time step, e.g., by factors of 2 or 10.
+   
+   - The maximum time step strongly depends on the dissipation in the system; with increased dissipation, larger time steps can be used.
+   
+- For systems with dissipation, the property `aTrapez` determines the integrator's order: For `aTrapez = 0.5`, it is second-order, for `aTrapez = 0`, it is first-order.
+  For conservative systems (without dissipation), this value has no effect, since it only affects the dissipation terms.
+  
+  For increased accuracy, one usually wants to use `aTrapez = 0.5` for second-order accuracy. However, in cases where computational efficiency is the primary concern, `aTrapez = 0` may be useful,
+  since it usually results in a much higher maximum time step $h_{max}$ (i.e., much larger time steps can be used, which decreases computation time), and the solver becomes generally more robust.
+  
+- The integrator setting `errorMargin` determines the residual threshold for the solution of the implicit system of equations.
+  Adjusting this value is often advantageous for either increased numerical efficiency (since higher tolerances usually mean less solver iterations and thus less computation time), or increased robustness.
+  In some cases, adjusting this value may allow the solver to run successfully when it failed for the default settings.
+  However, it depends on the specific system, which values result in the highest stability.
+  
+  Common values are between `1e-7` and `1e-12`.
+  
+  
+- For the highest performance and stability, one can additionally tune the parameters `errorMarginLimit`, `maxIterations` and `JacobianIterationThreshold`.
+  
+  - If `errorMarginLimit` is set to a different (larger) value than `errorMargin`, the integrator does not abort the simulation if the implicit solver does not converge to the default tolerance specified by `errorMargin` within `maxIterations`, as long as the residual remains below `errorMarginLimit`.
+  
+    This setting can be useful to successfully integrate systems with "challenging" numerical properties, but usually results in much larger run times since the solver executes a large number of additional iterations.
+    
+  - Correspondingly, `maxIterations` sets the maximum number of iterations of the implicit solver. If the residual does not converge to `errorMarginLimit` within this number, the integration fails.
+  
+  - `JacobianIterationThreshold`: This setting defines how often the Jacobian of the implicit system of equations (i.e., the DEL Jacobian) is recomputed during integration.
+   To increase performance, the Jacobian is not computed in each time step; it is only recomputed if the nr. of iterations in the last time step exceeds `JacobianIterationThreshold`.
+   Otherwise, the Jacobian of the last time step is reused.
+   Reusing the old Jacobian is a compromise between the computational cost of recomputing the exact Jacobian (which is expensive) and a few additional solver iterations caused by a slightly inaccarute Jacobian.
+   There is usually a optimal value to achieve the highest perfomance, which usually lies between 3 and 5.
+   In some cases, this mechanism can impact the stability of the integrator, and using a smaller number (or even 0 to disable the feature) may help.
+
+
+#### Practical Quick-Start Guide for the Variational integrator
+
+1. If the system is dissipative, decide whether the focus is on accuracy (low integration error), or on computational time. For accuracy, choose `aTrapez = 0.5`, otherwise `aTrapez = 0`.
+   For conservative (non-dissipative) systems, skip this step, as this setting only influences the dissipation term.
+
+2. Start with a fairly large time step `h`, e.g., the default value. If the integration does not succeed or the results show signs of instability (which may be the case for numerically stiff systems), decrease `h` until the integration completes successfully.
+Otherwise, choose `h` according to the requirements on integration error and run time.
+
+3. For highest performance, adjust `errorMargin`, which may allow to run the simulation with a larger time step or a smaller number of iterations, resulting in faster run times.
+
+4. For complex cases, you can further adjust `errorMarginLimit` and the other settings mentioned above.
+
 
 ### Optimal Control
 
@@ -102,13 +165,11 @@ After simulation, use `plotAll`, `computeEnergies`, `drawSnapshots`, and `animat
 
 Available OCP discretizations include:
 
-- `OCPIntegratorVI`: variational/discrete Euler-Lagrange transcription.
-- `OCPIntegratorRK("RK2")` and `OCPIntegratorRK("RK4")`: ODE transcriptions with Runge-Kutta integration.
-- `OCPIntegratorImplicitMidpoint`: ODE transcription with implicit midpoint integration.
+- `OCPIntegratorVI`: First/second-order variational/discrete Euler-Lagrange transcription (DMOC)
+- `OCPIntegratorRK`: Second-/fourth-order ODE transcription with explicit Runge-Kutta integration (`RK2` and `RK4`)
+- `OCPIntegratorImplicitMidpoint`: Second-order ODE transcription with implicit midpoint rule
 
 The helper `OCPComputeInitialGuess_InvDyn` can generate inverse-dynamics-based initial guesses for trajectory-optimization problems.
-
-
 
 
 ## Citation
