@@ -220,12 +220,8 @@ These contributions are marked in the comments.
 
 ## Developer documentation
 
-The repository contains a top-level [MATLAB project](https://www.mathworks.com/help/matlab/projects.html).
-If you work on the toolbox directly from the repository, make sure this project is always active.
-The project is also used to package the toolbox.
-
-(More developer details to be added later.)
-
+For release, the toolbox is packaged with the script `packageToolbox.m`, which creates the corresponding `mltbx` file.
+The version number in the script must be incremented manually.
 
 ## Contact & Support
 
