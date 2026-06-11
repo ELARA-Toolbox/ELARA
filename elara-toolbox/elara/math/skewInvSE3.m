@@ -20,5 +20,5 @@ function V = skewInvSE3(gSk)
     v = gSk(1:3, 4);
     
     % Give 6x1 vector
-    V = [v; skewInv(R)];
+    V = [skewInv(R); v];
 end
