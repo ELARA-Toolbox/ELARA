@@ -3,7 +3,7 @@ function DEL_res_N = computeDELResiduumFinalStep_casadi( ...
     %% Compute Residuum of DEL Equation
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemSym
+        MBSys   (1,1) elara.SystemSym
 
         simPars (1,1) MBSimPars
 

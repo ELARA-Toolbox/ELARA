@@ -4,7 +4,7 @@ function DEL_res_k = computeDELResiduumFirstStep_casadi_extKin( ...
     % Index convention: Same as in literature; i.e., starting at 0
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemSym
+        MBSys   (1,1) elara.SystemSym
 
         simPars (1,1) MBSimPars
 

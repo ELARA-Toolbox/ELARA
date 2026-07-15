@@ -1,21 +1,21 @@
 function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPars)
     %% Compute optimal steady-state system inputs for given TCP position
     arguments
-        MBSys    (1,1) MBSystem
+        MBSys    (1,1) elara.internal.System
         OCP      (1,1) OCPDefinition
         simPars  (1,1) MBSimPars
     end
 
     %% Get variables
-    if ~isa(MBSys, "MBSystemSym")
-        MBSysSym = convertMBSystemObject(MBSys, "MBSystemSym");
+    if ~isa(MBSys, "elara.SystemSym")
+        MBSysSym = convertelara.SystemObject(MBSys, "elara.SystemSym");
     else
         MBSysSym = MBSys;
     end
 
      % Verify that the TCP is defined for the system
     if ~MBSys.indexTCPFrame
-        warning("No TCP frame defined in the MBSystem object. Using last frame as the TCP frame.")
+        warning("No TCP frame defined in the elara.internal.System object. Using last frame as the TCP frame.")
         indexTCPFrame = MBSys.nFrames;
     else
         indexTCPFrame = MBSys.indexTCPFrame;

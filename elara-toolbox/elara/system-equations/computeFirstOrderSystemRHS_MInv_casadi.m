@@ -10,7 +10,7 @@ function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) 
         % Input vector
         u     (:,1)
 
-        MBSys   (1,1) MBSystemSym
+        MBSys   (1,1) elara.SystemSym
 
         simPars (1,1) MBSimPars
     end

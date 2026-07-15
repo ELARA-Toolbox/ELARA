@@ -2,7 +2,7 @@ function [res, g, g_rel] = computeStaticResiduum_casadi(MBSys, simPars, q, u)
     %% Compute Residuum of Static Equilbrium Equation
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemSym
+        MBSys   (1,1) elara.SystemSym
 
         simPars (1,1) MBSimPars
 

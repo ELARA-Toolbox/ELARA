@@ -40,7 +40,7 @@ classdef OCPDefinition
         nlpOpts         (1,1) struct
 
         %% System Definition
-        MBSys           (1,1) MBSystemSym
+        MBSys           (1,1) elara.SystemSym
 
         %% Cost function definition
         % wRx: Cost function weights

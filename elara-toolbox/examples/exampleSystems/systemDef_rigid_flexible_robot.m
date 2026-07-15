@@ -16,11 +16,11 @@ function links = systemDef_rigid_flexible_robot(opts)
 
     %% Flexible link
 
-    linkF = MBLinkDefinitionFlexible;
+    linkF =  elara.FlexibleLink;
 
     linkF.parentLink   = 3;
     linkF.isCantilever = false;
-    linkF.isActuated   = true;
+    linkF.jointIsActuated   = true;
     linkF.nSeg         = opts.nSeg;
     linkF.L            = 0.4;
     linkF.g_J_B        = eye(4);

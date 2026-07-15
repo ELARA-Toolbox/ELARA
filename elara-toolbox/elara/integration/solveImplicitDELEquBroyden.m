@@ -12,7 +12,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
     % Technical University of Munich
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystem
+        MBSys   (1,1) elara.internal.System
 
         % Vector of generalized coordinates at current time step (1,nDoF)
         q_k     (:,1) double
@@ -138,7 +138,7 @@ function DEL_res_k = MBSDynamics_DEL_implicitFun( ...
         MBSys, JGeom, h, f_frame_k, f_gen_k, eta_k, q_k_diff, a) %#codegen
     %% Evaluate implicit part of the DEL Equations
     arguments (Input)
-        MBSys       (1,1) MBSystem
+        MBSys       (1,1) elara.internal.System
 
         % Array of Beam Jacobians (6, nDoF, nNodes)
         JGeom       (6, :, :) double

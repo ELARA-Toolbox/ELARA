@@ -1,6 +1,5 @@
-classdef MBLinkDefinitionFlexible < MBLinkDefinition
-    % MBLinkDefinition class for a Flexible Link
-    % in a multibody system
+classdef FlexibleLink < elara.internal.Link
+    % Class defining a Flexible Link in a multibody system
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -27,14 +26,14 @@ classdef MBLinkDefinitionFlexible < MBLinkDefinition
         Bc          (6,:) double
 
         % Beam material
-        beamPars    (1,1) MBBeamParams
+        beamPars    (1,1) elara.BeamParams
 
         % Discrete deformations in the reference configuration (6,nSeg)
         xiRef       (6,:) double
 
         %%% For continuum manipulators
         % Configuration object for cable actuation
-        cableConfig (1,1) MBLinkCableActuationConfig
+        tendonActuation (1,1) elara.TendonActuation
 
     end
     properties (Constant)
@@ -44,7 +43,7 @@ classdef MBLinkDefinitionFlexible < MBLinkDefinition
         function validateProperties(link)
             %% Validate the link's properties
             arguments
-                link (1,1) MBLinkDefinition
+                link (1,1) elara.FlexibleLink
             end
 
             %%% Validate properties of flexible links

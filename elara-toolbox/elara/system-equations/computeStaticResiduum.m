@@ -2,7 +2,7 @@ function res = computeStaticResiduum(MBSys, simPars, q, u)
     %% Compute Residuum of Static Equilbrium Equation
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemNum
+        MBSys   (1,1) elara.SystemNum
 
         simPars (1,1) MBSimPars
 

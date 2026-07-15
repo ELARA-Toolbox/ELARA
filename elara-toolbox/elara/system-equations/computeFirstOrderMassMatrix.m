@@ -9,7 +9,7 @@ function M_fo = computeFirstOrderMassMatrix(t, x, MBSys)
         % State vector [q; q_dot] (2*nDof,1)
         x       (:,1) double
 
-        MBSys   (1,1) MBSystemNum
+        MBSys   (1,1) elara.SystemNum
     end
     M_fo = blkdiag( ...
         eye(MBSys.nDoF), ...

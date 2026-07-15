@@ -56,7 +56,7 @@ MBSimFwd.animateSimResults("figureName", "AnimVI");
 %% Define OCP
 
 OCP = OCPDefinition;
-OCP.MBSys = MBSystemSym(links);
+OCP.MBSys = elara.SystemSym(links);
 
 OCP.q0    = [pi/2, 0];
 OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity

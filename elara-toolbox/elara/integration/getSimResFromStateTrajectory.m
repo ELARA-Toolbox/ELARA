@@ -3,7 +3,7 @@ function simRes = getSimResFromStateTrajectory(MBSys, tout, q, q_dot)
     % E.g., to post-process integration results from ODE integrator
     arguments
         % Object defining the multibody system
-        MBSys   (1,1) MBSystemNum
+        MBSys   (1,1) elara.SystemNum
 
         % Time vector
         tout    (:,1) double

@@ -26,7 +26,7 @@ MBSim = MBSimulation(links, "displayInfo", false);
 %% Define OCP
 
 OCP = OCPDefinition;
-OCP.MBSys = MBSystemSym(links);
+OCP.MBSys = elara.SystemSym(links);
 
 OCP.q0    = zeros(MBSim.MBSys.nDoF,1);
 OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity

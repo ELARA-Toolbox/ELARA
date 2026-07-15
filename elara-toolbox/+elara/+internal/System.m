@@ -1,5 +1,5 @@
-classdef (Abstract) MBSystem
-    %% MBSystem class
+classdef (Abstract) System
+    %% elara.internal.System class
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.
     %
@@ -84,14 +84,14 @@ classdef (Abstract) MBSystem
         computeDiscreteAbsoluteVelocities
     end
     methods
-        function obj = MBSystem(links)
-            %% Constructor for MBSystem
+        function obj = System(links)
+            %% Constructor for elara.internal.System
             arguments
-                links (:,1) MBLinkDefinition = MBLinkDefinitionRigid.empty;
+                links (:,1) elara.internal.Link = elara.RigidLink.empty;
             end
             % Assemble system if links are given
             if ~isempty(links)
-                obj = assembleMBSystem(links, obj);
+                obj = elara.assembleSystem(links, obj);
             end
         end
     end

@@ -18,10 +18,10 @@ classdef MBSimulation
         %% System specification
 
         % Link definitions
-        links   (:,1) MBLinkDefinition
+        links   (:,1) elara.internal.Link
 
         % MB system definition
-        MBSys   (1,1) MBSystemNum
+        MBSys   (1,1) elara.SystemNum
 
         %% Simulation Parameters
         simPars (1,1) MBSimPars
@@ -36,7 +36,7 @@ classdef MBSimulation
             % Create instance of this class
             % If links are given (optionally), assemble the MB system from them
             arguments
-                links               (:,1) MBLinkDefinition  = MBLinkDefinitionRigid.empty;
+                links               (:,1) elara.internal.Link = elara.RigidLink.empty;
                 options.displayInfo (1,1) logical           = true;
                 options.Name        (1,1) string            = "";
             end
@@ -45,7 +45,7 @@ classdef MBSimulation
 
             if ~isempty(links)
                 obj.links = links;
-                obj.MBSys = MBSystemNum(links);
+                obj.MBSys = elara.SystemNum(links);
 
                 % Plot system information
                 if options.displayInfo

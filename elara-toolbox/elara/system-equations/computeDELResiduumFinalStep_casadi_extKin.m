@@ -6,7 +6,7 @@ function DEL_res_N = computeDELResiduumFinalStep_casadi_extKin( ...
     % (i.e., last index is N)
     arguments
         % Multibody system
-        MBSys    (1,1) MBSystemSym
+        MBSys    (1,1) elara.SystemSym
 
         simPars  (1,1) MBSimPars
 

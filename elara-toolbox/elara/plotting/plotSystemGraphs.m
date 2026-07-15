@@ -1,15 +1,15 @@
-function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(MBSys)
+function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(system)
     %% Plot Topology Graphs of a MB System
 
     arguments
-        MBSys (1,1) MBSystem
+        system (1,1) elara.internal.System
     end
 
-    linkGraph  = digraph(MBSys.AdjMatrixLinkGraph);
-    frameGraph = digraph(MBSys.AdjMatrixFrameGraph);
+    linkGraph  = digraph(system.AdjMatrixLinkGraph);
+    frameGraph = digraph(system.AdjMatrixFrameGraph);
 
     % Link colors
-    linkColors = lines(MBSys.nLinks);
+    linkColors = lines(system.nLinks);
 
 
     %% Plot Link Graph
@@ -27,7 +27,7 @@ function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(MBSys)
     %% Plot Frame Graph
 
     % Determine if the bodies are rigid or flexible
-    isRigidLink = ~(MBSys.linkFrameIndices(2,:)-MBSys.linkFrameIndices(1,:));
+    isRigidLink = ~(system.linkFrameIndices(2,:)-system.linkFrameIndices(1,:));
 
     fhFrameGraph = figure("Name","FrameGraph");
     ax = axes(fhFrameGraph);
@@ -37,7 +37,7 @@ function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(MBSys)
     h.HandleVisibility = "off";
 
     for iLink = 1:linkGraph.numnodes
-        linkFrames = MBSys.linkFrameIndices(1,iLink):MBSys.linkFrameIndices(2,iLink);
+        linkFrames = system.linkFrameIndices(1,iLink):system.linkFrameIndices(2,iLink);
 
         % Set Color for individual bodies
         path = shortestpath(frameGraph,linkFrames(1),linkFrames(end));

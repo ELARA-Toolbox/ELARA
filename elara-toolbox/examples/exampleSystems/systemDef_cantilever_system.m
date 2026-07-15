@@ -3,7 +3,7 @@ function links = systemDef_cantilever_system
 
     %% Link 1: Cantilever link
 
-    links(1) = MBLinkDefinitionFlexible;
+    links(1) = elara.FlexibleLink;
 
     links(1).parentLink = 0;
     links(1).isCantilever = true;
@@ -19,10 +19,10 @@ function links = systemDef_cantilever_system
 
     %% Link 2: Rigid link
 
-    links(2) = MBLinkDefinitionRigid;
+    links(2) = elara.RigidLink;
 
     links(2).parentLink = 1;
-    links(2).isActuated = 1;
+    links(2).jointIsActuated = 1;
     links(2).jointAxis  = [0 1 0 0 0 0].';
     links(2).g_J_B      = SE3Matrix(eye(3), [0,0,0.3]);
     links(2).g_ref      = SE3Matrix(eye(3), [0,0,0.3]);
@@ -44,10 +44,10 @@ function links = systemDef_cantilever_system
     % Transf. link 3 joint -> link 3 COM
     g_J3_COM3 = SE3Matrix(eye(3), [0,0,0.3]);
 
-    links(3) = MBLinkDefinitionRigid;
+    links(3) = elara.RigidLink;
 
     links(3).parentLink = 2;
-    links(3).isActuated = 1;
+    links(3).jointIsActuated = 1;
     links(3).jointAxis  = [0 1 0 0 0 0].';
     links(3).g_J_B      = g_J3_COM3;
     links(3).g_ref      = g_COM2_J3*g_J3_COM3;

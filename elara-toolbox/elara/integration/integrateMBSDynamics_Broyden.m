@@ -8,7 +8,7 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
 
     arguments
         % Object defining the multibody system
-        MBSys           (1,1) MBSystemNum
+        MBSys           (1,1) elara.SystemNum
 
         % simPars object (struct) with simulation parameters.
         % See class definition for details.

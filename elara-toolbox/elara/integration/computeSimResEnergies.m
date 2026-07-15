@@ -1,7 +1,7 @@
 function simEnergies = computeSimResEnergies(MBSys, simPars, simRes, isVarInt, useFD) %#codegen
     %% Compute energy evolution for simulation results
     arguments (Input)
-        MBSys       (1,1) MBSystemNum
+        MBSys       (1,1) elara.SystemNum
         simPars     (1,1) MBSimPars
         simRes      (1,1) MBSimResults
 

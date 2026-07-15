@@ -29,7 +29,7 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
         function obj = MBFlexibleLinkVisualization(linkDef, g, opts)
             % Construct an instance of this class
             arguments
-                linkDef (1,1)   MBLinkDefinition;
+                linkDef (1,1)   elara.FlexibleLink;
                 g       (4,4,:) double {mustBeSE3MatrixArray} = zeros(4,4,0);
 
                 % Additional drawing options
@@ -79,11 +79,11 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
             obj.beamVis.updateConfiguration(g);
 
             % Update tendons
-            nCables = length(obj.linkDef.cableConfig.x_m_funs);
+            nCables = length(obj.linkDef.tendonActuation.x_td_funs);
             if nCables && obj.ShowTendons
                 lBeam = obj.linkDef.L/obj.linkDef.nSeg;
                 sBeamNodes = 0:lBeam:obj.linkDef.L;
-                [g_cm, termNodes] = obj.linkDef.cableConfig.getNodeData( ...
+                [g_cm, termNodes] = obj.linkDef.tendonActuation.getNodeData( ...
                     sBeamNodes);
                 for iC = 1:nCables
                     g_c = zeros(4, 4, termNodes(iC));
@@ -111,8 +111,8 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
                 "interpolateBeam", true, ...
                 "FaceAlpha", 0.3, ...
                 "Color",obj.Color, ...
-                "Height", obj.linkDef.beamPars.geom.H, ...
-                "Width", obj.linkDef.beamPars.geom.W ...
+                "Height", obj.linkDef.beamPars.H, ...
+                "Width", obj.linkDef.beamPars.W ...
                 );
 
             % Draw Joint and TCP frame
@@ -131,12 +131,12 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
                 );
 
             % Tendons
-            nCables = length(obj.linkDef.cableConfig.x_m_funs);
+            nCables = length(obj.linkDef.tendonActuation.x_td_funs);
             if nCables
                 colorsTendons = lines(nCables);
                 lBeam = obj.linkDef.L/obj.linkDef.nSeg;
                 sBeamNodes = 0:lBeam:obj.linkDef.L;
-                [g_cm, termNodes] = obj.linkDef.cableConfig.getNodeData( ...
+                [g_cm, termNodes] = obj.linkDef.tendonActuation.getNodeData( ...
                     sBeamNodes);
 
                 for iC = 1:nCables

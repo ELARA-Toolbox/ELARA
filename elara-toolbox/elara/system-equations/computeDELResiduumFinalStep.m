@@ -1,7 +1,7 @@
 function [res_N, eta_N0] = computeDELResiduumFinalStep(MBSys, h, simPars, q_N0, q_N, u_N, qDotEnd, a)
     %% Compute Residuum for the final step N-1 -> N
     arguments
-        MBSys   (1,1) MBSystem
+        MBSys   (1,1) elara.internal.System
         h       (1,1) 
         simPars (1,1) MBSimPars
         q_N0    (:,1) % Coordinate variable at time step N

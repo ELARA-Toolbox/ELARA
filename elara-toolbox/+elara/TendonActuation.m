@@ -1,4 +1,4 @@
-classdef MBLinkCableActuationConfig
+classdef TendonActuation
     %% Class to define the actuation properties of cable actuated flexible links
     % used to model cable-actuated continuum manipulators
     %
@@ -16,30 +16,30 @@ classdef MBLinkCableActuationConfig
         % The functions must have the form
         %           [x;y;z] = f(s)
         % where f : R -> R^3 returns the cable path at s
-        x_m_funs        (:,1) cell
+        x_td_funs        (:,1) cell
 
         % First and second derivatives of the cable path functions w.r.t. s
-        x_m_ds_funs     (:,1) cell
-        x_m_dds_funs    (:,1) cell
+        x_td_ds_funs     (:,1) cell
+        x_td_dds_funs    (:,1) cell
     end
     methods
         function obj = getSymbolicPathDerivatives(obj)
             %% Compute derivatives of the cable path functions symbolically
             s = sym("s");
-            obj.x_m_ds_funs = cellfun( ...
+            obj.x_td_ds_funs = cellfun( ...
                 @(x) matlabFunction( diff(x(s), s, 1), "Vars", s ), ...
-                obj.x_m_funs, ...
+                obj.x_td_funs, ...
                 'UniformOutput', false);
-            obj.x_m_dds_funs = cellfun( ...
+            obj.x_td_dds_funs = cellfun( ...
                 @(x) matlabFunction( diff(x(s), s, 2), "Vars", s ), ...
-                obj.x_m_funs, ...
+                obj.x_td_funs, ...
                 'UniformOutput', false);
         end
 
         function [g_cm, termNodes, x_cm] = getNodeData(obj, sNodes)
             %% Compute discrete cable node configurations from function handles
             arguments(Input)
-                obj     (1,1) MBLinkCableActuationConfig
+                obj     (1,1) elara.TendonActuation
 
                 % Beam length
                 sNodes       (:,1) double {mustBeNonnegative}
@@ -62,16 +62,16 @@ classdef MBLinkCableActuationConfig
             end
 
             % Make sure function array sizes match
-            assert(length(obj.x_m_funs) == length(obj.x_m_ds_funs));
-            assert(length(obj.x_m_funs) == length(obj.x_m_dds_funs));
-            assert(length(obj.x_m_funs) == length(obj.LTermination));
+            assert(length(obj.x_td_funs) == length(obj.x_td_ds_funs));
+            assert(length(obj.x_td_funs) == length(obj.x_td_dds_funs));
+            assert(length(obj.x_td_funs) == length(obj.LTermination));
 
             % Vector with node arc length positions
             %l = L / nSeg;
             %sNodes = 0:l:L;
 
             nNodes  = length(sNodes);
-            nCables = length(obj.x_m_funs);
+            nCables = length(obj.x_td_funs);
 
             % Compute relative transformation / position of the cable path
             % at the nodes
@@ -81,7 +81,7 @@ classdef MBLinkCableActuationConfig
             for iC = 1:nCables
                 % Cable positions
                 x_cm(:,:,iC) = cell2mat( ...
-                    arrayfun( obj.x_m_funs{iC}, sNodes , ...
+                    arrayfun( obj.x_td_funs{iC}, sNodes , ...
                     'UniformOutput', false).' ...
                     );
 
@@ -90,8 +90,8 @@ classdef MBLinkCableActuationConfig
                 R = zeros(3, 3, nNodes);
 
                 % Get function handles
-                f_ds  = obj.x_m_ds_funs{iC}; %diff(obj.x_m_funs{iC}(s), s, 1);
-                f_dds = obj.x_m_dds_funs{iC}; %diff(obj.x_m_funs{iC}(s), s, 2);
+                f_ds  = obj.x_td_ds_funs{iC}; %diff(obj.x_td_funs{iC}(s), s, 1);
+                f_dds = obj.x_td_dds_funs{iC}; %diff(obj.x_td_funs{iC}(s), s, 2);
 
                 % Compute basis vectors of the Frenet-Serret frame
                 for iN = 1:nNodes

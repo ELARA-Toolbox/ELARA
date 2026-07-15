@@ -35,7 +35,7 @@ classdef MBSimIntegratorVarIntBroyden < MBSimIntegrator
 
     methods
         function simRes = simulateSystem(obj, MBSim)
-            %% Simulate MBSystem: Variational integrator, Broyden solver
+            %% Simulate elara.internal.System: Variational integrator, Broyden solver
             arguments
                 obj     (1,1)
                 MBSim   (1,1) MBSimulation

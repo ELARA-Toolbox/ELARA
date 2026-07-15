@@ -1,7 +1,5 @@
-classdef (Abstract) MBLinkDefinition < matlab.mixin.Heterogeneous
-    % MBLinkDefinition class
-    % For the convenient definition of a single link in a multibody system
-    % (MBS)
+classdef (Abstract) Link < matlab.mixin.Heterogeneous
+    % Abstract Class defining a general link in a multibody system
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -15,8 +13,7 @@ classdef (Abstract) MBLinkDefinition < matlab.mixin.Heterogeneous
         parentLink      (1,1) uint16 {mustBeNonnegative}
 
         % If the joint is actuated (with a generalized force/torque)
-        isActuated      (1,1) logical = true;
-
+        jointIsActuated (1,1) logical = true;
 
         % Joint screw coordinate vector in joint frame
         jointAxis       (6,1) double

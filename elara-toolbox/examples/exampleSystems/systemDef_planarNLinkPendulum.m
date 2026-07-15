@@ -46,7 +46,7 @@ function links = systemDef_planarNLinkPendulum(opts)
 
     %% Create link objects
 
-    links = createArray(nLinks,1,"MBLinkDefinitionRigid");
+    links = createArray(nLinks, 1, "elara.RigidLink");
 
     for iLink = 1:nLinks
         if iLink == 1
@@ -57,7 +57,7 @@ function links = systemDef_planarNLinkPendulum(opts)
             links(iLink).g_ref      = g_J_ref_i;
         end
 
-        links(iLink).isActuated = 1;
+        links(iLink).jointIsActuated = 1;
         links(iLink).jointAxis  = [0 1 0 0 0 0];
         links(iLink).g_J_B      = g_J1_COM;
         links(iLink).m          = m;

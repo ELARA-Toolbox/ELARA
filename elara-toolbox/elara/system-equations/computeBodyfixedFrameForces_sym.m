@@ -1,7 +1,7 @@
 function f_frame_b = computeBodyfixedFrameForces_sym(MBSys, g, f_frame_s, g_grav)
     %% Compute the body-fixed forces for all frames: Gravity and Ext. Forces
     arguments
-        MBSys       (1,1) MBSystemSym
+        MBSys       (1,1) elara.SystemSym
 
         % Absolute configurations of all frames
         g           (1,:) SE3

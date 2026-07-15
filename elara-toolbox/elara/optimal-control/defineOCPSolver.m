@@ -27,7 +27,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
 
     % Verify that the TCP is defined for the system
     if ~OCP.MBSys.indexTCPFrame
-        warning("No TCP frame defined in the MBSystem object. Using last frame as the TCP frame.")
+        warning("No TCP frame defined in the elara.internal.System object. Using last frame as the TCP frame.")
         indexTCPFrame = OCP.MBSys.nFrames;
     else
         indexTCPFrame = OCP.MBSys.indexTCPFrame;

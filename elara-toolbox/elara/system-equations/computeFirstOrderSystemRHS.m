@@ -7,7 +7,7 @@ function f_fo = computeFirstOrderSystemRHS(t, x, MBSys, simPars) %#codegen
         % State vector [q; q_dot] (2*nDof,1)
         x           (:,1) double
 
-        MBSys       (1,1) MBSystemNum
+        MBSys       (1,1) elara.SystemNum
 
         simPars     (1,1) MBSimPars
     end

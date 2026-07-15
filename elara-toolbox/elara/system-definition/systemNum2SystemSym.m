@@ -1,12 +1,12 @@
-function MBSysSym = MBSystemNum2MBSystemSym(MBSysNum)
-    %% Convert instances of the MBSystem and MBSystemSym class
+function MBSysSym = systemNum2SystemSym(MBSysNum)
+    %% Convert instances of the elara.internal.System and elara.SystemSym class
     % between each other (small helper function)
     % See https://www.mathworks.com/matlabcentral/answers/350158-convert-a-struct-to-an-object-of-a-class
     arguments
-        MBSysNum       (1,1) MBSystemNum
+        MBSysNum       (1,1) elara.SystemNum
     end
 
-    MBSysSym = MBSystemSym;        %create object
+    MBSysSym = elara.SystemSym;        %create object
     for fn = fieldnames(MBSysNum)'      %enumerate fields
         try
             MBSysSym.(fn{1}) = MBSysNum.(fn{1});   %and copy

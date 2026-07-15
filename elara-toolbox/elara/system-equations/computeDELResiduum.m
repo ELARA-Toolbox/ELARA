@@ -3,7 +3,7 @@ function DEL_res_k = computeDELResiduum(MBSys, simPars, q_k0, q_k, q_k1, u_k, h,
     % only in terms of coordinates q (at time steps k-1, k, k+1)
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemNum
+        MBSys   (1,1) elara.SystemNum
 
         simPars (1,1) MBSimPars
 

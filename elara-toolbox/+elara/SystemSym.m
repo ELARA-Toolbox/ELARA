@@ -1,5 +1,5 @@
-classdef MBSystemNum < MBSystem
-    %% MBSystem class for numeric variables
+classdef SystemSym < elara.internal.System
+    %% elara.SystemSym class for symbolic variables
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.
     %
@@ -9,20 +9,20 @@ classdef MBSystemNum < MBSystem
     % Technical University of Munich
     properties
         %% Data of the individual frames
-        frameData   (1,1) MBSystemFrameDataNum
+        frameData   (1,1) elara.FramePropertiesSym
 
         %% Global system properties
 
         % Vector of stiffness coefficients for all coordinates
         % (i.e., diagonal entries of the generalized stiffness matrix)
-        cSys        (:,1) double
+        cSys        (:,1)
 
         % Vector of (linear) dissipation coefficients for all coordinates
-        dSys        (:,1) double {mustBeNonnegative}
+        dSys        (:,1)
 
         % Vector of reference deformations written in generalized
         % coordinates form
-        qRef        (:,1) double
+        qRef        (:,1)
     end
 
     methods
@@ -30,10 +30,10 @@ classdef MBSystemNum < MBSystem
             %% Return coordinate vector with specified joint angles
             % The rest of q is zero.
             arguments
-                MBSys  (1,1) MBSystemNum
+                MBSys  (1,1) elara.SystemSym
 
-                % Vector of joint angles with dimension (nJoints,theta)
-                theta      (:,1) double
+                % Vector of joint angles with dimension (nJoints,1)
+                theta      (:,1)
             end
             assert(size(theta,1) == MBSys.nJoints, "Joint angle vector has incorrect length.");
 
@@ -47,11 +47,11 @@ classdef MBSystemNum < MBSystem
         function q = setLinkDeformations(MBSys, xi, iLink)
             %% Return coordinate vector with specified beam deformations
             arguments
-                MBSys  (1,1) MBSystemNum
+                MBSys  (1,1) elara.SystemSym
 
                 % Array of discrete deformations with size (6,nSeg) for
                 % the current link
-                xi      (:,:) double
+                xi      (:,:)
 
                 % Index of the current link
                 iLink   (1,1) double
@@ -86,11 +86,11 @@ classdef MBSystemNum < MBSystem
         function theta = getJointAngles(MBSys, q)
             %% Return vector of joint angles for given coordinate vector
             arguments
-                MBSys  (1,1) MBSystemNum
+                MBSys  (1,1) elara.SystemSym
 
                 % Vector of generalized coordinates from which the joint
                 % angles should be returned
-                q      (:,1) double
+                q      (:,1)
             end
             % Get indices of frames with screw joints
             thetaIndices = MBSys.frameData.qIndices(1,MBSys.frameData.jointType == 1);
@@ -100,13 +100,13 @@ classdef MBSystemNum < MBSystem
         end
 
         function xi = getLinkDeformations(MBSys, q, iLink)
-            %% Return array of discrete deformations for given link and corrdinate vector
+            %% Return array of discrete deformations for given link and coordinate vector
             arguments
-                MBSys  (1,1) MBSystemNum
+                MBSys  (1,1) elara.SystemSym
 
                 % Vector of generalized coordinates from which the
                 % discrete deformations shall be computed
-                q      (:,1) double
+                q      (:,1)
 
                 % Link for which to return the discrete deformations
                 iLink  (1,1) double
@@ -127,7 +127,9 @@ classdef MBSystemNum < MBSystem
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
             %       consecutively in the coordinate vector q
-            qIndices = MBSys.frameData.qIndices(1,linkFrames(1)):MBSys.frameData.qIndices(2,linkFrames(end));
+            qIndices = double( ...
+                MBSys.frameData.qIndices(1,linkFrames(1)):MBSys.frameData.qIndices(2,linkFrames(end)) ...
+                );
 
             % Get coordinates and store them in array of size
             % (nAllwd,nSeg)
@@ -146,26 +148,33 @@ classdef MBSystemNum < MBSystem
             %% Compute the relative transformations of all joints (rigid and flexible)
             % for given relative coordinates
             arguments (Input)
-                MBSys     (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
                 % System coordinates  (nDoF, 1)
-                q       (:,1) double
+                q       (:,1)
             end
             arguments (Output)
                 % SE3 Matrices with relative configurations between body frames
-                g_rel   (4,4,:) double
+                g_rel   (:,1) SE3
             end
-            g_rel = zeros(4,4,MBSys.nFrames);
+            f = getSE3Functions(q);
+            g_rel = createArray(MBSys.nFrames,1, "SE3");
             for iFrm = 1:MBSys.nFrames
-                qi = q(MBSys.frameData.qIndices(1,iFrm):MBSys.frameData.qIndices(2,iFrm));
+                indices = double(MBSys.frameData.qIndices(1,iFrm):MBSys.frameData.qIndices(2,iFrm)); % Casadi fix: Explicitly convert to double; unit16 integers do not work as indices
+                qi = q(indices);
                 switch MBSys.frameData.jointType(iFrm)
                     case 1
                         %%% Screw joint
-                        g_rel(:,:,iFrm) = MBSys.frameData.g_ref(:,:,iFrm) * expSE3Screw(MBSys.frameData.X(:,iFrm), qi);
+                        g_screw = SE3;
+                        g_ref = SE3(MBSys.frameData.g_ref(1:3,1:3,iFrm),MBSys.frameData.g_ref(1:3,4,iFrm));
+                        [g_screw.R, g_screw.x] = f.expSE3Screw(MBSys.frameData.X(1:3,iFrm), MBSys.frameData.X(4:6,iFrm), qi);
+                        g_rel(iFrm) = g_ref * g_screw;
                     case 2
                         %%% Flexible joint
-                        xi = MBSys.frameData.Ba(iFrm) * qi + MBSys.frameData.xiC(:,iFrm);
-                        g_rel(:,:,iFrm) = caySE3(xi*MBSys.frameData.l(iFrm));
+                        Ba = MBSys.frameData.Ba(iFrm);
+                        om = (Ba(1:3,:) * qi + MBSys.frameData.xiC(1:3,iFrm));
+                        v  = (Ba(4:6,:) * qi + MBSys.frameData.xiC(4:6,iFrm));
+                        [g_rel(iFrm).R, g_rel(iFrm).x] = f.caySE3(om*MBSys.frameData.l(iFrm), v*MBSys.frameData.l(iFrm));
                     otherwise
                         error("Invalid joint type specified.");
                 end
@@ -178,27 +187,28 @@ classdef MBSystemNum < MBSystem
             % frames)
             % with *given* relative joint transformations g_ij
             arguments (Input)
-                MBSys     (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
                 % Array of relative configurations between body frames
-                % dimensions (4,4,nFrames)
-                g_rel   (4,4,:) double
+                % dimensions (nFrames, 1)
+                g_rel   (:,1) SE3
             end
             arguments (Output)
                 % Absolute configurations of all body frames
-                g       (4,4,:) double
+                g       (:,1) SE3
             end
 
             %% Compute kinematics
             % Kinematics without Joint Frames, Section 2.3 (CoM Frames = Body Frames only)
-            g = zeros(4,4,MBSys.nFrames);
+            g = createArray(MBSys.nFrames,1, "SE3");
 
             % First frame
-            g(:,:,1) = MBSys.g0 * g_rel(:,:,1);
+            g0 = SE3(MBSys.g0(1:3,1:3), MBSys.g0(1:3,4));
+            g(1) = g0 * g_rel(1);
 
             % Other frames
             for iFrm = 2:MBSys.nFrames
-                g(:,:,iFrm) = g(:,:,MBSys.frameData.parent(iFrm)) * g_rel(:,:,iFrm);
+                g(iFrm) = g(MBSys.frameData.parent(iFrm)) * g_rel(iFrm);
             end
         end
 
@@ -207,18 +217,18 @@ classdef MBSystemNum < MBSystem
             % i.e., the configuration of all body frames (= CoM frames / node
             % frames)
             arguments (Input)
-                MBSys     (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q       (:,1) double
+                q       (:,1)
             end
             arguments (Output)
                 % Absolute configurations of all body frames
-                g       (4,4,:) double
+                g       (:,1) SE3
 
                 % Relative configurations between body frames (joint
                 % transformations)
-                g_rel   (4,4,:) double
+                g_rel   (:,1) SE3
             end
             % Compute relative joint transformations
             g_rel = MBSys.computeJointTransformations(q);
@@ -231,46 +241,49 @@ classdef MBSystemNum < MBSystem
             %% Compute Geometric Jacobian Matrix for Full Multibody System
             % with *given* relative joint transformations g_ij
             arguments (Input)
-                MBSys     (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q       (:,1) double
+                q       (:,1)
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
-                g_rel   (4,4,:) double
+                g_rel   (:,1) SE3
             end
             arguments (Output)
-                % Jacobian matrices with dimensions
-                % 6 x (nAllwd_1*nSeg1 + ... + nAllwdB*nSegB + nLinks) x nFrames
-                % where B is the nr. of flexible beams in the system
-                J       (6,:,:) double
+                % Cell array with dimensions nFrames x nFrames
+                % Each row contains the individual blocks of the full
+                % Jacobian matrix corresponding to the frame
+                J       (:,:) cell
             end
+            f = getSE3Functions(q);
 
             % Array holding all Jacobians
-            J = zeros(6, MBSys.nDoF, MBSys.nFrames);
+            J = cell(MBSys.nFrames, MBSys.nFrames);
             for iFrm = 1:MBSys.nFrames
-                for ii = 1:iFrm
+                for iBlock = 1:iFrm
                     % Column indices of the current block
-                    qIndices = MBSys.frameData.getQIndices(ii);
+                    qIndices = double(MBSys.frameData.getQIndices(iBlock));
 
                     % Compute block columns for current frame
-                    if ii == iFrm
+                    if iBlock == iFrm
                         switch MBSys.frameData.jointType(iFrm)
                             case 1
-                                J(:,qIndices,iFrm) = MBSys.frameData.X(:,iFrm);
+                                J{iFrm, iBlock} = MBSys.frameData.X(:,iFrm);
                             case 2
-                                xi = MBSys.frameData.Ba(iFrm) * q(qIndices) + MBSys.frameData.xiC(:,iFrm);
-                                J(:,qIndices,iFrm) = ...
-                                    MBSys.frameData.l(iFrm) * cayRTDSE3( -xi * MBSys.frameData.l(iFrm) ) ...
+                                Ba = MBSys.frameData.Ba(iFrm);
+                                om = (Ba(1:3,:) * q(qIndices) + MBSys.frameData.xiC(1:3,iFrm))*MBSys.frameData.l(iFrm);
+                                v  = (Ba(4:6,:) * q(qIndices) + MBSys.frameData.xiC(4:6,iFrm))*MBSys.frameData.l(iFrm);
+                                J{iFrm, iBlock} = ...
+                                    MBSys.frameData.l(iFrm) * f.cayRTDSE3( -om, -v ) ...
                                     * MBSys.frameData.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
-                        if ii < iFrm && ismember(ii, MBSys.frameData.ancestors(:,iFrm))
-                            J(:,qIndices,iFrm) = lAdSE3Inv( g_rel(:,:,iFrm) ) ...
-                                * J(:,qIndices,MBSys.frameData.parent(iFrm));
+                        if iBlock < iFrm && ismember(iBlock, MBSys.frameData.ancestors(:,iFrm))
+                            J{iFrm, iBlock} = f.lAdSE3Inv( g_rel(iFrm).R, g_rel(iFrm).x ) ...
+                                * J{MBSys.frameData.parent(iFrm),iBlock};
                         end
                     end
                 end
@@ -280,19 +293,19 @@ classdef MBSystemNum < MBSystem
         function [J, g_rel] = computeGeomJacobian(MBSys, q)
             %% Compute Geometric Jacobian Matrix for Full Multibody System
             arguments (Input)
-                MBSys     (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q       (:,1) double
+                q       (:,1)
             end
             arguments (Output)
                 % Jacobian matrices with dimensions
                 % 6 x (nAllwd_1*nSeg1 + ... + nAllwdB*nSegB + nLinks) x nFrames
                 % where B is the nr. of flexible beams in the system
-                J       (6,:,:) double
+                J       (:,:) cell
 
                 % Relative configurations between body frames
-                g_rel    (4,4,:) double
+                g_rel   (:,1) SE3
             end
             % Compute relative joint transformations
             g_rel = MBSys.computeJointTransformations(q);
@@ -306,54 +319,65 @@ classdef MBSystemNum < MBSystem
             % for the full multibody system
             % "Fast" function - with given relative transformations g_ij
             arguments (Input)
-                MBSys         (1,1) MBSystemNum
+                MBSys         (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q           (:,1) double
+                q           (:,1)
 
                 % System coordinate velocities (nDoF, 1)
-                q_dot       (:,1) double
+                q_dot       (:,1)
 
                 % Absolute frame velocities
-                eta         (6,:) double
+                eta         (:,1) cell
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
-                g_rel        (4,4,:) double
+                g_rel       (:,1) SE3
             end
             arguments (Output)
                 % Derivative of Jacobian matrix
-                J_dot       (6,:,:) double
+                J_dot        (:,:) cell
             end
 
+            %%%% TODO:
+            %%%% Decide if we keep eta as six-dimensional or use separate
+            %%%% omega, v
+
+            f = getSE3Functions(q);
+            fcayRTDSE3dt = getCayRTDSE3dtFunction(q);
+
             % Array holding all Jacobians
-            J_dot = zeros(6, MBSys.nDoF, MBSys.nFrames);
+            J_dot = cell(MBSys.nFrames, MBSys.nFrames);
             for iFrm = 1:MBSys.nFrames
-                for ii = 1:iFrm
+                for iBlock = 1:iFrm
                     % Column indices of the current block
-                    qIndices = MBSys.frameData.getQIndices(ii);
+                    qIndices = double(MBSys.frameData.getQIndices(iBlock));
 
                     % Compute block columns for current frame
-                    if ii == iFrm
+                    if iBlock == iFrm
                         switch MBSys.frameData.jointType(iFrm)
                             case 1
-                                J_dot(:,qIndices,iFrm) = ...
-                                    sadSE3(eta(:,ii)) * MBSys.frameData.X(:,iFrm);
+                                J_dot{iFrm, iBlock} = ...
+                                    f.sadSE3(eta{iBlock}(1:3),eta{iBlock}(4:6)) * MBSys.frameData.X(:,iFrm);
                             case 2
-                                xi     = MBSys.frameData.Ba(iFrm) * q(qIndices) + MBSys.frameData.xiC(:,iFrm);
-                                xi_dot = MBSys.frameData.Ba(iFrm) * q_dot(qIndices);
                                 l = MBSys.frameData.l(iFrm);
-                                J_dot(:,qIndices,iFrm) = l * ( ...
-                                    + sadSE3(eta(:,ii)) * cayRTDSE3(-xi*l) ...
-                                    + cayRTDSE3dt(-xi*l, -xi_dot*l ) ...
+                                Ba = MBSys.frameData.Ba(iFrm);
+                                om = (Ba(1:3,:) * q(qIndices) + MBSys.frameData.xiC(1:3,iFrm))*l;
+                                v  = (Ba(4:6,:) * q(qIndices) + MBSys.frameData.xiC(4:6,iFrm))*l;
+                                om_dot = Ba(1:3,:) * q_dot(qIndices)*l;
+                                v_dot  = Ba(4:6,:) * q_dot(qIndices)*l;
+
+                                J_dot{iFrm, iBlock} = l * ( ...
+                                    f.sadSE3(eta{iBlock}(1:3), eta{iBlock}(4:6)) * f.cayRTDSE3(-om, -v) ...
+                                    + fcayRTDSE3dt(-om, -v, -om_dot, -v_dot ) ...
                                     ) * MBSys.frameData.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
-                        if ismember(ii, MBSys.frameData.ancestors(:,iFrm))
-                            J_dot(:,qIndices,iFrm) = lAdSE3Inv( g_rel(:,:,iFrm) ) ...
-                                * J_dot(:,qIndices,MBSys.frameData.parent(iFrm));
+                        if ismember(iBlock, MBSys.frameData.ancestors(:,iFrm))
+                            J_dot{iFrm, iBlock} = f.lAdSE3Inv( g_rel(iFrm).R, g_rel(iFrm).x ) ...
+                                * J_dot{MBSys.frameData.parent(iFrm),iBlock};
                         end
                     end
                 end
@@ -364,16 +388,16 @@ classdef MBSystemNum < MBSystem
             %% Compute the Time Derivative of the Geometric Jacobian Matrix
             % for the full multibody system
             arguments
-                MBSys         (1,1) MBSystemNum
+                MBSys         (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q           (:,1) double
+                q           (:,1)
 
                 % System coordinate velocities (nDoF, 1)
-                q_dot       (:,1) double
+                q_dot       (:,1)
 
                 % Absolute frame velocities
-                eta         (6,:) double
+                eta         (:,1) cell
             end
 
             % Compute relative joint transformations
@@ -387,57 +411,61 @@ classdef MBSystemNum < MBSystem
             %% Compute the system input matrix
             % "Fast" function -- with given relative deformations
             arguments
-                MBSys         (1,1) MBSystemNum
+                MBSys         (1,1) elara.SystemSym
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
-                g_rel        (4,4,:) double
+                g_rel       (:,1) SE3
             end
+            f = getSE3Functions(g_rel(1).R);
 
-            B = zeros(MBSys.nDoF, MBSys.nInputs);
+            B = cell(MBSys.nFrames, MBSys.nInputs);
+
             for iFrm = 1:MBSys.nFrames
                 if MBSys.frameData.uIndices(1,iFrm)
-                    uIndices = MBSys.frameData.getUIndices(iFrm);
-                    qIndices = MBSys.frameData.getQIndices(iFrm);
+                    uIndices = double(MBSys.frameData.getUIndices(iFrm));
+                    %qIndices = double(MBSys.frameData.getQIndices(iFrm));
 
                     switch MBSys.frameData.jointType(iFrm)
                         case 1
                             % Rigid joint (scalar input)
-                            B(qIndices, uIndices) = 1;
+                            B{iFrm, uIndices} = 1;
                         case 2
                             % Flexible joint (multiple cable inputs)
                             l = MBSys.frameData.l(iFrm);
 
                             for iC = 1:length(uIndices)
                                 % Cable configurations at adjacent nodes
-                                g_cm_i1 = MBSys.frameData.g_cm(:,:,1,iFrm,iC);
-                                g_cm_i2 = MBSys.frameData.g_cm(:,:,2,iFrm,iC);
+                                g_cm_i1 = MBSys.frameData.g_cm(1,iFrm,iC);
+                                g_cm_i2 = MBSys.frameData.g_cm(2,iFrm,iC);
 
                                 % Discrete deformation gradient cable routing
                                 % Tangent vector is in elements 4:6
-                                xi_c = cayInvSE3( g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2 ) / l;
+                                g_rel_c = g_cm_i1 \ g_rel(iFrm) * g_cm_i2;
+                                [~, v_c] = f.cayInvSE3( g_rel_c.R, g_rel_c.x );
+                                v_c = v_c / l;
 
                                 % Compute matrix entry
-                                b_i = MBSys.frameData.Ba(iFrm).' * [
-                                    1/2 * ( skew( g_cm_i1(1:3,4) + g_cm_i2(1:3,4) ) ) * xi_c(4:6);
-                                    xi_c(4:6)
+                                B{iFrm, uIndices(iC)} = ...
+                                    -l / norm(v_c) * MBSys.frameData.Ba(iFrm).' * [
+                                    1/2 * ( skewSO3( g_cm_i1.x + g_cm_i2.x ) ) * v_c;
+                                    v_c
                                     ];
-                                B(qIndices, uIndices(iC)) = -l / norm(xi_c(4:6)) * b_i;
                             end
                         otherwise
                             % error
                     end
                 end
-
             end
         end
+
         function B = computeInputMatrix(MBSys, q)
             %% Compute the system input matrix
             arguments
-                MBSys         (1,1) MBSystemNum
+                MBSys         (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q           (:,1) double
+                q           (:,1)
             end
             % Compute relative joint transformations
             g_rel = MBSys.computeJointTransformations(q);
@@ -449,35 +477,47 @@ classdef MBSystemNum < MBSystem
         function M = computeMassMatrixFast(MBSys, J)
             %% Compute the system mass matrix
             arguments (Input)
-                MBSys         (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
-                % Array of geometric Jacobians
-                J       (6,:,:) double
+                % Cell array of geometric Jacobians
+                J       (:,:) cell
             end
             arguments (Output)
                 % System mass matrix
-                M   (:,:) double
+                M       (:,:) cell
             end
-            M = zeros(MBSys.nDoF);
-            for iFrm = 1:MBSys.nFrames
-                M = M + J(:,:,iFrm).' * MBSys.frameData.MGen(:,:,iFrm) * J(:,:,iFrm);
+            % Compute blocks of M based on dyadic product J.' * M * J
+            M = cell(MBSys.nFrames, MBSys.nFrames);
+            for iFrm = 1:MBSys.nFrames % Sum over all the frame contributions
+                for iRow = 1:MBSys.nFrames % Rows of M
+                    for iCol = 1:MBSys.nFrames % Columns of M
+                        if ~isempty(J{iFrm,iRow}) && ~isempty(J{iFrm,iCol})
+                            MBlock = J{iFrm,iRow}.' * MBSys.frameData.MGen{iFrm} * J{iFrm,iCol};
+                            if isempty(M{iRow, iCol})
+                                M{iRow,iCol} = MBlock;
+                            else
+                                M{iRow,iCol} = M{iRow,iCol} + MBlock;
+                            end
+                        end
+                    end
+                end
             end
         end
 
         function [M, J] = computeMassMatrix(MBSys, q)
             %% Compute the system mass matrix
             arguments (Input)
-                MBSys         (1,1) MBSystemNum
+                MBSys     (1,1) elara.SystemSym
 
                 % System coordinates (nDoF, 1)
-                q           (:,1) double
+                q       (:,1)
             end
             arguments (Output)
                 % System mass matrix
-                M   (:,:) double
+                M       (:,:) cell
 
                 % Array of frame Jacobian matrices
-                J   (6,:,:) double
+                J       (:,:) cell
             end
 
             % Get Jacobians
@@ -492,33 +532,39 @@ classdef MBSystemNum < MBSystem
             % i.e., compute absolute body-fixed velocities eta in se3
             % (vector form) from given relative transformations at time
             % instances k and k+1
-            arguments
-                MBSys         (1,1)   MBSystemNum
+            arguments (Input)
+                MBSys         (1,1) elara.SystemSym
 
-                % Array of relative configurations at time step k
-                g_rel_k     (4,4,:) double
+                % Cell array of relative configurations at time step k
+                g_rel_k     (:,1) SE3
 
-                % Array of relative configurations at time step k+1
-                g_rel_k1    (4,4,:) double
+                % Cell array of relative configurations at time step k+1
+                g_rel_k1    (:,1) SE3
 
                 % Time step
-                h           (1,1)   double
+                h           (1,1)
             end
-            hInv = 1/h; % Precompute for performance (?)
+            arguments (Output)
+                % Array of absolute frame velocities
+                % (separate rotational and translational components)
+                eta_k       (:,2) cell
+            end
+            f = getSE3Functions(g_rel_k(1).R);
 
-            % Array of absolute frame velocities
-            eta_k = zeros(6, MBSys.nFrames);
+            eta_k = cell(MBSys.nFrames, 2);
 
             % Recursive computation for all frames
             for iFrm = 1:MBSys.nFrames
                 if iFrm > 1
-                    eta_k(:,iFrm) = cayInvSE3( ...
-                        invSE3Matrix(g_rel_k(:,:,iFrm)) * caySE3(h*eta_k(:,iFrm-1)) * g_rel_k1(:,:,iFrm) ...
-                        ) *hInv;
+                    g_eta = SE3;
+                    [g_eta.R, g_eta.x] = f.caySE3(h*eta_k{iFrm-1, 1}, h*eta_k{iFrm-1, 2});
+                    g_rel = g_rel_k(iFrm) \ g_eta * g_rel_k1(iFrm);
                 else
-                    eta_k(:,iFrm) = cayInvSE3( ...
-                        invSE3Matrix(g_rel_k(:,:,iFrm)) * g_rel_k1(:,:,iFrm) ) *hInv;
+                    g_rel = g_rel_k(iFrm) \ g_rel_k1(iFrm);
                 end
+                [om_k, v_k] = f.cayInvSE3(g_rel.R, g_rel.x);
+                eta_k{iFrm,1} = om_k / h;
+                eta_k{iFrm,2} = v_k / h;
             end
         end
     end

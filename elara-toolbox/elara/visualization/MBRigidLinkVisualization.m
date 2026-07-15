@@ -28,7 +28,7 @@ classdef MBRigidLinkVisualization < MBLinkVisualization
         function obj = MBRigidLinkVisualization(linkDef, g, opts)
             % Construct an instance of this class
             arguments
-                linkDef (1,1) MBLinkDefinition = MBLinkDefinition;
+                linkDef (1,1) elara.RigidLink = elara.RigidLink;
                 g       (4,4) double = eye(4);
 
                 % Additional drawing options

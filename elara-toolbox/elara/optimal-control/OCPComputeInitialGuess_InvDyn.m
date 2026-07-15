@@ -43,7 +43,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
 
             fprintf("Computing optimal steady state configuration...\n\n");
 
-            MBSysSym = MBSystemNum2MBSystemSym(MBSim.MBSys);
+            MBSysSym = systemNum2SystemSym(MBSim.MBSys);
 
             [qF, uF] = computeOptimalSteadyStateInputsTCPPos(MBSysSym, OCP_stat, MBSim.simPars);
 

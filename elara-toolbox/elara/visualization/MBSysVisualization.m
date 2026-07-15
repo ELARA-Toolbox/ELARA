@@ -6,7 +6,7 @@ classdef MBSysVisualization < handle
     % TUM School of Engineering and Design
     % Technical University of Munich
     properties
-        MBSys               (1,1) MBSystemNum
+        MBSys               (1,1) elara.SystemNum
 
         % Array of link visualization objects
         linkVis             (1,:) MBLinkVisualization
@@ -28,9 +28,9 @@ classdef MBSysVisualization < handle
         function obj = MBSysVisualization(MBSys, links, g, opts)
             % Construct an instance of this class
             arguments
-                MBSys   (1,1) MBSystem
+                MBSys   (1,1) elara.internal.System
 
-                links   (1,:) MBLinkDefinition = MBLinkDefinitionRigid.empty();
+                links   (1,:) elara.internal.Link = elara.RigidLink.empty();
 
                 % Array of SE3 matrices defining the system's configuration
                 g       (4,4,:) double {mustBeSE3MatrixArray} = zeros(4,4,0)
@@ -74,7 +74,7 @@ classdef MBSysVisualization < handle
             %% Initialize drawing for the full system
             arguments
                 obj     (1,1) MBSysVisualization
-                links   (:,1) MBLinkDefinition
+                links   (:,1) elara.internal.Link
 
                 % Color map used to specify link colors
                 linkColorMap (1,1) function_handle

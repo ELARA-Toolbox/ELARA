@@ -7,7 +7,7 @@ function [res_0, eta_0] = computeDELResiduumFirstStep(MBSys, h, simPars, q_0, q_
     %  * We're using the complete trapezoidal rule for the first step
     %    for true second-order accuracy
     arguments
-        MBSys   (1,1) MBSystem
+        MBSys   (1,1) elara.internal.System
         h       (1,1)
         simPars (1,1) MBSimPars
         q_0     (:,1) double % Coordinate variable at time step k = 1

@@ -1,14 +1,14 @@
-classdef MBSystemFrameDataSym < MBSystemFrameData
-    %% MBSystemFrameData Class (symbolic representation)
+classdef FramePropertiesNum < elara.internal.FrameProperties
+    %% MBSystemFrameData Class (numeric representation)
     % Class that holds all frame-related data for all abstract frames
     % in a multibody system, e.g., joint kinematics and inertia properties.
     properties
         %% Inertia properties
         % Generalized inertia tensor
-        MGen    (:,1) cell
+        MGen    (6,6,:) double {mustBeSymmetricPosDefiniteArray};
 
         % Frame mass (kg)
-        m       (:,1)
+        m       (:,1) double {mustBeNonnegative}
 
         % Additional masses attached to a frame that are offset from the COM
         % (mainly to include additional bodies attached to the beam)
@@ -20,10 +20,10 @@ classdef MBSystemFrameDataSym < MBSystemFrameData
         g_a     (4,4,:) double {mustBeSE3MatrixArray}
 
         % Position vector to the external body's CoM (corresponding to g_a)
-        x_a     (3,:)
+        x_a     (3,:) double
 
         % Mass of the external body
-        m_a     (1,:)
+        m_a     (1,:) double {mustBeNonnegative}
 
         % For cable actuation:
         % Relative SE3 configurations of the cable path frames (w.r.t.
@@ -32,6 +32,6 @@ classdef MBSystemFrameDataSym < MBSystemFrameData
         % Dimensions: (4, 4, 2, nFrames, nCablesMax),
         % where nCablesMax is the largest nr. of cables of all
         % cable-actuated flexible links
-        g_cm        (2,:,:) SE3
+        g_cm        (4,4,2,:,:) double
     end
 end

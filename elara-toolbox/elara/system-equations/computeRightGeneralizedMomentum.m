@@ -2,7 +2,7 @@ function p_k = computeRightGeneralizedMomentum(MBSys, h, simPars, q_k, q_k1, g_k
     %% Compute the (forced) "Right" Generalized Momentum p_k1
     % based on the forced discrete Legendre transform F+ L_d (q_k, q_k1)
     arguments
-        MBSys   (1,1) MBSystem
+        MBSys   (1,1) elara.internal.System
         h       (1,1)
         simPars (1,1) MBSimPars
 

@@ -1,6 +1,5 @@
-classdef MBLinkDefinitionRigid < MBLinkDefinition
-    % MBLinkDefinition class for a Rigid Link
-    % in a multibody system
+classdef RigidLink < elara.internal.Link
+    % Class defining a Rigid Link in a multibody system
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

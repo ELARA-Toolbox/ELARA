@@ -1,5 +1,5 @@
-classdef (Abstract) MBSystemFrameData
-    %% MBSystemFrameData Class
+classdef (Abstract) FrameProperties
+    %% ELARA FrameProperties Class
     % Class that holds all frame-related data for all abstract frames 
     % in a multibody system, e.g., joint kinematics and inertia properties.
     properties

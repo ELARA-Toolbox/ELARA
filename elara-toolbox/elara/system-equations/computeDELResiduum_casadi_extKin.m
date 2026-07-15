@@ -4,7 +4,7 @@ function DEL_res_k = computeDELResiduum_casadi_extKin(MBSys, simPars, ...
     %% Compute Residuum of DEL Equation
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemSym
+        MBSys   (1,1) elara.SystemSym
 
         simPars (1,1) MBSimPars
 

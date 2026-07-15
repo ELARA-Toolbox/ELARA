@@ -2,7 +2,7 @@ function DEL_res_k = computeDELResiduumFirstStep_casadi(MBSys, simPars, q_0, q_1
     %% Compute the Residuum for the first step in DEL integration
     arguments
         % Multibody system
-        MBSys   (1,1) MBSystemSym
+        MBSys   (1,1) elara.SystemSym
 
         simPars (1,1) MBSimPars
 

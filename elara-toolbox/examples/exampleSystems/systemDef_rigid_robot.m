@@ -6,7 +6,7 @@ function links = systemDef_rigid_robot(opts)
     end
 
     nLinks = 3;
-    links = createArray(nLinks,1,"MBLinkDefinitionRigid");
+    links = createArray(nLinks,1,"elara.RigidLink");
 
     % Joint dissipation
     links(1).d = opts.d;
@@ -80,7 +80,7 @@ function links = systemDef_rigid_robot(opts)
     I_long = 1/4*m*r^2 + 1/12*m*l(1)^2;
 
     links(1).parentLink = 0;
-    links(1).isActuated = 1;
+    links(1).jointIsActuated = 1;
     links(1).jointAxis  = Z(:,1);
     links(1).g_J_B      = g_J1_COM(:,:,1);
     links(1).g_ref      = g_J_ref(:,:,1);

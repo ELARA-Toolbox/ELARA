@@ -18,7 +18,10 @@ function pars = beamParams_ASA_round(options)
     end
 
     % Class Instance
-    pars = MBBeamParams;
+    pars = elara.BeamParams;
+
+    % Struct with intermediate data
+    baseParams = struct();
 
     %% Beam Parameters
 
@@ -28,33 +31,34 @@ function pars = beamParams_ASA_round(options)
 
     % Cross-Section geometry
     % H/W corresponds to the diameter of the circular cross-section
-    pars.geom.H = 2*radius;
-    pars.geom.W = 2*radius;
-    pars.geom.A = radius^2 * pi;
+    pars.H = 2*radius;
+    pars.W = 2*radius;
+    baseParams.A = radius^2 * pi;
 
     % Compute second moments of inertia (about x and y axes of the body-fixed
     % coordinate systems)
     % https://en.wikipedia.org/wiki/List_of_second_moments_of_area
-    pars.geom.I_x = pi/4 * radius^4;
-    pars.geom.I_y = pi/4 * radius^4;
+    baseParams.I_x = pi/4 * radius^4;
+    baseParams.I_y = pi/4 * radius^4;
 
     % Polar moment of inertia
-    pars.geom.J_P = pi/2 * radius^4;
+    baseParams.J_P = pi/2 * radius^4;
 
     %%% Beam Material
     % Density (kg/m^3)
-    pars.mat.rho = 1070;
+    baseParams.rho = 1070;
 
     % Young's modulus (N/m^2)
-    pars.mat.E = options.E;
+    baseParams.E = options.E;
 
     % Poisson's number
-    pars.mat.nu = 0.3459;
+    baseParams.nu = 0.3459;
 
 
     %%% Dissipation coefficients
     pars.d = 0;
 
-    pars = pars.computeParams;
+    % Compute Generalized Stiffness and Inertia matrices
+    pars = pars.computeParams(baseParams);
    
 end

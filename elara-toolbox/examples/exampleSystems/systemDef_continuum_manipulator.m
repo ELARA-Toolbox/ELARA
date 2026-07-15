@@ -5,13 +5,13 @@ function link = systemDef_continuum_manipulator(opts)
         opts.nSeg   (1,1) uint8  = 5;
     end
 
-    link = MBLinkDefinitionFlexible;
+    link =  elara.FlexibleLink;
 
     %% Basic Link Configuration
 
     link.parentLink   = 0;
     link.isCantilever = true;
-    link.isActuated   = false;
+    link.jointIsActuated = false;
     link.nSeg         = opts.nSeg;
     link.L            = 0.7;
     link.g_J_B        = eye(4);
@@ -69,7 +69,7 @@ function link = systemDef_continuum_manipulator(opts)
     %% Set Up Cable Configuration
 
     % Cell array of function handles; defines the individual cable paths
-    link.cableConfig.x_m_funs = {
+    link.tendonActuation.x_td_funs = {
         @(s)x_m_fun_straight(s,0.02, 0)
         @(s)x_m_fun_straight(s,0.02, 120) 
         @(s)x_m_fun_straight(s,0.02, 240)
@@ -77,10 +77,10 @@ function link = systemDef_continuum_manipulator(opts)
         };
 
     % Compute derivatives of cable path functions
-    link.cableConfig = link.cableConfig.getSymbolicPathDerivatives;
+    link.tendonActuation = link.tendonActuation.getSymbolicPathDerivatives;
 
     % Lengths at which the cables terminate along the link length
-    link.cableConfig.LTermination = [
+    link.tendonActuation.LTermination = [
         link.L, link.L, link.L,link.L 
         ];
 
