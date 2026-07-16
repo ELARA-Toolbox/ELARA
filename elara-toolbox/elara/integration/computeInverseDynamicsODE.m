@@ -1,5 +1,6 @@
-function [u, solInfo] = computeInverseDynamics_cont(MBSim, q, qd, qdd, lbu, ubu)
+function [u, solInfo] = computeInverseDynamicsODE(MBSim, q, qd, qdd, lbu, ubu)
     %% Compute inverse dynamics for given coordinate trajectory
+    % using continuous-time equations of motion (ODEs)
     arguments
         MBSim   (1,1) elara.Simulation
 

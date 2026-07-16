@@ -160,9 +160,9 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
 
     switch opts.invDynMethod
         case "DEL"
-            [uInit_ID, solInfo] = computeInverseDynamics_DEL(MBSim, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
+            [uInit_ID, solInfo] = computeInverseDynamicsDEL(MBSim, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
         case "ODE"
-            [uInit_ID, solInfo] = computeInverseDynamics_cont(MBSim, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
+            [uInit_ID, solInfo] = computeInverseDynamicsODE(MBSim, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
         otherwise
     end
     fprintf("Inverse dynamics residual norm: max = %e, mean = %e\n", max(abs(solInfo.resNorm)), mean(abs(solInfo.resNorm)));
