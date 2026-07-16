@@ -44,7 +44,7 @@ OCP.tF = 2;
 OCP.x_TCP_F = [0.7; 0.2; 0.3];
 OCP.R_TCP_F = []; % Rotation arbitrary
 
-OCP.parameters = MBSim.parameters;
+OCP.simPars = MBSim.parameters;
 
 % Running cost
 OCP.wRC = [ % weights

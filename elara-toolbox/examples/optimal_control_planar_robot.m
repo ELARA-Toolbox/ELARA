@@ -77,7 +77,7 @@ OCP.useSplineInputs = false;
 OCP.inputSplineOrder = 3;
 OCP.nInputSplinePoints = 25;
 
-OCP.parameters = MBSim.parameters;
+OCP.simPars = MBSim.parameters;
 
 % Running cost
 OCP.wRC = [ % Weights

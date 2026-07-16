@@ -15,7 +15,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = OCPConstraintFunDEL(OCP, q, u, opts)
     %% Get variables
     MBSys = OCP.system;
     nSteps = OCP.nSteps;
-    simPars = OCP.parameters;
+    simPars = OCP.simPars;
 
     % Weighting factor for generalized trapezoidal rule
     % Rectangle rule: a = 0, trapezoidal rule: a = 1/2

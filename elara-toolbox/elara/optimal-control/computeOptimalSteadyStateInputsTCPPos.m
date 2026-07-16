@@ -89,7 +89,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
     %s_opts.max_iter = 100;
     %s_opts.fixed_variable_treatment = 'relax_bounds';
 
-    opti.integrator('ipopt', p_opts, s_opts);
+    opti.solver('ipopt', p_opts, s_opts);
 
     q0 = zeros(MBSysSym.nDoF,1);
     u0 = zeros(MBSysSym.nInputs,1);
