@@ -74,8 +74,8 @@ function [u, solInfo] = computeInverseDynamics_DEL(MBSim, q, qd, h, lbu, ubu)
         eta_k = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
 
         % External frame forces from the environment
-        f_frame_k_b_ext = getExternalStepWrenches(simPars.extWrench_b, MBSys.nFrames, tout(k));
-        f_frame_k_s_ext = getExternalStepWrenches(simPars.extWrench_s, MBSys.nFrames, tout(k));
+        f_frame_k_b_ext = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, tout(k));
+        f_frame_k_s_ext = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, tout(k));
 
         % Get residuum
         res_k = computeDELResiduum_extKin(MBSys, simPars, ...

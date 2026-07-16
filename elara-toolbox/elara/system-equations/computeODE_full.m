@@ -42,8 +42,8 @@ function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
         - MBSys.computeInputMatrix(q) * u;
 
     % External frame forces from the environment
-    f_frame_b = getExternalStepWrenches(simPars.extWrench_b, MBSys.nFrames, t);
-    f_frame_s = getExternalStepWrenches(simPars.extWrench_s, MBSys.nFrames, t);
+    f_frame_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, t);
+    f_frame_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, t);
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames

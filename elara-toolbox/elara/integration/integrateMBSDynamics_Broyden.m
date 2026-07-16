@@ -30,9 +30,9 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
         "Vector of constant system inputs has wrong dimensions.");
     assert( isempty(simPars.uSampleValues) || size(simPars.uSampleValues,1) == MBSys.nInputs, ...
         "Nr. of rows of the matrix of time-varying system inputs does not match the nr. of system inputs.");
-    assert( isempty(simPars.extWrench_b.wrench) || size(simPars.extWrench_b.wrench,2) == MBSys.nFrames, ...
+    assert( isempty(simPars.externalWrench_b.wrench) || size(simPars.externalWrench_b.wrench,2) == MBSys.nFrames, ...
         "Nr. of columns of the matrix of body-fixed wrenches does not match the nr. of frames.");
-    assert( isempty(simPars.extWrench_s.wrench) || size(simPars.extWrench_s.wrench,2) == MBSys.nFrames, ...
+    assert( isempty(simPars.externalWrench_s.wrench) || size(simPars.externalWrench_s.wrench,2) == MBSys.nFrames, ...
         "Nr. of columns of the matrix of spatial frame forces does not match the nr. of frames.");
 
 
@@ -84,8 +84,8 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     [g_0, g_rel_0] = MBSys.computeFwdKin(simPars.q0);
 
     % Frame forces at first step
-    f_frame_0_b = getExternalStepWrenches(simPars.extWrench_b, MBSys.nFrames, 0);
-    f_frame_0_s = getExternalStepWrenches(simPars.extWrench_s, MBSys.nFrames, 0);
+    f_frame_0_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, 0);
+    f_frame_0_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, 0);
     
     f_frame_0_b = -h*(1-a)*f_frame_0_b + h*(1-a)*computeBodyfixedFrameForces(g_0, f_frame_0_s, MBSys, simPars);
 
@@ -145,8 +145,8 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
         g_rel_k = g_rel_k1;
 
         % External frame forces from the environment
-        f_frame_k_b = getExternalStepWrenches(simPars.extWrench_b, MBSys.nFrames, tout(k));
-        f_frame_k_s = getExternalStepWrenches(simPars.extWrench_s, MBSys.nFrames, tout(k));
+        f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, tout(k));
+        f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, tout(k));
 
         % Compute Frame Forces
         % * External frame forces

@@ -42,13 +42,13 @@ classdef SimulationParameters
 
 
         %% External wrenches acting on the frames
-        % defined by MBExternalWrenchDefinition objects.
-        % See MBExternalWrenchDefinition class for details.
+        % defined by elara.ExternalWrenchDefinition objects.
+        % See elara.ExternalWrenchDefinition class for details.
 
         % Definition of body-fixed ext. wrenches
-        extWrench_b (1,1) MBExternalWrenchDefinition
+        externalWrench_b (1,1) elara.ExternalWrenchDefinition
 
         % Definition of spatial ext. wrenches
-        extWrench_s (1,1) MBExternalWrenchDefinition
+        externalWrench_s (1,1) elara.ExternalWrenchDefinition
     end
 end

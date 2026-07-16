@@ -37,8 +37,8 @@ function DEL_res_k = computeDELResiduum_casadi(MBSys, simPars, q_k0, q_k, q_k1, 
 
     %% External frame forces from the environment
     % % NOTE: May be replaced with symbolic variables or similar.
-    % f_frame_k_b_ext = getExternalStepWrenches(simPars.extWrench_b, MBSys.nFrames, t);
-    % f_frame_k_s_ext = getExternalStepWrenches(simPars.extWrench_s, MBSys.nFrames, t);
+    %f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, t);
+    %f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, t);
     f_frame_k_b_ext = zeros(6, MBSys.nFrames);
     f_frame_k_s_ext = zeros(6, MBSys.nFrames);
 

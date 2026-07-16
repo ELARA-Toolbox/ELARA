@@ -8,26 +8,26 @@ classdef Simulation
     % Technical University of Munich
     properties
         % Simulation name (used, e.g., in plots)
-        Name            (1,1) string
+        Name        (1,1) string
 
         %% Used integrator
         % The integrator object contains all methods and settings required
         % to perform the integration
-        integrator      (1,1) MBSimIntegrator = MBSimIntegratorVarIntBroyden;
+        integrator  (1,1) MBSimIntegrator = MBSimIntegratorVarIntBroyden;
 
         %% System specification
 
         % Link definitions
-        links   (:,1) elara.internal.Link
+        links       (:,1) elara.internal.Link
 
         % ELARA system definition
-        system   (1,1) elara.SystemNum
+        system      (1,1) elara.SystemNum
 
         %% Simulation Parameters
-        parameters (1,1) elara.SimulationParameters
+        parameters  (1,1) elara.SimulationParameters
 
         %% Simulation Results
-        results  (1,1) elara.SimulationResults
+        results     (1,1) elara.SimulationResults
     end
 
     methods
