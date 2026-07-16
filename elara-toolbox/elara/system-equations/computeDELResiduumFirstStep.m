@@ -25,7 +25,7 @@ function [res_0, eta_0] = computeDELResiduumFirstStep(MBSys, h, simPars, q_0, q_
 
     % Get generalized mass matrix array from numeric array if not given
     if isempty(MGenCell)
-        MGenCell = squeeze(num2cell(MBSys.frameData.MGen,[1,2]));
+        MGenCell = squeeze(num2cell(MBSys.frames.MGen,[1,2]));
     end
 
     % Forward kinematics for the first two steps (k = 1, 2)

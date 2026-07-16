@@ -49,6 +49,6 @@ function [M, J] = computeSystemMassMatrix(~, x, MBSys)
         M = zeros(MBSys.nDoF, class(x));
     end
     for iFrm = 1:MBSys.nFrames
-        M = M + J{iFrm}.' * MBSys.frameData.MGen(:,:,iFrm) * J{iFrm};
+        M = M + J{iFrm}.' * MBSys.frames.MGen(:,:,iFrm) * J{iFrm};
     end
 end

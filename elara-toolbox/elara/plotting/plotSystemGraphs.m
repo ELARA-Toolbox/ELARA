@@ -5,8 +5,8 @@ function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(system)
         system (1,1) elara.internal.System
     end
 
-    linkGraph  = digraph(system.AdjMatrixLinkGraph);
-    frameGraph = digraph(system.AdjMatrixFrameGraph);
+    linkGraph  = digraph(system.LinkAdjacencyMatrix);
+    frameGraph = digraph(system.FrameAdjacencyMatrix);
 
     % Link colors
     linkColors = lines(system.nLinks);

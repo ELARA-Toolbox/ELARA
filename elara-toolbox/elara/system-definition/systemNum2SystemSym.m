@@ -14,15 +14,15 @@ function MBSysSym = systemNum2SystemSym(MBSysNum)
             %warning('Could not copy field %s', fn{1});
         end
     end
-    for fn = fieldnames(MBSysNum.frameData)'      %enumerate fields
+    for fn = fieldnames(MBSysNum.frames)'      %enumerate fields
         try
-            MBSysSym.frameData.(fn{1}) = MBSysNum.frameData.(fn{1});   %and copy
+            MBSysSym.frames.(fn{1}) = MBSysNum.frames.(fn{1});   %and copy
         catch
             %warning('Could not copy field %s', fn{1});
         end
     end
-    MBSysSym.frameData.g_cm = SE3MatArray2SE3Array(MBSysNum.frameData.g_cm);
-    MBSysSym.frameData.MGen = squeeze(num2cell(MBSysNum.frameData.MGen,[1,2]));
+    MBSysSym.frames.g_cm = SE3MatArray2SE3Array(MBSysNum.frames.g_cm);
+    MBSysSym.frames.MGen = squeeze(num2cell(MBSysNum.frames.MGen,[1,2]));
 
 
 end

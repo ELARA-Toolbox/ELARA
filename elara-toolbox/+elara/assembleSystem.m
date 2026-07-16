@@ -66,7 +66,7 @@ function sys = assembleSystem(links, sys)
 
     % Store adjacency matrix
     % Note: Convert from sparse to full matrix to support code generation
-    sys.AdjMatrixLinkGraph = full(linkGraph.adjacency);
+    sys.LinkAdjacencyMatrix = full(linkGraph.adjacency);
 
 
     %% Build Frame Graph
@@ -133,7 +133,7 @@ function sys = assembleSystem(links, sys)
 
     % Get Adjacency matrix
     % Note: Convert from sparse to full matrix to support code generation
-    sys.AdjMatrixFrameGraph = full(frameGraph.adjacency);
+    sys.FrameAdjacencyMatrix = full(frameGraph.adjacency);
 
 
     %% Compute General System Properties
@@ -153,8 +153,8 @@ function sys = assembleSystem(links, sys)
     % predecessors vector (which is padded with zeros)
     nodeDists = distances(frameGraph);
     maxLength = max(nodeDists(~isinf(nodeDists)));
-    sys.frameData.ancestors = zeros(maxLength, nFrames);
-    sys.frameData.parent = zeros(nFrames,1);
+    sys.frames.ancestors = zeros(maxLength, nFrames);
+    sys.frames.parent = zeros(nFrames,1);
 
     lastIndexq = 1; % Temp variable to compute the system coordinate vector indices
     for iLink = 1:sys.nLinks
@@ -163,46 +163,46 @@ function sys = assembleSystem(links, sys)
         for iFrm = 1:length(linkFrames)
             iCurFrame = linkFrames(iFrm);
 
-            sys.frameData.linkIndex(iCurFrame) = iLink;
+            sys.frames.linkIndex(iCurFrame) = iLink;
 
             % System topology: Parent and ancestors
             parent =  frameGraph.predecessors(iCurFrame);
             if ~isempty(parent)
                 ancestors = frameGraph.shortestpath(1,parent);
                 if ~isempty(ancestors)
-                    sys.frameData.ancestors(1:length(ancestors),iCurFrame) = ancestors;
-                    sys.frameData.parent(iCurFrame) = parent;
+                    sys.frames.ancestors(1:length(ancestors),iCurFrame) = ancestors;
+                    sys.frames.parent(iCurFrame) = parent;
                 end
             end
 
             % Check if joint is a screw joint or flexible beam joint
             if (isempty(frameGraph.predecessors(iCurFrame)) && sys.isCantilever) || (iFrm > 1)
                 % Flexible beam joint
-                sys.frameData.jointType(iCurFrame) = 2;
-                sys.frameData.nDof(iCurFrame) = size(links(iLink).Ba, 2);
+                sys.frames.jointType(iCurFrame) = 2;
+                sys.frames.nDof(iCurFrame) = size(links(iLink).Ba, 2);
             else
                 % Screw joint
-                sys.frameData.jointType(iCurFrame) = 1;
-                sys.frameData.nDof(iCurFrame) = 1;
+                sys.frames.jointType(iCurFrame) = 1;
+                sys.frames.nDof(iCurFrame) = 1;
             end
 
             % Indices in the system coordinate vector
-            sys.frameData.qIndices(1,iCurFrame) = lastIndexq;
-            sys.frameData.qIndices(2,iCurFrame) = lastIndexq + sys.frameData.nDof(iCurFrame) - 1;
-            lastIndexq = lastIndexq + sys.frameData.nDof(iCurFrame);
+            sys.frames.qIndices(1,iCurFrame) = lastIndexq;
+            sys.frames.qIndices(2,iCurFrame) = lastIndexq + sys.frames.nDof(iCurFrame) - 1;
+            lastIndexq = lastIndexq + sys.frames.nDof(iCurFrame);
         end
     end
 
-    sys.nDoF = sum(sys.frameData.nDof);
+    sys.nDoF = sum(sys.frames.nDof);
 
 
     %% Compute Inertial Properties
 
     MGen = repmat(eye(6), [1,1,sys.nFrames]);
-    sys.frameData.x_a  = zeros(3, sys.nFrames);
-    sys.frameData.g_a  = repmat(eye(4), [1,1,sys.nFrames]);
-    sys.frameData.m    = zeros(sys.nFrames,1);
-    sys.frameData.m_a  = zeros(sys.nFrames,1);
+    sys.frames.x_a  = zeros(3, sys.nFrames);
+    sys.frames.g_a  = repmat(eye(4), [1,1,sys.nFrames]);
+    sys.frames.m    = zeros(sys.nFrames,1);
+    sys.frames.m_a  = zeros(sys.nFrames,1);
 
     for iLink = 1:sys.nLinks
         linkFrames = sys.linkFrameIndices(1,iLink):sys.linkFrameIndices(2,iLink);
@@ -215,11 +215,11 @@ function sys = assembleSystem(links, sys)
                 links(iLink).J, ...
                 links(iLink).m * eye(3) ...
                 );
-            sys.frameData.m(linkFrames) = links(iLink).m;
+            sys.frames.m(linkFrames) = links(iLink).m;
             if ~isempty(links(iLink).g_a) && ~isempty(links(iLink).m_a)
-                sys.frameData.g_a(:,:,linkFrames) = links(iLink).g_a;
-                sys.frameData.x_a(:,linkFrames)   = links(iLink).g_a(1:3,4);
-                sys.frameData.m_a(linkFrames)     = links(iLink).m_a;
+                sys.frames.g_a(:,:,linkFrames) = links(iLink).g_a;
+                sys.frames.x_a(:,linkFrames)   = links(iLink).g_a(1:3,4);
+                sys.frames.m_a(linkFrames)     = links(iLink).m_a;
             end
         else
             %%% Flexible link
@@ -250,27 +250,27 @@ function sys = assembleSystem(links, sys)
 
                 if isempty(links(iLink).M_a)
                     MGen(:,:,iCurFrame)          = l*factors(iCurNode)*links(iLink).beamPars.Mgen;
-                    sys.frameData.m(iCurFrame) = l*factors(iCurNode)*links(iLink).beamPars.m;
+                    sys.frames.m(iCurFrame) = l*factors(iCurNode)*links(iLink).beamPars.m;
                 else
                     MGen(:,:,iCurFrame) = ...
                         + links(iLink).M_a(:,:,iCurNode) ...
                         + l*factors(iCurNode)*links(iLink).beamPars.Mgen;
-                    sys.frameData.m(iCurFrame) = ...
+                    sys.frames.m(iCurFrame) = ...
                         + links(iLink).m_a(iCurNode) ...
                         + l*factors(iCurNode)*links(iLink).beamPars.m;
-                    sys.frameData.m_a(iCurFrame)     = links(iLink).m_a(iCurNode);
-                    sys.frameData.g_a(:,:,iCurFrame) = links(iLink).g_a(:,:,iCurNode);
-                    sys.frameData.x_a(:,iCurFrame)   = links(iLink).g_a(1:3,4,iCurNode);
+                    sys.frames.m_a(iCurFrame)     = links(iLink).m_a(iCurNode);
+                    sys.frames.g_a(:,:,iCurFrame) = links(iLink).g_a(:,:,iCurNode);
+                    sys.frames.x_a(:,iCurFrame)   = links(iLink).g_a(1:3,4,iCurNode);
                 end
             end
         end
     end
 
-    % Assign MGen to framedata
+    % Assign MGen to frames
     if isa(sys, "elara.SystemNum")
-        sys.frameData.MGen = MGen;
+        sys.frames.MGen = MGen;
     else
-        sys.frameData.MGen = squeeze(num2cell(MGen,[1,2]));
+        sys.frames.MGen = squeeze(num2cell(MGen,[1,2]));
     end
 
 
@@ -280,19 +280,19 @@ function sys = assembleSystem(links, sys)
     sys.cSys = zeros(sys.nDoF,1);
     sys.dSys = zeros(sys.nDoF,1);
     sys.qRef = zeros(sys.nDoF,1);
-    sys.frameData.g_ref  = repmat(eye(4), [1,1,sys.nFrames]);
+    sys.frames.g_ref  = repmat(eye(4), [1,1,sys.nFrames]);
 
     for iFrm = 1:sys.nFrames
-        iCurLink = sys.frameData.linkIndex(iFrm);
-        frameQIndices = sys.frameData.qIndices(1,iFrm):sys.frameData.qIndices(2,iFrm);
+        iCurLink = sys.frames.linkIndex(iFrm);
+        frameQIndices = sys.frames.qIndices(1,iFrm):sys.frames.qIndices(2,iFrm);
 
-        switch sys.frameData.jointType(iFrm)
+        switch sys.frames.jointType(iFrm)
             case 1
                 %%% Screw joint
 
                 % Joint kinematics
-                sys.frameData.X(:,iFrm)       = lAdSE3Inv(links(iCurLink).g_J_B) * links(iCurLink).jointAxis;
-                sys.frameData.g_ref(:,:,iFrm) = links(iCurLink).g_ref;
+                sys.frames.X(:,iFrm)       = lAdSE3Inv(links(iCurLink).g_J_B) * links(iCurLink).jointAxis;
+                sys.frames.g_ref(:,:,iFrm) = links(iCurLink).g_ref;
 
                 % Stiffness and dissipation
                 sys.cSys(frameQIndices) = links(iCurLink).c;
@@ -310,9 +310,9 @@ function sys = assembleSystem(links, sys)
                     segNrLocal = iFrm - sys.linkFrameIndices(1,iCurLink);
                 end
 
-                sys.frameData.BaPadded(:,1:sys.frameData.nDof(iFrm),iFrm) = Ba;
-                sys.frameData.l(iFrm)   = l;
-                sys.frameData.xiC(:,iFrm) = links(iCurLink).Bc * links(iCurLink).Bc.' * links(iCurLink).xiRef(:,segNrLocal);
+                sys.frames.BaPadded(:,1:sys.frames.nDof(iFrm),iFrm) = Ba;
+                sys.frames.l(iFrm)   = l;
+                sys.frames.xiC(:,iFrm) = links(iCurLink).Bc * links(iCurLink).Bc.' * links(iCurLink).xiRef(:,segNrLocal);
 
                 % Stiffness and dissipation
                 sys.cSys(frameQIndices) = l * Ba.' * diag(links(iCurLink).beamPars.Cgen);
@@ -326,7 +326,7 @@ function sys = assembleSystem(links, sys)
 
     %% Compute Input Assignment
 
-    sys.frameData.uIndices = zeros(2, sys.nFrames);
+    sys.frames.uIndices = zeros(2, sys.nFrames);
 
     lastIndexU = 1; % Temp variable to compute the input vector indices
     nCablesMax = 0; % Temp variable holding the max. nr. of cables of all links
@@ -342,8 +342,8 @@ function sys = assembleSystem(links, sys)
         % Assign input index for scalar joint actuation to the first
         % frame in the link (which, for rigid links, is the only frame)
         if hasJointActuation
-            sys.frameData.uIndices(1,linkFrames(1)) = lastIndexU;
-            sys.frameData.uIndices(2,linkFrames(1)) = lastIndexU;
+            sys.frames.uIndices(1,linkFrames(1)) = lastIndexU;
+            sys.frames.uIndices(2,linkFrames(1)) = lastIndexU;
             lastIndexU = lastIndexU + 1;
         end
 
@@ -361,8 +361,8 @@ function sys = assembleSystem(links, sys)
                 actuatedFrames = linkFrames(2:end);
             end
 
-            sys.frameData.uIndices(1,actuatedFrames) = lastIndexU;
-            sys.frameData.uIndices(2,actuatedFrames) = lastIndexU + nCables - 1;
+            sys.frames.uIndices(1,actuatedFrames) = lastIndexU;
+            sys.frames.uIndices(2,actuatedFrames) = lastIndexU + nCables - 1;
             lastIndexU = lastIndexU + nCables - 1;
 
             nCablesMax = max([nCables, nCablesMax]);
@@ -370,7 +370,7 @@ function sys = assembleSystem(links, sys)
     end
 
     % Nr. of system inputs
-    sys.nInputs =  max(sys.frameData.uIndices(2,:));
+    sys.nInputs =  max(sys.frames.uIndices(2,:));
 
 
     %% Compute data for cable actuation
@@ -380,12 +380,12 @@ function sys = assembleSystem(links, sys)
     for iFrm = 1:sys.nFrames
         % Check whether the joint is a beam joint and if it's actuated
         % (=non-zero input index)
-        if sys.frameData.jointType(iFrm) == 2 && sys.frameData.uIndices(1,iFrm)
-            iCurLink = sys.frameData.linkIndex(iFrm);
+        if sys.frames.jointType(iFrm) == 2 && sys.frames.uIndices(1,iFrm)
+            iCurLink = sys.frames.linkIndex(iFrm);
 
             % Get arc lengths of the beam nodes of the current link
             linkFrameIndices = sys.linkFrameIndices(1,iCurLink):sys.linkFrameIndices(2,iCurLink);
-            sLinkFrames = [0; cumsum(sys.frameData.l(linkFrameIndices))];
+            sLinkFrames = [0; cumsum(sys.frames.l(linkFrameIndices))];
 
             % Get cable actuation data for current link
             [g_m, termNodes] = links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
@@ -406,11 +406,11 @@ function sys = assembleSystem(links, sys)
         end
     end
 
-    % Assign to framedata
+    % Assign to frames
     if isa(sys, "elara.SystemNum")
-        sys.frameData.g_cm = g_cm;
+        sys.frames.g_cm = g_cm;
     else
-        sys.frameData.g_cm = SE3MatArray2SE3Array(g_cm);
+        sys.frames.g_cm = SE3MatArray2SE3Array(g_cm);
     end
 
     %% Store TCP data if TCP is defined

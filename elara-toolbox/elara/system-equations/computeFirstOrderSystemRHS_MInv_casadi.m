@@ -34,7 +34,7 @@ function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) 
     eta = cell(MBSys.nFrames,1);
     for iFrm = 1:MBSys.nFrames
         for iBlock = 1:MBSys.nFrames
-            qIndices = double( MBSys.frameData.qIndices(1,iBlock):MBSys.frameData.qIndices(2,iBlock));
+            qIndices = double( MBSys.frames.qIndices(1,iBlock):MBSys.frames.qIndices(2,iBlock));
             if ~isempty(J{iFrm, iBlock})
                 if isempty(eta{iFrm})
                     eta{iFrm} = J{iFrm, iBlock} * q_dot(qIndices);
@@ -79,7 +79,7 @@ function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) 
     JdotTerm = cell(MBSys.nFrames,1);
     for iFrm = 1:MBSys.nFrames
         for iBlock = 1:MBSys.nFrames
-            qIndices = double( MBSys.frameData.qIndices(1,iBlock):MBSys.frameData.qIndices(2,iBlock));
+            qIndices = double( MBSys.frames.qIndices(1,iBlock):MBSys.frames.qIndices(2,iBlock));
             if ~isempty(J_dot{iFrm, iBlock})
                 if isempty(JdotTerm{iFrm})
                     JdotTerm{iFrm} = J_dot{iFrm, iBlock} * q_dot(qIndices);
@@ -96,8 +96,8 @@ function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) 
             - f_frame_b(:, iFrm) ...
             + f_frame_b_C{iFrm} ...
             ...% Coriolis Term
-            + MBSys.frameData.MGen{iFrm} * JdotTerm{iFrm} ...
-            - f.sadSE3(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * MBSys.frameData.MGen{iFrm} * eta{iFrm};
+            + MBSys.frames.MGen{iFrm} * JdotTerm{iFrm} ...
+            - f.sadSE3(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * MBSys.frames.MGen{iFrm} * eta{iFrm};
         % Distribute node terms to coordinates
         for iB = 1:MBSys.nFrames
             if ~isempty(J{iFrm,iB})

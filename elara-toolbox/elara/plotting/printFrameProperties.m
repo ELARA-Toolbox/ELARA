@@ -4,8 +4,8 @@ function tFrames = printFrameProperties(MBSys)
     % Disable warning appearing when we convert an object to struct
     warning('off','MATLAB:structOnObject');
 
-    % Get frameData as a suitable struct
-    frameStr = struct(MBSys.frameData);
+    % Get frames as a suitable struct
+    frameStr = struct(MBSys.frames);
     frameStr.ancestors = frameStr.ancestors.';
     frameStr = prepareStruct(frameStr, MBSys.nFrames);
 

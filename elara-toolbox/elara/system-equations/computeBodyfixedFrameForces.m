@@ -11,8 +11,8 @@ function f_frame_b = computeBodyfixedFrameForces(g, f_frame_s, MBSys, simPars)
             ] ...
             ...% Gravity
             + simPars.g * [
-            MBSys.frameData.m_a(iFrm) * cross( MBSys.frameData.x_a(:, iFrm), g(1:3,1:3,iFrm).' * [0;0;1] )
-            MBSys.frameData.m(iFrm) * g(1:3,1:3,iFrm).' * [0;0;1] 
+            MBSys.frames.m_a(iFrm) * cross( MBSys.frames.x_a(:, iFrm), g(1:3,1:3,iFrm).' * [0;0;1] )
+            MBSys.frames.m(iFrm) * g(1:3,1:3,iFrm).' * [0;0;1] 
             ];
     end
 end

@@ -1,5 +1,5 @@
 classdef FramePropertiesSym < elara.internal.FrameProperties
-    %% MBSystemFrameData Class (symbolic representation)
+    %% MBSystemframes Class (symbolic representation)
     % Class that holds all frame-related data for all abstract frames
     % in a multibody system, e.g., joint kinematics and inertia properties.
     properties

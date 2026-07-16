@@ -9,7 +9,7 @@ classdef SystemNum < elara.internal.System
     % Technical University of Munich
     properties
         %% Data of the individual frames
-        frameData   (1,1) elara.FramePropertiesNum
+        frames   (1,1) elara.FramePropertiesNum
 
         %% Global system properties
 
@@ -38,7 +38,7 @@ classdef SystemNum < elara.internal.System
             assert(size(theta,1) == MBSys.nJoints, "Joint angle vector has incorrect length.");
 
             % Get indices of frames with screw joints
-            thetaIndices = MBSys.frameData.qIndices(1,MBSys.frameData.jointType == 1);
+            thetaIndices = MBSys.frames.qIndices(1,MBSys.frames.jointType == 1);
 
             % Set coordinates
             q = zeros(MBSys.nDoF,1);
@@ -73,11 +73,11 @@ classdef SystemNum < elara.internal.System
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
             %       consecutively in the coordinate vector q
-            qIndices = MBSys.frameData.qIndices(1,linkFrames(1)):MBSys.frameData.qIndices(2,linkFrames(end));
+            qIndices = MBSys.frames.qIndices(1,linkFrames(1)):MBSys.frames.qIndices(2,linkFrames(end));
 
             % Store coordinates in q
             % Note: We assume all segments have the same Ba matrix
-            Ba = MBSys.frameData.Ba(linkFrames(1));
+            Ba = MBSys.frames.Ba(linkFrames(1));
             psi = Ba.' * xi;
             q = zeros(MBSys.nDoF,1);
             q(qIndices) = psi(:);
@@ -93,7 +93,7 @@ classdef SystemNum < elara.internal.System
                 q      (:,1) double
             end
             % Get indices of frames with screw joints
-            thetaIndices = MBSys.frameData.qIndices(1,MBSys.frameData.jointType == 1);
+            thetaIndices = MBSys.frames.qIndices(1,MBSys.frames.jointType == 1);
 
             % Get angles
             theta = q(thetaIndices);
@@ -127,19 +127,19 @@ classdef SystemNum < elara.internal.System
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
             %       consecutively in the coordinate vector q
-            qIndices = MBSys.frameData.qIndices(1,linkFrames(1)):MBSys.frameData.qIndices(2,linkFrames(end));
+            qIndices = MBSys.frames.qIndices(1,linkFrames(1)):MBSys.frames.qIndices(2,linkFrames(end));
 
             % Get coordinates and store them in array of size
             % (nAllwd,nSeg)
             % Note: We assume all segments have same nr. of dof/allowed
             %       modes
-            nAllwd = MBSys.frameData.nDof(linkFrames(1));
+            nAllwd = MBSys.frames.nDof(linkFrames(1));
             psi = reshape(q(qIndices), nAllwd, nSeg);
 
             % Compute complete array of deformations
             % Note: We assume all segments have the same Ba matrix
-            Ba = MBSys.frameData.Ba(linkFrames(1));
-            xi = Ba * psi + MBSys.frameData.xiC(:,linkFrames);
+            Ba = MBSys.frames.Ba(linkFrames(1));
+            xi = Ba * psi + MBSys.frames.xiC(:,linkFrames);
         end
 
         function g_rel = computeJointTransformations(MBSys,q)
@@ -157,15 +157,15 @@ classdef SystemNum < elara.internal.System
             end
             g_rel = zeros(4,4,MBSys.nFrames);
             for iFrm = 1:MBSys.nFrames
-                qi = q(MBSys.frameData.qIndices(1,iFrm):MBSys.frameData.qIndices(2,iFrm));
-                switch MBSys.frameData.jointType(iFrm)
+                qi = q(MBSys.frames.qIndices(1,iFrm):MBSys.frames.qIndices(2,iFrm));
+                switch MBSys.frames.jointType(iFrm)
                     case 1
                         %%% Screw joint
-                        g_rel(:,:,iFrm) = MBSys.frameData.g_ref(:,:,iFrm) * expSE3Screw(MBSys.frameData.X(:,iFrm), qi);
+                        g_rel(:,:,iFrm) = MBSys.frames.g_ref(:,:,iFrm) * expSE3Screw(MBSys.frames.X(:,iFrm), qi);
                     case 2
                         %%% Flexible joint
-                        xi = MBSys.frameData.Ba(iFrm) * qi + MBSys.frameData.xiC(:,iFrm);
-                        g_rel(:,:,iFrm) = caySE3(xi*MBSys.frameData.l(iFrm));
+                        xi = MBSys.frames.Ba(iFrm) * qi + MBSys.frames.xiC(:,iFrm);
+                        g_rel(:,:,iFrm) = caySE3(xi*MBSys.frames.l(iFrm));
                     otherwise
                         error("Invalid joint type specified.");
                 end
@@ -198,7 +198,7 @@ classdef SystemNum < elara.internal.System
 
             % Other frames
             for iFrm = 2:MBSys.nFrames
-                g(:,:,iFrm) = g(:,:,MBSys.frameData.parent(iFrm)) * g_rel(:,:,iFrm);
+                g(:,:,iFrm) = g(:,:,MBSys.frames.parent(iFrm)) * g_rel(:,:,iFrm);
             end
         end
 
@@ -252,25 +252,25 @@ classdef SystemNum < elara.internal.System
             for iFrm = 1:MBSys.nFrames
                 for ii = 1:iFrm
                     % Column indices of the current block
-                    qIndices = MBSys.frameData.getQIndices(ii);
+                    qIndices = MBSys.frames.getQIndices(ii);
 
                     % Compute block columns for current frame
                     if ii == iFrm
-                        switch MBSys.frameData.jointType(iFrm)
+                        switch MBSys.frames.jointType(iFrm)
                             case 1
-                                J(:,qIndices,iFrm) = MBSys.frameData.X(:,iFrm);
+                                J(:,qIndices,iFrm) = MBSys.frames.X(:,iFrm);
                             case 2
-                                xi = MBSys.frameData.Ba(iFrm) * q(qIndices) + MBSys.frameData.xiC(:,iFrm);
+                                xi = MBSys.frames.Ba(iFrm) * q(qIndices) + MBSys.frames.xiC(:,iFrm);
                                 J(:,qIndices,iFrm) = ...
-                                    MBSys.frameData.l(iFrm) * cayRTDSE3( -xi * MBSys.frameData.l(iFrm) ) ...
-                                    * MBSys.frameData.Ba(iFrm);
+                                    MBSys.frames.l(iFrm) * cayRTDSE3( -xi * MBSys.frames.l(iFrm) ) ...
+                                    * MBSys.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
-                        if ii < iFrm && ismember(ii, MBSys.frameData.ancestors(:,iFrm))
+                        if ii < iFrm && ismember(ii, MBSys.frames.ancestors(:,iFrm))
                             J(:,qIndices,iFrm) = lAdSE3Inv( g_rel(:,:,iFrm) ) ...
-                                * J(:,qIndices,MBSys.frameData.parent(iFrm));
+                                * J(:,qIndices,MBSys.frames.parent(iFrm));
                         end
                     end
                 end
@@ -331,29 +331,29 @@ classdef SystemNum < elara.internal.System
             for iFrm = 1:MBSys.nFrames
                 for ii = 1:iFrm
                     % Column indices of the current block
-                    qIndices = MBSys.frameData.getQIndices(ii);
+                    qIndices = MBSys.frames.getQIndices(ii);
 
                     % Compute block columns for current frame
                     if ii == iFrm
-                        switch MBSys.frameData.jointType(iFrm)
+                        switch MBSys.frames.jointType(iFrm)
                             case 1
                                 J_dot(:,qIndices,iFrm) = ...
-                                    sadSE3(eta(:,ii)) * MBSys.frameData.X(:,iFrm);
+                                    sadSE3(eta(:,ii)) * MBSys.frames.X(:,iFrm);
                             case 2
-                                xi     = MBSys.frameData.Ba(iFrm) * q(qIndices) + MBSys.frameData.xiC(:,iFrm);
-                                xi_dot = MBSys.frameData.Ba(iFrm) * q_dot(qIndices);
-                                l = MBSys.frameData.l(iFrm);
+                                xi     = MBSys.frames.Ba(iFrm) * q(qIndices) + MBSys.frames.xiC(:,iFrm);
+                                xi_dot = MBSys.frames.Ba(iFrm) * q_dot(qIndices);
+                                l = MBSys.frames.l(iFrm);
                                 J_dot(:,qIndices,iFrm) = l * ( ...
                                     + sadSE3(eta(:,ii)) * cayRTDSE3(-xi*l) ...
                                     + cayRTDSE3dt(-xi*l, -xi_dot*l ) ...
-                                    ) * MBSys.frameData.Ba(iFrm);
+                                    ) * MBSys.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
-                        if ismember(ii, MBSys.frameData.ancestors(:,iFrm))
+                        if ismember(ii, MBSys.frames.ancestors(:,iFrm))
                             J_dot(:,qIndices,iFrm) = lAdSE3Inv( g_rel(:,:,iFrm) ) ...
-                                * J_dot(:,qIndices,MBSys.frameData.parent(iFrm));
+                                * J_dot(:,qIndices,MBSys.frames.parent(iFrm));
                         end
                     end
                 end
@@ -396,29 +396,29 @@ classdef SystemNum < elara.internal.System
 
             B = zeros(MBSys.nDoF, MBSys.nInputs);
             for iFrm = 1:MBSys.nFrames
-                if MBSys.frameData.uIndices(1,iFrm)
-                    uIndices = MBSys.frameData.getUIndices(iFrm);
-                    qIndices = MBSys.frameData.getQIndices(iFrm);
+                if MBSys.frames.uIndices(1,iFrm)
+                    uIndices = MBSys.frames.getUIndices(iFrm);
+                    qIndices = MBSys.frames.getQIndices(iFrm);
 
-                    switch MBSys.frameData.jointType(iFrm)
+                    switch MBSys.frames.jointType(iFrm)
                         case 1
                             % Rigid joint (scalar input)
                             B(qIndices, uIndices) = 1;
                         case 2
                             % Flexible joint (multiple cable inputs)
-                            l = MBSys.frameData.l(iFrm);
+                            l = MBSys.frames.l(iFrm);
 
                             for iC = 1:length(uIndices)
                                 % Cable configurations at adjacent nodes
-                                g_cm_i1 = MBSys.frameData.g_cm(:,:,1,iFrm,iC);
-                                g_cm_i2 = MBSys.frameData.g_cm(:,:,2,iFrm,iC);
+                                g_cm_i1 = MBSys.frames.g_cm(:,:,1,iFrm,iC);
+                                g_cm_i2 = MBSys.frames.g_cm(:,:,2,iFrm,iC);
 
                                 % Discrete deformation gradient cable routing
                                 % Tangent vector is in elements 4:6
                                 xi_c = cayInvSE3( g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2 ) / l;
 
                                 % Compute matrix entry
-                                b_i = MBSys.frameData.Ba(iFrm).' * [
+                                b_i = MBSys.frames.Ba(iFrm).' * [
                                     1/2 * ( skew( g_cm_i1(1:3,4) + g_cm_i2(1:3,4) ) ) * xi_c(4:6);
                                     xi_c(4:6)
                                     ];
@@ -460,7 +460,7 @@ classdef SystemNum < elara.internal.System
             end
             M = zeros(MBSys.nDoF);
             for iFrm = 1:MBSys.nFrames
-                M = M + J(:,:,iFrm).' * MBSys.frameData.MGen(:,:,iFrm) * J(:,:,iFrm);
+                M = M + J(:,:,iFrm).' * MBSys.frames.MGen(:,:,iFrm) * J(:,:,iFrm);
             end
         end
 

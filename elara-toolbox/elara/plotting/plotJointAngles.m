@@ -8,7 +8,7 @@ function figHandle = plotJointAngles(MBSys, simRes, opts)
         'Name', strcat(opts.nameStr, "JointAngles"), 'NumberTitle','off');
 
     % Get indices of the joint angles in the coordinate vector
-    thetaIndices = MBSys.frameData.qIndices(:,MBSys.frameData.jointType == 1);
+    thetaIndices = MBSys.frames.qIndices(:,MBSys.frames.jointType == 1);
 
     if  ~isempty(thetaIndices)
         theta     = simRes.q(thetaIndices(1,:),:);

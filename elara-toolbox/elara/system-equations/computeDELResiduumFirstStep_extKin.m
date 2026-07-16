@@ -38,7 +38,7 @@ function res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1,
 
     % % Get generalized mass matrix array from numeric array if not given
     % if isempty(MGenCell)
-    %     MGenCell = squeeze(num2cell(MBSys.frameData.MGen,[1,2]));
+    %     MGenCell = squeeze(num2cell(MBSys.frames.MGen,[1,2]));
     % end
 
     % Initial (continuous-time) momentum
@@ -61,7 +61,7 @@ function res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1,
     res_0 = h*f_gen_0 - p_0;
     for iFrm = 1:MBSys.nFrames
         res_0 = res_0 + J_0(:,:,iFrm).' *( ...
-            + cayRTDInvSE3(eta_0(:,iFrm)*h).' * MBSys.frameData.MGen(:,:,iFrm) * eta_0(:,iFrm) ...
+            + cayRTDInvSE3(eta_0(:,iFrm)*h).' * MBSys.frames.MGen(:,:,iFrm) * eta_0(:,iFrm) ...
             + h*f_frame_0_b(:, iFrm) ...
             - h*(1-a)*f_frame_0_b_ext(:, iFrm) ...
             );

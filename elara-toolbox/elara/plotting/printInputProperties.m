@@ -7,13 +7,13 @@ function tInputs = printInputProperties(MBSys)
     %% Get input information
 
     % Max. nr. of inputs one frame can have
-    maxNrInputs = max(MBSys.frameData.uIndices(2,:)-MBSys.frameData.uIndices(1,:))+1;
+    maxNrInputs = max(MBSys.frames.uIndices(2,:)-MBSys.frames.uIndices(1,:))+1;
 
     % Matrix with the indices of all inputs of each frame (padded with
     % zeros)
     frameInputMatrix = zeros(MBSys.nFrames,maxNrInputs);
     for iFrm = 1:MBSys.nFrames
-        frameInputs = MBSys.frameData.uIndices(1,iFrm):MBSys.frameData.uIndices(2,iFrm);
+        frameInputs = MBSys.frames.uIndices(1,iFrm):MBSys.frames.uIndices(2,iFrm);
         frameInputMatrix(iFrm,1:length(frameInputs)) = frameInputs;
     end
 
@@ -28,13 +28,13 @@ function tInputs = printInputProperties(MBSys)
         [uFrms,~] = find(frameInputMatrix == iInput);
 
         % Get link, on which the input acts (should be only 1)
-        uLink = unique(MBSys.frameData.linkIndex(uFrms));
+        uLink = unique(MBSys.frames.linkIndex(uFrms));
         assert(isscalar(uLink), "Input acts on more than one link.");
         inputLink(iInput) = uLink;
 
         % Get joint types of frames, on which the input acts (should be
         % only 1 joint type)
-        uType = unique(MBSys.frameData.jointType(uFrms));
+        uType = unique(MBSys.frames.jointType(uFrms));
         assert(isscalar(uLink), "Input affects multiple joint types.");
 
         switch uType

@@ -54,7 +54,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
             % For revolute joints: Remove offsets by 2pi
             % TODO: This line is only valid for revolute joints! For any other
             % screw joint (prismatic or screw), it produces wrong values
-            jointIndices = MBSysSym.frameData.qIndices(1, MBSysSym.frameData.jointType==1);
+            jointIndices = MBSysSym.frames.qIndices(1, MBSysSym.frames.jointType==1);
             qF(jointIndices) = wrapToPi(qF(jointIndices));
 
             gOptStatic = MBSim.MBSys.computeFwdKin(qF);
@@ -193,7 +193,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
         % Use full 2nd-order dissipation (a = 1/2) only for rigid systems and
         % simplified dissipation (rectangle rule, a = 0) for flexible systems for
         % higher stability
-        MBSim.solver.aTrapez = 1/2 * all(MBSim.MBSys.frameData.jointType == 1);
+        MBSim.solver.aTrapez = 1/2 * all(MBSim.MBSys.frames.jointType == 1);
     end
 
     % Start integration

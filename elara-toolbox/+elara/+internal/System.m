@@ -19,8 +19,8 @@ classdef (Abstract) System
 
 
         %% Graph Adjacency Matrices
-        AdjMatrixLinkGraph    (:,:) double
-        AdjMatrixFrameGraph   (:,:) double
+        LinkAdjacencyMatrix    (:,:) double
+        FrameAdjacencyMatrix   (:,:) double
 
 
         %% System Topology Data
@@ -59,7 +59,7 @@ classdef (Abstract) System
     end
 
     properties (Abstract)
-        % frameData
+        % frames
         % cSys
         % dSys
         % dSys
