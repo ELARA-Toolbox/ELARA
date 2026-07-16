@@ -181,7 +181,7 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
 
         % Check if solver was successful; cancel simulation if residual is
         % above residual limit
-        if ( solData_k.ExitFlag && solData_k.ImplicitError > solverConfig.errorMarginLimit ) ...
+        if ( solData_k.ExitFlag && solData_k.ImplicitError > solverConfig.toleranceLimit ) ...
                 || isnan(solData_k.ImplicitError)
             nStepsDone = k;
             break;

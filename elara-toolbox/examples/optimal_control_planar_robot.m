@@ -42,7 +42,7 @@ title("Initial Configuration")
 MBSimFwd.integrator = elara.integration.VIBroyden;
 MBSimFwd.integrator.h = 2^-7;
 MBSimFwd.integrator.JacobianIterationThreshold = 5;
-MBSimFwd.integrator.errorMargin = 1e-11;
+MBSimFwd.integrator.tolerance = 1e-11;
 
 % Start integration
 MBSimFwd = MBSimFwd.simulateSystem;

@@ -10,10 +10,10 @@ classdef VIBroyden < elara.internal.Integrator
         h                           (1,1) double = 2^-8;
 
         % Target value for the solver error margin
-        errorMargin                 (1,1) double = 1e-8;
+        tolerance                   (1,1) double = 1e-8;
 
         % Solver error margin at which the simulation is cancelled
-        errorMarginLimit            (1,1) double = 1e-8;
+        toleranceLimit              (1,1) double = 1e-8;
 
         % Max. nr. of iterations of the implicit solver
         maxIterations               (1,1) double = 100;
@@ -23,11 +23,14 @@ classdef VIBroyden < elara.internal.Integrator
         % Jacobian matrix is recomputed
         JacobianIterationThreshold  (1,1) double = 4;
 
-        % Generalized trapezoidal rule factor of the interior integration
-        % steps (only relevant for dissipation)
-        % 0 = Rectangle Rule     (Second order only without dissipation)
-        % 1/2 = Trapezoidal rule (Always second order)
-        aTrapez                     (1,1) double = 0;
+        % Whether to use first- or second-order dissipation term.
+        % (first order: more robust; second order: more accurate)
+        % 
+        % This sets the generalized trapezoidal rule factor a of the interior
+        % integration steps. It is only relevant if dissipation is present.
+        % true  -> a = 0   -> Rectangle Rule (Second order only without dissipation)
+        % false -> a = 1/2 -> Trapezoidal rule (Always second order)
+        useFirstOrderDissipation    (1,1) logical = 1;
     end
     properties(Constant)
         type = "varint";
@@ -48,15 +51,20 @@ classdef VIBroyden < elara.internal.Integrator
                 fprintf('Starting integration (varint-broyden)...\n');
             end
 
-            % Copy solver settings into object (needed for codegen
-            % function)
+            % Copy solver settings into object (needed for codegen function)
             solverOptionsVI = varIntSolverConfig;
             solverOptionsVI.h                = obj.h;
-            solverOptionsVI.errorMargin      = obj.errorMargin;
-            solverOptionsVI.errorMarginLimit = obj.errorMarginLimit;
+            solverOptionsVI.tolerance      = obj.tolerance;
+            solverOptionsVI.toleranceLimit = obj.toleranceLimit;
             solverOptionsVI.maxIterations    = obj.maxIterations;
-            solverOptionsVI.aTrapez          = obj.aTrapez;
             solverOptionsVI.JacobianIterationThreshold = obj.JacobianIterationThreshold;
+
+            % Set generalized trapezoidal rule factor for dissipation
+            if obj.useFirstOrderDissipation
+                solverOptionsVI.aTrapez = 0;
+            else
+                solverOptionsVI.aTrapez = 1/2;
+            end
 
             tic;
             if useMex

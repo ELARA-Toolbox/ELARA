@@ -70,7 +70,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
 
     %% Solver loop
     resNorm = norm(resDEL);
-    if resNorm > solverConfig.errorMargin || forceSolverIteration
+    if resNorm > solverConfig.tolerance || forceSolverIteration
 
         % Update Implicit Jacobian Matrix if Necessary
         if updateInvJacobian
@@ -107,7 +107,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
 
             % Check residual and update H_k
             resNorm = norm(resDEL);
-            if resNorm <= solverConfig.errorMargin
+            if resNorm <= solverConfig.tolerance
                 % Solution found
                 % Set iteration count, exit flag and exit loop
                 solData.ExitFlag = 0;

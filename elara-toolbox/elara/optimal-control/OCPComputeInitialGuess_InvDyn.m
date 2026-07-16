@@ -185,15 +185,15 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     MBSim.integrator = elara.integration.VIBroyden;
     MBSim.integrator.h = h_ID;
     MBSim.integrator.JacobianIterationThreshold = 2;
-    MBSim.integrator.errorMargin = 1e-8;
+    MBSim.integrator.tolerance = 1e-8;
 
     if opts.doIDForwardSim
-        MBSim.integrator.aTrapez = 1/2;
+        MBSim.integrator.useFirstOrderDissipation = false;
     else
         % Use full 2nd-order dissipation (a = 1/2) only for rigid systems and
         % simplified dissipation (rectangle rule, a = 0) for flexible systems for
         % higher stability
-        MBSim.integrator.aTrapez = 1/2 * all(MBSim.system.frames.jointType == 1);
+        MBSim.integrator.useFirstOrderDissipation = ~all(MBSim.system.frames.jointType == 1);
     end
 
     % Start integration

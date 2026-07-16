@@ -43,8 +43,8 @@ MBSimVI = MBSim;
 MBSimVI.integrator = elara.integration.VIBroyden;
 MBSimVI.integrator.h = 2^-8;
 MBSimVI.integrator.JacobianIterationThreshold = 5;
-MBSimVI.integrator.errorMargin = 1e-11;
-MBSimVI.integrator.aTrapez = 1/2;
+MBSimVI.integrator.tolerance = 1e-11;
+MBSimVI.integrator.useFirstOrderDissipation = false;
 
 % Start integration
 MBSimVI = MBSimVI.simulateSystem;
