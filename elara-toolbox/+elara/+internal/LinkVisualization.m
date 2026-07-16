@@ -1,4 +1,4 @@
-classdef (Abstract) MBLinkVisualization < handle & matlab.mixin.Heterogeneous
+classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
     %% General class to visualize a rigid or flexible link in a multibody system
     %
     % Maximilian Herrmann

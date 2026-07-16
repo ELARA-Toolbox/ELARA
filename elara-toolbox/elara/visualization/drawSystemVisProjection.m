@@ -8,7 +8,7 @@ function p = drawSystemVisProjection(vis, plane, planePos, opts)
 
     arguments
         % System visualization
-        vis             (1,1) MBSysVisualization
+        vis             (1,1) elara.visualization.SystemVisualization
 
         % Which plane: XY, XZ, YZ
         plane           (1,1) string
@@ -38,7 +38,7 @@ function p = drawSystemVisProjection(vis, plane, planePos, opts)
     p = gobjects(length(vis.linkVis),1);
 
     for iLink = 1:length(vis.linkVis)
-        if isa(vis.linkVis{iLink}, "MBFlexibleLinkVisualization")
+        if isa(vis.linkVis{iLink}, "elara.visualization.FlexibleLinkVisualization")
             % Get 3D vertices of the beam edges
             verts = vis.linkVis{iLink}.beamVis.hPatchBeam.Vertices();
 
@@ -47,7 +47,7 @@ function p = drawSystemVisProjection(vis, plane, planePos, opts)
 
             Faces = vis.linkVis{iLink}.beamVis.hPatchBeam.Faces;
 
-        elseif isa(vis.linkVis{iLink}, "MBRigidLinkVisualization")
+        elseif isa(vis.linkVis{iLink}, "elara.visualization.RigidLinkVisualization")
             % Get vertices of the bounding box in 3D space by explictily
             % applying the transformations stored in the graphics objects
             vertsH = (vis.linkVis{iLink}.transf.Matrix ....

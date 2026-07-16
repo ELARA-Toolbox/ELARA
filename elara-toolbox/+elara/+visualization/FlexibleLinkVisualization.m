@@ -1,4 +1,4 @@
-classdef MBFlexibleLinkVisualization < MBLinkVisualization
+classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
     %% Class to visualize a flexible link in a multibody system
     %
     % Maximilian Herrmann
@@ -18,15 +18,15 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
         flexLinkJointPlot   (1,1) matlab.graphics.chart.primitive.Line
 
         % Object for beam visualization
-        beamVis             (1,1) elasticBeam
+        beamVis             (1,1) elara.visualization.elasticBeam
 
         % Objects for tendons
-        tendonVis           (:,1) elasticBeam
+        tendonVis           (:,1) elara.visualization.elasticBeam
     end
 
     %% Main Methods
     methods
-        function obj = MBFlexibleLinkVisualization(linkDef, g, opts)
+        function obj = FlexibleLinkVisualization(linkDef, g, opts)
             % Construct an instance of this class
             arguments
                 linkDef (1,1)   elara.FlexibleLink;
@@ -104,7 +104,7 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
             end
 
             % Draw beam
-            obj.beamVis = elasticBeam(g, ...
+            obj.beamVis = elara.visualization.elasticBeam(g, ...
                 "showFrames", obj.ShowBeamFrames, ...
                 "ShowLabels", obj.ShowBeamFrames, ...
                 "drawCrossSections", true, ...
@@ -147,7 +147,7 @@ classdef MBFlexibleLinkVisualization < MBLinkVisualization
                         g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
                     end
 
-                    obj.tendonVis(iC) = elasticBeam( g_c, ...
+                    obj.tendonVis(iC) = elara.visualization.elasticBeam( g_c, ...
                         "edgeAlpha", 0, ...
                         "FaceAlpha", 0, ...
                         "DrawEdges", false, ...

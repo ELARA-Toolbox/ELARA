@@ -34,7 +34,7 @@ classdef RigidLink < elara.internal.Link
         end
         function linkVis = getLinkVisualization(link, varargin)
             %% Initialize and return link visualization object
-            linkVis = MBRigidLinkVisualization(link, varargin{:});
+            linkVis = elara.visualization.RigidLinkVisualization(link, varargin{:});
         end
     end
 end

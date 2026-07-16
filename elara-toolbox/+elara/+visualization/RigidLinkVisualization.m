@@ -1,4 +1,4 @@
-classdef MBRigidLinkVisualization < MBLinkVisualization
+classdef RigidLinkVisualization < elara.internal.LinkVisualization
     %% Class to visualize a rigid link in a multibody system
     %
     % Maximilian Herrmann
@@ -25,7 +25,7 @@ classdef MBRigidLinkVisualization < MBLinkVisualization
 
     %% Main Methods
     methods
-        function obj = MBRigidLinkVisualization(linkDef, g, opts)
+        function obj = RigidLinkVisualization(linkDef, g, opts)
             % Construct an instance of this class
             arguments
                 linkDef (1,1) elara.RigidLink = elara.RigidLink;

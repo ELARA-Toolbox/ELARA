@@ -84,7 +84,7 @@ classdef elasticBeam < handle
                 g (4,4,:) double = zeros(4,4,0)
 
                 % Class properties as optional arguments
-                options.?elasticBeam;
+                options.?elara.visualization.elasticBeam;
             end
 
             % Set class properties from optional arguments

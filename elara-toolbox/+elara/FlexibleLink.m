@@ -76,7 +76,7 @@ classdef FlexibleLink < elara.internal.Link
         end
         function linkVis = getLinkVisualization(link, varargin)
             %% Initialize and return link visualization object
-            linkVis = MBFlexibleLinkVisualization(link, varargin{:});
+            linkVis = elara.visualization.FlexibleLinkVisualization(link, varargin{:});
         end
     end
 end

@@ -1,4 +1,4 @@
-classdef MBSysVisualization < handle
+classdef SystemVisualization < handle
     %% Class for the Visualization of a complete Multibody system
     %
     % Maximilian Herrmann
@@ -9,7 +9,7 @@ classdef MBSysVisualization < handle
         system              (1,1) elara.SystemNum
 
         % Array of link visualization objects
-        linkVis             (1,:) MBLinkVisualization
+        linkVis             (1,:) elara.internal.LinkVisualization
     end
     properties(SetObservable)
         ShowInertialFrame   (1,1) logical = true;
@@ -25,7 +25,7 @@ classdef MBSysVisualization < handle
 
     %% Main Methods
     methods
-        function obj = MBSysVisualization(MBSys, links, g, opts)
+        function obj = SystemVisualization(MBSys, links, g, opts)
             % Construct an instance of this class
             arguments
                 MBSys   (1,1) elara.internal.System
@@ -73,7 +73,7 @@ classdef MBSysVisualization < handle
         function obj = initializeVisualization(obj, links, linkColorMap)
             %% Initialize drawing for the full system
             arguments
-                obj     (1,1) MBSysVisualization
+                obj     (1,1) elara.visualization.SystemVisualization
                 links   (:,1) elara.internal.Link
 
                 % Color map used to specify link colors
