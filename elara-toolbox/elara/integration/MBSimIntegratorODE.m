@@ -1,5 +1,5 @@
 classdef (Abstract) MBSimIntegratorODE < MBSimIntegrator
-    %% Abstract class defining an ODE integrator for a MBSimulation
+    %% Abstract class defining an ODE integrator for a elara.Simulation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

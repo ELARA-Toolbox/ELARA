@@ -10,7 +10,7 @@ function f_fo = computeFirstOrderSystemRHS_sym(t, x, MBSys, simPars, u)
 
         MBSys       (1,1) elara.internal.System
 
-        simPars     (1,1) MBSimPars
+        simPars     (1,1) elara.SimulationParameters
 
         % Vector of input variables
         u           (:,1)

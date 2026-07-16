@@ -8,7 +8,7 @@ function DEL_res_N = computeDELResiduumFinalStep_casadi_extKin( ...
         % Multibody system
         MBSys    (1,1) elara.SystemSym
 
-        simPars  (1,1) MBSimPars
+        simPars  (1,1) elara.SimulationParameters
 
         % Vector of generalized coordinates (1,nDoF) at steps N and N+1
         q_N0     (:,1)

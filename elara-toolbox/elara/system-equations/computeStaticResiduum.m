@@ -4,7 +4,7 @@ function res = computeStaticResiduum(MBSys, simPars, q, u)
         % Multibody system
         MBSys   (1,1) elara.SystemNum
 
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
 
         % Vector of generalized coordinates (1,nDoF)
         q       (:,1) double

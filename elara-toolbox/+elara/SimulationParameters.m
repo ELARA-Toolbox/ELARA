@@ -1,5 +1,5 @@
-classdef MBSimPars
-    % MBSimPars class containing all data for a specific simulation
+classdef SimulationParameters
+    % elara.SimulationParameters class containing all data for a specific simulation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

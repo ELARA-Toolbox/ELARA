@@ -1,7 +1,7 @@
 function [u, solInfo] = computeInverseDynamics_DEL(MBSim, q, qd, h, lbu, ubu)
     %% Compute inverse dynamics for given coordinate trajectory using DEL Equs.
     arguments
-        MBSim   (1,1) MBSimulation
+        MBSim   (1,1) elara.Simulation
 
         % Trajectory over time with dimensions (nDoF, nSteps+1)
         q       (:,:) double % Configuration q(t)
@@ -15,8 +15,8 @@ function [u, solInfo] = computeInverseDynamics_DEL(MBSim, q, qd, h, lbu, ubu)
         ubu      (:,1) double
     end
 
-    MBSys = MBSim.MBSys;
-    simPars = MBSim.simPars;
+    MBSys = MBSim.system;
+    simPars = MBSim.parameters;
    
     % Nr. of time steps
     nSteps = size(q, 2) - 1;

@@ -4,7 +4,7 @@ function fh = plotFramePositions(obj, opts)
     %  * all rigid links (reference/COM frame)
     %  * first and last node of the flexible links
     arguments
-        obj          (1,1) MBSimulation
+        obj          (1,1) elara.Simulation
         opts.nameStr (1,1) string = ""
     end
 
@@ -14,29 +14,29 @@ function fh = plotFramePositions(obj, opts)
 
     tl = tiledlayout(fh, "flow");
 
-    for iLink = 1:obj.MBSys.nLinks
+    for iLink = 1:obj.system.nLinks
         if obj.links(iLink).isRigid
-            iPlotFrames = obj.MBSys.linkFrameIndices(1,iLink);
+            iPlotFrames = obj.system.linkFrameIndices(1,iLink);
         else
-            iPlotFrames = obj.MBSys.linkFrameIndices(:,iLink);
+            iPlotFrames = obj.system.linkFrameIndices(:,iLink);
         end
         for iPlot = 1:numel(iPlotFrames)
             iFrame = iPlotFrames(iPlot);
             if obj.links(iLink).isRigid
                 titleString = sprintf('Link %d (Rigid)', iLink );
             else
-                iNode = iFrame - obj.MBSys.linkFrameIndices(1,iLink);
+                iNode = iFrame - obj.system.linkFrameIndices(1,iLink);
                 titleString = sprintf("Link %d (Flex.), Node %d", iLink, iNode);
             end
 
             %%% Plot
             t = nexttile(tl);
             plot(t, ...
-                obj.simRes.tout, reshape( obj.simRes.g(1:3, 4, iFrame, :), 3, []) ...
+                obj.results.tout, reshape( obj.results.g(1:3, 4, iFrame, :), 3, []) ...
                 );
 
             grid on
-            xlim([obj.simRes.tout(1), obj.simRes.tout(end)]);
+            xlim([obj.results.tout(1), obj.results.tout(end)]);
 
             title( titleString, 'Interpreter', 'latex')
             legend('$x$', '$y$', '$z$', 'interpreter', 'latex');

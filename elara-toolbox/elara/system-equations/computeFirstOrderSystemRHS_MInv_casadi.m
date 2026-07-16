@@ -12,7 +12,7 @@ function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) 
 
         MBSys   (1,1) elara.SystemSym
 
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
     end
     arguments (Output)
         f_fo        (:,1)

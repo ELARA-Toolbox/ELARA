@@ -1,4 +1,4 @@
-classdef MBSimulation
+classdef Simulation
     % Class that contains everything to perform a complete multibody
     % simulation.
     %
@@ -8,31 +8,31 @@ classdef MBSimulation
     % Technical University of Munich
     properties
         % Simulation name (used, e.g., in plots)
-        Name                (1,1) string
+        Name            (1,1) string
 
         %% Used integrator
         % The integrator object contains all methods and settings required
         % to perform the integration
-        solver              (1,1) MBSimIntegrator = MBSimIntegratorVarIntBroyden;
+        integrator      (1,1) MBSimIntegrator = MBSimIntegratorVarIntBroyden;
 
         %% System specification
 
         % Link definitions
         links   (:,1) elara.internal.Link
 
-        % MB system definition
-        MBSys   (1,1) elara.SystemNum
+        % ELARA system definition
+        system   (1,1) elara.SystemNum
 
         %% Simulation Parameters
-        simPars (1,1) MBSimPars
+        parameters (1,1) elara.SimulationParameters
 
         %% Simulation Results
-        simRes  (1,1) MBSimResults
+        results  (1,1) MBSimResults
     end
 
     methods
         %% Constructor
-        function obj = MBSimulation(links, options)
+        function obj = Simulation(links, options)
             % Create instance of this class
             % If links are given (optionally), assemble the MB system from them
             arguments
@@ -45,14 +45,14 @@ classdef MBSimulation
 
             if ~isempty(links)
                 obj.links = links;
-                obj.MBSys = elara.SystemNum(links);
+                obj.system = elara.SystemNum(links);
 
                 % Plot system information
                 if options.displayInfo
                     printLinkProperties(links);
-                    printFrameProperties(obj.MBSys);
-                    plotSystemGraphs(obj.MBSys);
-                    printInputProperties(obj.MBSys);
+                    printFrameProperties(obj.system);
+                    plotSystemGraphs(obj.system);
+                    printInputProperties(obj.system);
                 end
             end
         end
@@ -60,9 +60,9 @@ classdef MBSimulation
         %% Run Simulation
         function obj = simulateSystem(obj)
             arguments
-                obj (1,1) MBSimulation
+                obj (1,1) elara.Simulation
             end
-            obj.simRes = obj.solver.simulateSystem(obj);
+            obj.results = obj.integrator.simulateSystem(obj);
         end
 
         %% Visualization
@@ -70,7 +70,7 @@ classdef MBSimulation
         function [fig, vis] = visualizeSystemRefConf(obj, options)
             % Visualize the system in its reference configuration
             arguments
-                obj             (1,1) MBSimulation
+                obj             (1,1) elara.Simulation
 
                 % Figure Name
                 options.figureName    (1,1) string = "Visualization Reference Config";
@@ -81,7 +81,7 @@ classdef MBSimulation
                 % Show inertial frame of the system?
                 options.ShowInertialFrame (1,1) logical = true;
             end
-            q = zeros(obj.MBSys.nDoF, 1);
+            q = zeros(obj.system.nDoF, 1);
             [fig, vis] = visualizeSystemConfig(obj, q, ...
                 "createFigure", options.createFigure, ...
                 "figureName", options.figureName, ...
@@ -92,7 +92,7 @@ classdef MBSimulation
         function [fig, vis] = visualizeSystemConfig(obj, q, options)
             % Visualize the system in given configuration
             arguments
-                obj             (1,1) MBSimulation
+                obj             (1,1) elara.Simulation
                 % Vector of system coordinates
                 q               (:,1) double
                 % Figure Name
@@ -104,7 +104,7 @@ classdef MBSimulation
                 % Show inertial frame of the system?
                 options.ShowInertialFrame (1,1) logical = true;
             end
-            g = obj.MBSys.computeFwdKin(q);
+            g = obj.system.computeFwdKin(q);
             if options.createFigure
                 if obj.Name == ""
                     figureName = options.figureName;
@@ -115,7 +115,7 @@ classdef MBSimulation
             else
                 fig = gcf;
             end
-            vis = MBSysVisualization(obj.MBSys, obj.links, g, ...
+            vis = MBSysVisualization(obj.system, obj.links, g, ...
                 "ShowInertialFrame", options.ShowInertialFrame);
         end
 
@@ -151,9 +151,9 @@ classdef MBSimulation
             % Change docked figure windows to separate window?
             %fig.WindowStyle = "normal";
 
-            MBVisAnim = MBSysVisualization(obj.MBSys, obj.links);
+            MBVisAnim = MBSysVisualization(obj.system, obj.links);
 
-            MBVisAnim.animateSystem(obj.simRes, fig, ...
+            MBVisAnim.animateSystem(obj.results, fig, ...
                 "saveMovie", opts.saveMovie, ...
                 "fileName", opts.fileName, ...
                 "frameRate", opts.frameRate);
@@ -195,8 +195,8 @@ classdef MBSimulation
             axSnapShots = gca;
 
             %% Interpolate results at fixed sampling rate
-            tQuery = linspace(obj.simRes.tout(1), obj.simRes.tout(end), opts.nSnapShots);
-            gQuery = interpolateSimResultsTime(obj.MBSys, obj.simRes, tQuery);
+            tQuery = linspace(obj.results.tout(1), obj.results.tout(end), opts.nSnapShots);
+            gQuery = interpolateSimResultsTime(obj.system, obj.results, tQuery);
 
             %% Prepare axis limits
             % Extra margin
@@ -214,7 +214,7 @@ classdef MBSimulation
             %% Draw Snapshots
             for iStep = 1:length(tQuery)
                 vis = MBSysVisualization( ...
-                    obj.MBSys, obj.links, gQuery(:,:,:,iStep), ...
+                    obj.system, obj.links, gQuery(:,:,:,iStep), ...
                     "ShowInertialFrame", false, ...
                     "ShowJoints", false, ...
                     "ShowLinkFrames", false, ...
@@ -248,7 +248,7 @@ classdef MBSimulation
                 ch.FontSize = 10;
                 ch.Position(3) = 0.75*ch.Position(3);
                 ch.Position(4) = 0.95*ch.Position(4);
-                clim(axSnapShots, [obj.simRes.tout(1), obj.simRes.tout(end)]);
+                clim(axSnapShots, [obj.results.tout(1), obj.results.tout(end)]);
                 ylabel(ch, 'time $t$ in s', 'Interpreter', 'latex','FontSize', 10);
             end
         end
@@ -261,15 +261,15 @@ classdef MBSimulation
                 opts.useFD (1,1) logical = true;
             end
             disp('   Computing Energy Evolution...');
-            isVarInt = obj.solver.type ==  "varint";
+            isVarInt = obj.integrator.type ==  "varint";
 
             % Check if compiled mex files are available
             if exist("computeFirstOrderSystemRHS_mex", "file")
-                obj.simRes.energies = computeSimResEnergies_mex( ...
-                    obj.MBSys, obj.simPars, obj.simRes, isVarInt, opts.useFD);
+                obj.results.energies = computeSimResEnergies_mex( ...
+                    obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
             else
-                obj.simRes.energies = computeSimResEnergies( ...
-                    obj.MBSys, obj.simPars, obj.simRes, isVarInt, opts.useFD);
+                obj.results.energies = computeSimResEnergies( ...
+                    obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
             end
         end
 
@@ -283,17 +283,17 @@ classdef MBSimulation
                 nameStr = strcat(obj.Name, ": ");
             end
             % Various plots
-            fhs(1) = plotJointAngles(obj.MBSys, obj.simRes, "nameStr", nameStr);
+            fhs(1) = plotJointAngles(obj.system, obj.results, "nameStr", nameStr);
             fhs(2) = plotFramePositions(obj, "nameStr", nameStr);
             fhs_vel = plotFrameVelocities(obj, "nameStr", nameStr);
             fhs_beam = plotBeamData(obj, "nameStr", nameStr);
 
             % Solver stats: Depend on the chosen solver
-            switch obj.solver.type
+            switch obj.integrator.type
                 case "varint"
-                    fh_stats = plotSolverStatsVI(obj.simRes, "nameStr", nameStr);
+                    fh_stats = plotSolverStatsVI(obj.results, "nameStr", nameStr);
                 case "ode"
-                    fh_stats = plotSolverStatsODE(obj.simRes, "nameStr", nameStr);
+                    fh_stats = plotSolverStatsODE(obj.results, "nameStr", nameStr);
                 otherwise
                     error("Solver not implemented.");
             end
@@ -319,8 +319,8 @@ classdef MBSimulation
 
             % Add fixed node to configuration array if the system is a
             % cantilever beam
-            if obj.MBSys.isCantilever
-                x0 = obj.MBSys.g0(1:3,4);
+            if obj.system.isCantilever
+                x0 = obj.system.g0(1:3,4);
             else
                 x0 = nan(3,1);
             end

@@ -4,7 +4,7 @@ function [res, g, g_rel] = computeStaticResiduum_casadi(MBSys, simPars, q, u)
         % Multibody system
         MBSys   (1,1) elara.SystemSym
 
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
 
         % Vector of generalized coordinates (1,nDoF)
         q       (:,1)

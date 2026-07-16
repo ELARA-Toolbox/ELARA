@@ -1,5 +1,5 @@
 classdef (Abstract) MBSimIntegrator
-    %% Abstract class defining an integrator for a MBSimulation
+    %% Abstract class defining an integrator for a elara.Simulation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

@@ -16,8 +16,8 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     end
 
     %% Initial checks
-    nInputs = OCP.MBSys.nInputs;
-    nDoF = OCP.MBSys.nDoF;
+    nInputs = OCP.system.nInputs;
+    nDoF = OCP.system.nDoF;
 
     % Check end time and time step and display warning if the time step is
     % not an even divisor of the end time (important for simulation studies)
@@ -26,11 +26,11 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     end
 
     % Verify that the TCP is defined for the system
-    if ~OCP.MBSys.indexTCPFrame
+    if ~OCP.system.indexTCPFrame
         warning("No TCP frame defined in the elara.internal.System object. Using last frame as the TCP frame.")
-        indexTCPFrame = OCP.MBSys.nFrames;
+        indexTCPFrame = OCP.system.nFrames;
     else
-        indexTCPFrame = OCP.MBSys.indexTCPFrame;
+        indexTCPFrame = OCP.system.indexTCPFrame;
     end
 
     % Verify that TCP trajectory is specified if the TCP tracking cost is
@@ -129,7 +129,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     g_F = g{end};
 
     % TCP constraint at final time
-    g_TCP_F = g_F(indexTCPFrame) * SE3(OCP.MBSys.g_B_TCP(1:3,1:3), OCP.MBSys.g_B_TCP(1:3,4));
+    g_TCP_F = g_F(indexTCPFrame) * SE3(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
     if OCP.addTCPFinalTimeConstraint
         fprintf("\n   Adding final time TCP position constraint...\n")
         c = [c; {g_TCP_F.x - OCP.x_TCP_F}];
@@ -174,7 +174,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     J_TCP_tr = casadi.MX.zeros(1,1);
     if OCP.iRC(5)
         for iStep = 1:OCP.nSteps + 1
-            g_TCP_k = g{iStep}(indexTCPFrame) * SE3(OCP.MBSys.g_B_TCP(1:3,1:3), OCP.MBSys.g_B_TCP(1:3,4));
+            g_TCP_k = g{iStep}(indexTCPFrame) * SE3(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
 
             % Factor for trapezoidal rule integration
             % First and last step have factor 1/2

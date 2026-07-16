@@ -2,7 +2,7 @@ function simEnergies = computeSimResEnergies(MBSys, simPars, simRes, isVarInt, u
     %% Compute energy evolution for simulation results
     arguments (Input)
         MBSys       (1,1) elara.SystemNum
-        simPars     (1,1) MBSimPars
+        simPars     (1,1) elara.SimulationParameters
         simRes      (1,1) MBSimResults
 
         % Defines whether simulation results belong to a variational

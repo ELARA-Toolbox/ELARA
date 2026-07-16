@@ -1,5 +1,5 @@
 classdef MBSimIntegratorVarIntBroyden < MBSimIntegrator
-    %% MBSimulation Integrator: Variational Integrator with Broyden Solver
+    %% elara.Simulation Integrator: Variational Integrator with Broyden Solver
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -38,7 +38,7 @@ classdef MBSimIntegratorVarIntBroyden < MBSimIntegrator
             %% Simulate elara.internal.System: Variational integrator, Broyden solver
             arguments
                 obj     (1,1)
-                MBSim   (1,1) MBSimulation
+                MBSim   (1,1) elara.Simulation
             end
 
             % Check if compiled mex files are available
@@ -60,25 +60,25 @@ classdef MBSimIntegratorVarIntBroyden < MBSimIntegrator
 
             tic;
             if useMex
-                simRes = integrateMBSDynamics_Broyden_mex(MBSim.MBSys, MBSim.simPars, solverOptionsVI);
+                simRes = integrateMBSDynamics_Broyden_mex(MBSim.system, MBSim.parameters, solverOptionsVI);
             else
-                simRes = integrateMBSDynamics_Broyden(MBSim.MBSys, MBSim.simPars, solverOptionsVI);
+                simRes = integrateMBSDynamics_Broyden(MBSim.system, MBSim.parameters, solverOptionsVI);
             end
             tSim = toc;
 
             % Run simulation again with timeit (if desired) for more accurate times
             if obj.accurateTiming
                 if useMex
-                    timingFun = @() integrateMBSDynamics_Broyden_mex(MBSim.MBSys, MBSim.simPars, solverOptionsVI);
+                    timingFun = @() integrateMBSDynamics_Broyden_mex(MBSim.system, MBSim.parameters, solverOptionsVI);
                 else
-                    timingFun = @() integrateMBSDynamics_Broyden(MBSim.MBSys, MBSim.simPars, solverOptionsVI);
+                    timingFun = @() integrateMBSDynamics_Broyden(MBSim.system, MBSim.parameters, solverOptionsVI);
                 end
                 tSim = timeit(timingFun);
             end
 
             % Compute some metadata values of the simulation
             simRes.metaDataSim.TotalTime = tSim;
-            % obj.simRes.getSimMetaData();
+            % obj.results.getSimMetaData();
 
             if obj.showConsoleOutput
                 % Display meta data

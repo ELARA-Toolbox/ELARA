@@ -6,7 +6,7 @@ classdef MBSysVisualization < handle
     % TUM School of Engineering and Design
     % Technical University of Munich
     properties
-        MBSys               (1,1) elara.SystemNum
+        system              (1,1) elara.SystemNum
 
         % Array of link visualization objects
         linkVis             (1,:) MBLinkVisualization
@@ -49,7 +49,7 @@ classdef MBSysVisualization < handle
             end
 
             % Assign properties
-            obj.MBSys             = MBSys;
+            obj.system             = MBSys;
             obj.ShowInertialFrame = opts.ShowInertialFrame;
             obj.ShowLinkFrames    = opts.ShowLinkFrames;
             obj.ShowBeamFrames    = opts.ShowBeamFrames;
@@ -90,7 +90,7 @@ classdef MBSysVisualization < handle
                 "Visible", obj.ShowInertialFrame);
 
             % Initialize links
-            linkColors = linkColorMap(obj.MBSys.nLinks);
+            linkColors = linkColorMap(obj.system.nLinks);
             for iLink = 1:numel(links)
                 obj.linkVis(iLink) = links(iLink).getLinkVisualization( ...
                     "ShowJoint", obj.ShowJoints, ...
@@ -109,8 +109,8 @@ classdef MBSysVisualization < handle
 
         function obj = visualizeReferenceConfig(obj)
             %% Visualize the reference configuration of the given system
-            q = zeros(1,obj.MBSys.nDoF);
-            gRef = obj.MBSys.computeFwdKin(q);
+            q = zeros(1,obj.system.nDoF);
+            gRef = obj.system.computeFwdKin(q);
             obj = obj.updateConfiguration(gRef);
         end
 
@@ -119,12 +119,12 @@ classdef MBSysVisualization < handle
                 obj (1,1)
                 g   (4,4,:) double {mustBeSE3MatrixArray}
             end
-            for iLink = 1:obj.MBSys.nLinks
+            for iLink = 1:obj.system.nLinks
                 % Add fixed node to configuration array if the beam is a
                 % cantilever beam
-                gLink = g(:,:,obj.MBSys.linkFrameIndices(1,iLink):obj.MBSys.linkFrameIndices(2,iLink));
-                if iLink == 1 && obj.MBSys.isCantilever
-                    g0 = obj.MBSys.g0;% * obj.MBSys.linkData.g_J1_B(:,:,iLink);
+                gLink = g(:,:,obj.system.linkFrameIndices(1,iLink):obj.system.linkFrameIndices(2,iLink));
+                if iLink == 1 && obj.system.isCantilever
+                    g0 = obj.system.g0;% * obj.system.linkData.g_J1_B(:,:,iLink);
                     gLink = cat(3, g0, gLink);
                 end
                 obj.linkVis(iLink) = obj.linkVis(iLink).updateConfiguration(gLink);
@@ -154,7 +154,7 @@ classdef MBSysVisualization < handle
             %% Interpolate results at fixed sampling rate
             tSample = 1/opts.frameRate;
             tQuery = simRes.tout(1):tSample:simRes.tout(end);
-            gQuery = interpolateSimResultsTime(obj.MBSys, simRes, tQuery);
+            gQuery = interpolateSimResultsTime(obj.system, simRes, tQuery);
 
 
             %% Prepare animation
@@ -273,8 +273,8 @@ classdef MBSysVisualization < handle
 
             % Add fixed node to configuration array if the system is a
             % cantilever beam
-            if obj.MBSys.isCantilever
-                x0 = obj.MBSys.g0(1:3,4);
+            if obj.system.isCantilever
+                x0 = obj.system.g0(1:3,4);
             else
                 x0 = nan(3,1);
             end

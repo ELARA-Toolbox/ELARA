@@ -6,7 +6,7 @@ function [x_TCP_traj, fhs] = generateDesiredTCPTrajLinear(MBSim, OCP, opts)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments (Input)
-        MBSim   (1,1) MBSimulation
+        MBSim   (1,1) elara.Simulation
         OCP     (1,1) OCPDefinition
 
         % Pre- and post-actuation times
@@ -23,8 +23,8 @@ function [x_TCP_traj, fhs] = generateDesiredTCPTrajLinear(MBSim, OCP, opts)
     end
 
     % Initial position: TCP position in initial configuration
-    g0 = MBSim.MBSys.computeFwdKin(OCP.q0);
-    g_TCP_0 = g0(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+    g0 = MBSim.system.computeFwdKin(OCP.q0);
+    g_TCP_0 = g0(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
     x_TCP_0 = g_TCP_0(1:3, 4);
 
     % Generate trajectory

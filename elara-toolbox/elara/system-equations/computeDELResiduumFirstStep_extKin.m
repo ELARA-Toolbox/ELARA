@@ -9,7 +9,7 @@ function res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1,
     arguments
         MBSys   (1,1) elara.internal.System
         h       (1,1)
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
 
         % Coordinates at time step k = 1
         q_0     (:,1) double

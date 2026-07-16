@@ -7,7 +7,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     %    configuration
     % 3. Compute inputs with inverse dynamics
     arguments
-        MBSim   (1,1) MBSimulation
+        MBSim   (1,1) elara.Simulation
         OCP     (1,1) OCPDefinition
 
         opts.doIDForwardSim (1,1) logical = false;
@@ -34,8 +34,8 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
             nWPts = 1;
             x_TCP_waypoints = OCP.x_TCP_F;
         end
-        qStat = zeros(MBSim.MBSys.nDoF, nWPts);
-        uStat = zeros(MBSim.MBSys.nInputs, nWPts);
+        qStat = zeros(MBSim.system.nDoF, nWPts);
+        uStat = zeros(MBSim.system.nInputs, nWPts);
 
         for iWpt = 1:nWPts
             %% Compute optimal steady-state inputs
@@ -43,9 +43,9 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
 
             fprintf("Computing optimal steady state configuration...\n\n");
 
-            MBSysSym = systemNum2SystemSym(MBSim.MBSys);
+            MBSysSym = systemNum2SystemSym(MBSim.system);
 
-            [qF, uF] = computeOptimalSteadyStateInputsTCPPos(MBSysSym, OCP_stat, MBSim.simPars);
+            [qF, uF] = computeOptimalSteadyStateInputsTCPPos(MBSysSym, OCP_stat, MBSim.parameters);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
             disp("Computed static inputs (N/Nm):")
@@ -57,8 +57,8 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
             jointIndices = MBSysSym.frames.qIndices(1, MBSysSym.frames.jointType==1);
             qF(jointIndices) = wrapToPi(qF(jointIndices));
 
-            gOptStatic = MBSim.MBSys.computeFwdKin(qF);
-            g_TCP = gOptStatic(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+            gOptStatic = MBSim.system.computeFwdKin(qF);
+            g_TCP = gOptStatic(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
             fprintf("Distance desired TCP position:     %.2e m\n", ...
                 norm(OCP_stat.x_TCP_F - g_TCP(1:3, 4)));
 
@@ -69,7 +69,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     else
         % Final configuration given instead of desired TCP position
         qStat = OCP.qF;
-        uStat = zeros(MBSim.MBSys.nInputs, 1);
+        uStat = zeros(MBSim.system.nInputs, 1);
     end
     qF = qStat(:,end);
     uF = uStat(:,end);
@@ -85,13 +85,13 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     tout_ID = (0 : h_ID : h_ID*nSteps_ID).';
 
     if isempty(OCP.qDot0)
-        qDot0 = zeros(MBSim.MBSys.nDoF,1);
+        qDot0 = zeros(MBSim.system.nDoF,1);
     else
         qDot0 = OCP.qDot0;
     end
 
     if isempty(OCP.qDotF)
-        qDotF = zeros(MBSim.MBSys.nDoF,1);
+        qDotF = zeros(MBSim.system.nDoF,1);
     else
         qDotF = OCP.qDotF;
     end
@@ -117,9 +117,9 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
             repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
             ];
         qdd_init = [
-            zeros(MBSim.MBSys.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
+            zeros(MBSim.system.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
             qdd_init_dyn, ...
-            zeros(MBSim.MBSys.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
+            zeros(MBSim.system.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
             ];
     else
         [q_init, qd_init, qdd_init] = minjerkpolytraj(qStat, ...
@@ -144,7 +144,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$q$", "Interpreter", "latex");
-        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSim.MBSys.nDoF), "Interpreter", "latex");
+        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSim.system.nDoF), "Interpreter", "latex");
         xlim([tout_ID(1),tout_ID(end)]);
 
         nexttile;
@@ -152,7 +152,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$\dot{q}$", "Interpreter", "latex");
-        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSim.MBSys.nDoF), "Interpreter", "latex");
+        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSim.system.nDoF), "Interpreter", "latex");
         xlim([tout_ID(1),tout_ID(end)]);
     end
 
@@ -173,35 +173,35 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     MBSim.Name = "Initial Guess";
 
     % Specify Simulation Parameters
-    MBSim.simPars.tEnd  = OCP.tF;
-    MBSim.simPars.q0    = OCP.q0;
-    MBSim.simPars.qDot0 = OCP.qDot0;
+    MBSim.parameters.tEnd  = OCP.tF;
+    MBSim.parameters.q0    = OCP.q0;
+    MBSim.parameters.qDot0 = OCP.qDot0;
 
     % Initial guess inputs
-    MBSim.simPars.uSampleTimes  = tout_ID;
-    MBSim.simPars.uSampleValues = uInit_ID;
+    MBSim.parameters.uSampleTimes  = tout_ID;
+    MBSim.parameters.uSampleValues = uInit_ID;
 
     % Solver settings
-    MBSim.solver = MBSimIntegratorVarIntBroyden;
-    MBSim.solver.h = h_ID;
-    MBSim.solver.JacobianIterationThreshold = 2;
-    MBSim.solver.errorMargin = 1e-8;
+    MBSim.integrator = MBSimIntegratorVarIntBroyden;
+    MBSim.integrator.h = h_ID;
+    MBSim.integrator.JacobianIterationThreshold = 2;
+    MBSim.integrator.errorMargin = 1e-8;
 
     if opts.doIDForwardSim
-        MBSim.solver.aTrapez = 1/2;
+        MBSim.integrator.aTrapez = 1/2;
     else
         % Use full 2nd-order dissipation (a = 1/2) only for rigid systems and
         % simplified dissipation (rectangle rule, a = 0) for flexible systems for
         % higher stability
-        MBSim.solver.aTrapez = 1/2 * all(MBSim.MBSys.frames.jointType == 1);
+        MBSim.integrator.aTrapez = 1/2 * all(MBSim.system.frames.jointType == 1);
     end
 
     % Start integration
     MBSim = MBSim.simulateSystem;
 
     if opts.doIDForwardSim
-        q_init_HF = MBSim.simRes.q;
-        tout_HF   = MBSim.simRes.tout;
+        q_init_HF = MBSim.results.q;
+        tout_HF   = MBSim.results.tout;
     else
         q_init_HF = q_init;
         tout_HF   = tout_ID;

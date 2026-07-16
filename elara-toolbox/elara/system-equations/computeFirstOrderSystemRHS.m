@@ -9,7 +9,7 @@ function f_fo = computeFirstOrderSystemRHS(t, x, MBSys, simPars) %#codegen
 
         MBSys       (1,1) elara.SystemNum
 
-        simPars     (1,1) MBSimPars
+        simPars     (1,1) elara.SimulationParameters
     end
     arguments (Output)
         f_fo        (:,1) double

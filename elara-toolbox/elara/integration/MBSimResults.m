@@ -45,15 +45,15 @@ classdef MBSimResults
             % data
             %{
 
-            obj.metaDataSim.ImplicitIterations.min  = min( obj.solverIterations(:));
-            obj.metaDataSim.ImplicitIterations.max  = max( obj.solverIterations(:));
-            obj.metaDataSim.ImplicitIterations.mean = mean(obj.solverIterations(:), 'omitnan');
+            obj.metaDataSim.ImplicitIterations.min  = min( obj.integratorIterations(:));
+            obj.metaDataSim.ImplicitIterations.max  = max( obj.integratorIterations(:));
+            obj.metaDataSim.ImplicitIterations.mean = mean(obj.integratorIterations(:), 'omitnan');
 
-            obj.metaDataSim.ImplicitError.min       = min(  abs( obj.solverError(:) ));
-            obj.metaDataSim.ImplicitError.max       = max(  abs( obj.solverError(:) ));
-            obj.metaDataSim.ImplicitError.mean      = mean( abs( obj.solverError(:) ), 'omitnan');
+            obj.metaDataSim.ImplicitError.min       = min(  abs( obj.integratorError(:) ));
+            obj.metaDataSim.ImplicitError.max       = max(  abs( obj.integratorError(:) ));
+            obj.metaDataSim.ImplicitError.mean      = mean( abs( obj.integratorError(:) ), 'omitnan');
 
-            obj.metaDataSim.TotalIterations        = sum( obj.solverIterations(:), 'omitmissing');
+            obj.metaDataSim.TotalIterations        = sum( obj.integratorIterations(:), 'omitmissing');
             %}
         end
     end

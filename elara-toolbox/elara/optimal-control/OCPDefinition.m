@@ -31,7 +31,7 @@ classdef OCPDefinition
         qMax    (:,1)
 
         % simPars object
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
 
         % Workspace definition
         workSpaceDef    (1,1) workspaceDefinition

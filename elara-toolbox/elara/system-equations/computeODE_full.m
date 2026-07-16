@@ -14,7 +14,7 @@ function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
 
         MBSys       (1,1) elara.internal.System
 
-        simPars     (1,1) MBSimPars
+        simPars     (1,1) elara.SimulationParameters
     end
     arguments (Output)
         f        (:,1) double

@@ -12,7 +12,7 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
 
         % simPars object (struct) with simulation parameters.
         % See class definition for details.
-        simPars         (1,1) MBSimPars
+        simPars         (1,1) elara.SimulationParameters
 
         % Struct containing solver config
         solverConfig    (1,1) varIntSolverConfig

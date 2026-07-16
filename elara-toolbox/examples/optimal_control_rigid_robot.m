@@ -20,21 +20,21 @@ COMPUTE_IG = 1;
 %% Define System
 
 links = systemDef_rigid_robot("d", 0);
-MBSim = MBSimulation(links, "displayInfo", false);
+MBSim = elara.Simulation(links, "displayInfo", false);
 
 
 %% Define OCP
 
 OCP = OCPDefinition;
-OCP.MBSys = elara.SystemSym(links);
+OCP.system = elara.SystemSym(links);
 
-OCP.q0    = zeros(MBSim.MBSys.nDoF,1); % Initial configuration
-OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
-OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
+OCP.q0    = zeros(MBSim.system.nDoF,1); % Initial configuration
+OCP.qDot0 = zeros(MBSim.system.nDoF,1); % Initial velocity
+OCP.qDotF = zeros(MBSim.system.nDoF,1); % Final velocity
 
 OCP.u0 = [];
-OCP.uMin = ones(MBSim.MBSys.nInputs,1)*-100;
-OCP.uMax = ones(MBSim.MBSys.nInputs,1)*100;
+OCP.uMin = ones(MBSim.system.nInputs,1)*-100;
+OCP.uMax = ones(MBSim.system.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 1e-2;
@@ -44,7 +44,7 @@ OCP.tF = 2;
 OCP.x_TCP_F = [0.7; 0.2; 0.3];
 OCP.R_TCP_F = []; % Rotation arbitrary
 
-OCP.simPars = MBSim.simPars;
+OCP.parameters = MBSim.parameters;
 
 % Running cost
 OCP.wRC = [ % weights
@@ -63,8 +63,8 @@ OCP.addTCPFinalTimeConstraint = false;
 OCP.tPreAct  = 5*2^-5;
 OCP.tPostAct = 2*2^-5;
 
-OCP.qMin = ones(MBSim.MBSys.nDoF, 1)*-2*pi;
-OCP.qMax = ones(MBSim.MBSys.nDoF, 1)*2*pi;
+OCP.qMin = ones(MBSim.system.nDoF, 1)*-2*pi;
+OCP.qMax = ones(MBSim.system.nDoF, 1)*2*pi;
 
 % Control trajectory parameterization with splines
 OCP.useSplineInputs = true;
@@ -132,7 +132,7 @@ if OCP.useSplineInputs
     plot(OCP.tout, B*u_init_z.', "--o", "DisplayName", "Fitted Spline");
 
     grid on;
-    colororder(lines(MBSim.MBSys.nInputs));
+    colororder(lines(MBSim.system.nInputs));
     legend;
 else
     u_init_z = u_init;
@@ -153,8 +153,8 @@ if 1
     % Solve ODE OCP
     [x_sol, u_sol_z, sol, stats] = OCP_ODE.solve(x_init, u_init_z);
 
-    q_sol = x_sol(1:OCP.MBSys.nDoF,:);
-    q_dot_sol = x_sol(OCP.MBSys.nDoF+1:end,:);
+    q_sol = x_sol(1:OCP.system.nDoF,:);
+    q_dot_sol = x_sol(OCP.system.nDoF+1:end,:);
 
     if OCP.useSplineInputs
         u_sol = (B*u_sol_z.').';
@@ -226,7 +226,7 @@ gTCPDes = SE3Matrix(eye(3), OCP_DEL.x_TCP_F);
 
 MBSimCasadi = MBSim;
 MBSimCasadi.Name = "Optimization";
-MBSimCasadi.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCP_DEL.tout, q_sol, q_dot);
+MBSimCasadi.results = getSimResFromStateTrajectory(MBSim.system, OCP_DEL.tout, q_sol, q_dot);
 
 MBSimCasadi.plotAll;
 

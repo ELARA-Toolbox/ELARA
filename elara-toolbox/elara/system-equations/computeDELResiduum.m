@@ -5,7 +5,7 @@ function DEL_res_k = computeDELResiduum(MBSys, simPars, q_k0, q_k, q_k1, u_k, h,
         % Multibody system
         MBSys   (1,1) elara.SystemNum
 
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
 
         % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
         q_k0    (:,1) double

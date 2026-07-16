@@ -1,7 +1,7 @@
 function [u, solInfo] = computeInverseDynamics_cont(MBSim, q, qd, qdd, lbu, ubu)
     %% Compute inverse dynamics for given coordinate trajectory
     arguments
-        MBSim   (1,1) MBSimulation
+        MBSim   (1,1) elara.Simulation
 
         % Trajectory over time with dimensions (nDoF, nSteps+1)
         q       (:,:) double
@@ -13,8 +13,8 @@ function [u, solInfo] = computeInverseDynamics_cont(MBSim, q, qd, qdd, lbu, ubu)
         ubu      (:,1) double
     end
 
-    MBSys = MBSim.MBSys;
-    simPars = MBSim.simPars;
+    MBSys = MBSim.system;
+    simPars = MBSim.parameters;
 
     % Nr. of time steps
     nSteps = size(q, 2) - 1;
@@ -22,7 +22,7 @@ function [u, solInfo] = computeInverseDynamics_cont(MBSim, q, qd, qdd, lbu, ubu)
     % Zero input vector used in the dynamics functions
     uZero = zeros(MBSys.nInputs, 1);
 
-    u = nan(MBSim.MBSys.nInputs, nSteps+1);
+    u = nan(MBSim.system.nInputs, nSteps+1);
 
     solInfo.resNorm  = zeros(nSteps + 1,1);
     solInfo.rank_B = zeros(nSteps + 1,1);

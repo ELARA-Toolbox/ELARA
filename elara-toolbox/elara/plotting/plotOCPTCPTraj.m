@@ -2,7 +2,7 @@ function fh = plotOCPTCPTraj(MBSim, OCP, q_sol)
     %% Plot TCP Trajectory of OCP Solution
     %   Detailed explanation goes here
     arguments (Input)
-        MBSim   (1,1) MBSimulation
+        MBSim   (1,1) elara.Simulation
         OCP     (1,1) OCPDefinition
         q_sol   (:,:) double
     end
@@ -10,8 +10,8 @@ function fh = plotOCPTCPTraj(MBSim, OCP, q_sol)
     % Compute TCP trajectory
     g_TCP_sol = zeros(4,4, OCP.nSteps+1);
     for iStep = 1:OCP.nSteps+1
-        g_k = MBSim.MBSys.computeFwdKin(q_sol(:,iStep));
-        g_TCP_sol(:,:,iStep) = g_k(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+        g_k = MBSim.system.computeFwdKin(q_sol(:,iStep));
+        g_TCP_sol(:,:,iStep) = g_k(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
     end
     x_TCP_sol = squeeze(g_TCP_sol(1:3,4,:));
 

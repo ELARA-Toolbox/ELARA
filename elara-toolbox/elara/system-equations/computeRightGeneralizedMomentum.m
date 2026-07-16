@@ -4,7 +4,7 @@ function p_k = computeRightGeneralizedMomentum(MBSys, h, simPars, q_k, q_k1, g_k
     arguments
         MBSys   (1,1) elara.internal.System
         h       (1,1)
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
 
         % Coordinates
         q_k     (:,1) double

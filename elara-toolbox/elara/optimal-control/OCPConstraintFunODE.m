@@ -12,9 +12,9 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = OCPConstraintFunODE(OCP, x, u)
     end
 
     %%
-    MBSys = OCP.MBSys;
+    MBSys = OCP.system;
     nSteps = OCP.nSteps;
-    simPars = OCP.simPars;
+    simPars = OCP.parameters;
     h = OCP.h;
 
     % Get workspace constraint functions

@@ -9,7 +9,7 @@ function [res_0, eta_0] = computeDELResiduumFirstStep(MBSys, h, simPars, q_0, q_
     arguments
         MBSys   (1,1) elara.internal.System
         h       (1,1)
-        simPars (1,1) MBSimPars
+        simPars (1,1) elara.SimulationParameters
         q_0     (:,1) double % Coordinate variable at time step k = 1
         q_1     (:,1) double % Coordinate variable at time step k = 2
         u_0     (:,1) double % System input variable at time step k = 1

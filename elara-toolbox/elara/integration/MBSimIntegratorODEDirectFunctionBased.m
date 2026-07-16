@@ -1,5 +1,5 @@
 classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
-    %% MBSimulation Integrator: ODE solver
+    %% elara.Simulation Integrator: ODE solver
     % based on the direct/explicit form of the equations of motion, where
     % all EOM terms (including mass matrix) are explicitly computed;
     % implementation is based on the odeXY functions approach
@@ -23,7 +23,7 @@ classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
             %% Simulate system: First order mass-matrix form / continuous-time ode solver
             arguments
                 obj     (1,1)
-                MBSim   (1,1) MBSimulation
+                MBSim   (1,1) elara.Simulation
             end
 
             % Check if compiled mex files are available
@@ -31,24 +31,24 @@ classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
 
             % Initial states for the first-order system
             x0 = [
-                MBSim.simPars.q0;
-                MBSim.simPars.qDot0;
+                MBSim.parameters.q0;
+                MBSim.parameters.qDot0;
                 ];
 
             if obj.useMassMatrixForm
                 if useMex
-                    odeFun  = @(t,x) computeFirstOrderSystemRHS_mex(t, x, MBSim.MBSys, MBSim.simPars);
-                    massFun = @(t,x) computeFirstOrderMassMatrix_mex(t, x, MBSim.MBSys);
+                    odeFun  = @(t,x) computeFirstOrderSystemRHS_mex(t, x, MBSim.system, MBSim.parameters);
+                    massFun = @(t,x) computeFirstOrderMassMatrix_mex(t, x, MBSim.system);
                 else
-                    odeFun  = @(t,x) computeFirstOrderSystemRHS(t, x, MBSim.MBSys, MBSim.simPars);
-                    massFun = @(t,x) computeFirstOrderMassMatrix(t, x, MBSim.MBSys);
+                    odeFun  = @(t,x) computeFirstOrderSystemRHS(t, x, MBSim.system, MBSim.parameters);
+                    massFun = @(t,x) computeFirstOrderMassMatrix(t, x, MBSim.system);
                 end
                 odeOpts = odeset(obj.solverOptions, "Mass", massFun);
             else
                 if useMex
-                    odeFun = @(t,x) computeFirstOrderSystemRHS_MInv_mex(t, x, MBSim.MBSys, MBSim.simPars);
+                    odeFun = @(t,x) computeFirstOrderSystemRHS_MInv_mex(t, x, MBSim.system, MBSim.parameters);
                 else
-                    odeFun = @(t,x) computeFirstOrderSystemRHS_MInv(t, x, MBSim.MBSys, MBSim.simPars);
+                    odeFun = @(t,x) computeFirstOrderSystemRHS_MInv(t, x, MBSim.system, MBSim.parameters);
                 end
                 odeOpts = obj.solverOptions;
             end
@@ -58,12 +58,12 @@ classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
                     functions(obj.solverFunction).function);
             end
             tic;
-            [tout, xout] = obj.solverFunction(odeFun, [0, MBSim.simPars.tEnd], x0, odeOpts);
+            [tout, xout] = obj.solverFunction(odeFun, [0, MBSim.parameters.tEnd], x0, odeOpts);
             tSim = toc;
 
             % Run simulation again with timing (if desired) for accuracy
             if obj.accurateTiming
-                timingFun = @() obj.solverFunction(odeFun, [0, MBSim.simPars.tEnd], x0, odeOpts);
+                timingFun = @() obj.solverFunction(odeFun, [0, MBSim.parameters.tEnd], x0, odeOpts);
                 tSim = timeit(timingFun, 2);
             end
 
@@ -73,11 +73,11 @@ classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
             end
 
             if useMex
-                simRes = getSimResFromStateTrajectory_mex(MBSim.MBSys, tout, ...
-                    xout(1:MBSim.MBSys.nDoF,:), xout((MBSim.MBSys.nDoF+1):end,:));
+                simRes = getSimResFromStateTrajectory_mex(MBSim.system, tout, ...
+                    xout(1:MBSim.system.nDoF,:), xout((MBSim.system.nDoF+1):end,:));
             else
-                simRes = getSimResFromStateTrajectory(MBSim.MBSys, tout, ...
-                    xout(1:MBSim.MBSys.nDoF,:), xout((MBSim.MBSys.nDoF+1):end,:));
+                simRes = getSimResFromStateTrajectory(MBSim.system, tout, ...
+                    xout(1:MBSim.system.nDoF,:), xout((MBSim.system.nDoF+1):end,:));
             end
 
             tFullODE = toc;

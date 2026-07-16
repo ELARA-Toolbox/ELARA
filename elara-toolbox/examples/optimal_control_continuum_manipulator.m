@@ -20,21 +20,21 @@ COMPUTE_IG = 1;
 
 links = systemDef_continuum_manipulator("nSeg", 4);
 
-MBSim = MBSimulation(links, "displayInfo", false);
+MBSim = elara.Simulation(links, "displayInfo", false);
 
 
 %% Define OCP
 
 OCP = OCPDefinition;
-OCP.MBSys = elara.SystemSym(links);
+OCP.system = elara.SystemSym(links);
 
-OCP.q0    = zeros(MBSim.MBSys.nDoF,1);
-OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
-OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
+OCP.q0    = zeros(MBSim.system.nDoF,1);
+OCP.qDot0 = zeros(MBSim.system.nDoF,1); % Initial velocity
+OCP.qDotF = zeros(MBSim.system.nDoF,1); % Final velocity
 
 OCP.u0 = [];
-OCP.uMin = ones(MBSim.MBSys.nInputs,1)*-1e-3; % Add small slack for improved convergence
-OCP.uMax = ones(MBSim.MBSys.nInputs,1)*100;
+OCP.uMin = ones(MBSim.system.nInputs,1)*-1e-3; % Add small slack for improved convergence
+OCP.uMax = ones(MBSim.system.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 2^-6;
@@ -44,7 +44,7 @@ OCP.tF = 2;
 OCP.x_TCP_F = [0.55; 0.3; 0.05];
 OCP.R_TCP_F = []; % Rotation arbitrary
 
-OCP.simPars = MBSim.simPars;
+OCP.parameters = MBSim.parameters;
 
 % Running cost
 OCP.wRC = [ % Weights
@@ -102,8 +102,8 @@ end
 
 plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
 
-gOptStatic = MBSim.MBSys.computeFwdKin(qOptStatic);
-g_TCP = gOptStatic(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
+gOptStatic = MBSim.system.computeFwdKin(qOptStatic);
+g_TCP = gOptStatic(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
 x_TCP_des = g_TCP(1:3, 4);
 
 if OCP.useSplineInputs
@@ -119,7 +119,7 @@ if OCP.useSplineInputs
     hold on;
     plot(OCP.tout, B*u_init_z.', "--o", "DisplayName", "Fitted Spline");
     grid on;
-    colororder(lines(MBSim.MBSys.nInputs));
+    colororder(lines(MBSim.system.nInputs));
     legend;
     title("Spline Fit");
 
@@ -175,18 +175,18 @@ disp('Post processing...')
 gTCPDes = SE3Matrix(eye(3), OCP.x_TCP_F);
 
 q_dot_Sol = diff(q_sol, 1, 2) / OCP.h;
-q_dot_Sol_full = [q_dot_Sol, nan(OCP.MBSys.nDoF,1)];
+q_dot_Sol_full = [q_dot_Sol, nan(OCP.system.nDoF,1)];
 
 MBSimCasadi = MBSim;
 MBSimCasadi.Name = "Optimization";
-MBSimCasadi.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCP.tout, q_sol, q_dot_Sol_full);
+MBSimCasadi.results = getSimResFromStateTrajectory(MBSim.system, OCP.tout, q_sol, q_dot_Sol_full);
 MBSimCasadi.plotAll;
 
 % Draw snapshots
 fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
 coordSysSE3(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
-TCPTraj = squeeze(MBSimCasadi.simRes.g(1:3,4,end,:));
+TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 % Animate results

@@ -4,7 +4,7 @@ fprintf("Verifying ELARA toolbox installation...\n")
 
 %% Check core toolbox installation
 
-if exist("MBSimulation", "file")
+if exist("elara.Simulation", "file")
     fprintf("  [PASS]  Core toolbox installed correctly.\n")
 else
     fprintf("  [FAIL]  Core toolbox not installed correctly. " + ...

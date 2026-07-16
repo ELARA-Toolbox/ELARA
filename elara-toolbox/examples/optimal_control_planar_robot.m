@@ -19,7 +19,7 @@ COMPUTE_IG = 0;
 %% Define System
 
 links = systemDef_planarNLinkPendulum("nLinks", 2, "d", 0);
-MBSim = MBSimulation(links, "displayInfo", false);
+MBSim = elara.Simulation(links, "displayInfo", false);
 
 % Visualize system in reference configuration
 MBSim.visualizeSystemRefConf();
@@ -28,21 +28,21 @@ MBSim.visualizeSystemRefConf();
 %% Quick example forward simulation
 
 MBSimFwd = MBSim;
-MBSimFwd.simPars.tEnd = 5;
+MBSimFwd.parameters.tEnd = 5;
 
 q0 = deg2rad([30,-30]);
-MBSimFwd.simPars.q0 = q0;
-MBSimFwd.simPars.qDot0 = zeros(2,1);
+MBSimFwd.parameters.q0 = q0;
+MBSimFwd.parameters.qDot0 = zeros(2,1);
 
 % Visualize initial config
 MBSimFwd.visualizeSystemConfig(q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
 % Solver settings
-MBSimFwd.solver = MBSimIntegratorVarIntBroyden;
-MBSimFwd.solver.h = 2^-7;
-MBSimFwd.solver.JacobianIterationThreshold = 5;
-MBSimFwd.solver.errorMargin = 1e-11;
+MBSimFwd.integrator = MBSimIntegratorVarIntBroyden;
+MBSimFwd.integrator.h = 2^-7;
+MBSimFwd.integrator.JacobianIterationThreshold = 5;
+MBSimFwd.integrator.errorMargin = 1e-11;
 
 % Start integration
 MBSimFwd = MBSimFwd.simulateSystem;
@@ -56,11 +56,11 @@ MBSimFwd.animateSimResults("figureName", "AnimVI");
 %% Define OCP
 
 OCP = OCPDefinition;
-OCP.MBSys = elara.SystemSym(links);
+OCP.system = elara.SystemSym(links);
 
 OCP.q0    = [pi/2, 0];
-OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
-OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
+OCP.qDot0 = zeros(MBSim.system.nDoF,1); % Initial velocity
+OCP.qDotF = zeros(MBSim.system.nDoF,1); % Final velocity
 
 OCP.u0 = [];
 
@@ -77,7 +77,7 @@ OCP.useSplineInputs = false;
 OCP.inputSplineOrder = 3;
 OCP.nInputSplinePoints = 25;
 
-OCP.simPars = MBSim.simPars;
+OCP.parameters = MBSim.parameters;
 
 % Running cost
 OCP.wRC = [ % Weights
@@ -140,7 +140,7 @@ if COMPUTE_IG
     end
 else
     q_init = repmat(OCP.q0, [1,OCP.nSteps+1]);
-    u_init = zeros(MBSim.MBSys.nInputs,OCP.nSteps+1);
+    u_init = zeros(MBSim.system.nInputs,OCP.nSteps+1);
 end
 
 if OCP.useSplineInputs
@@ -156,7 +156,7 @@ if OCP.useSplineInputs
     hold on;
     plot(OCP.tout, B*u_init_z.', "--o", "DisplayName", "Fitted Spline");
     grid on;
-    colororder(lines(MBSim.MBSys.nInputs));
+    colororder(lines(MBSim.system.nInputs));
     legend;
     title("Spline Fit");
 
@@ -185,8 +185,8 @@ OCP_ODE.plotConstraintResiduals(x_init, u_init_z, "figureName", "Constr. Res. IG
 % Solve ODE OCP
 [x_sol, u_sol_z, sol, stats] = OCP_ODE.solve(x_init, u_init_z);
 
-q_sol = x_sol(1:OCP_ODE.MBSys.nDoF,:);
-q_dot_sol = x_sol(OCP_ODE.MBSys.nDoF+1:end,:);
+q_sol = x_sol(1:OCP_ODE.system.nDoF,:);
+q_dot_sol = x_sol(OCP_ODE.system.nDoF+1:end,:);
 
 
 if OCP.useSplineInputs
@@ -245,7 +245,7 @@ gTCPDes = SE3Matrix(eye(3), OCP_DEL.x_TCP_F);
 
 MBSimCasadi = MBSim;
 MBSimCasadi.Name = "Optimization";
-MBSimCasadi.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCP_DEL.tout, q_sol, q_dot);
+MBSimCasadi.results = getSimResFromStateTrajectory(MBSim.system, OCP_DEL.tout, q_sol, q_dot);
 
 MBSimCasadi.plotAll;
 
@@ -253,7 +253,7 @@ MBSimCasadi.plotAll;
 fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
 coordSysSE3(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 15);
-TCPTraj = squeeze(MBSimCasadi.simRes.g(1:3,4,end,:));
+TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 %% Animate results
