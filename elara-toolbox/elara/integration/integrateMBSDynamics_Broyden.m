@@ -196,14 +196,14 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
 
 
     %% Assign to output object
-    simResults = MBSimResults;
+    simResults = elara.SimulationResults;
     simResults.g     = g(:,:,:,1:nStepsDone+1);
     simResults.q     = q(:,1:nStepsDone+1);
     simResults.q_dot = q_dot(:,1:nStepsDone+1);
     simResults.eta   = eta(:,:,1:nStepsDone+1);
     simResults.tout  = tout(1:nStepsDone+1, 1);
 
-    simResults.solverError      = ImplicitError(1:nStepsDone+1);
+    simResults.solverResidual      = ImplicitError(1:nStepsDone+1);
     simResults.solverIterations = ImplicitIterations(1:nStepsDone+1);
     simResults.solverExitFlag   = ExitFlag(1:nStepsDone+1);
 end

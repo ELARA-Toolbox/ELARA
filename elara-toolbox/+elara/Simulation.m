@@ -27,7 +27,7 @@ classdef Simulation
         parameters (1,1) elara.SimulationParameters
 
         %% Simulation Results
-        results  (1,1) MBSimResults
+        results  (1,1) elara.SimulationResults
     end
 
     methods
@@ -257,20 +257,24 @@ classdef Simulation
         function obj = computeEnergies(obj, opts)
             %% Compute energy evolution for a finished simulation
             arguments
-                obj
-                opts.useFD (1,1) logical = true;
+                obj         (1,1) elara.Simulation
+                opts.useFD  (1,1) logical = true;
             end
             disp('   Computing Energy Evolution...');
             isVarInt = obj.integrator.type ==  "varint";
 
             % Check if compiled mex files are available
             if exist("computeFirstOrderSystemRHS_mex", "file")
-                obj.results.energies = computeSimResEnergies_mex( ...
+                [T,U,V,H] = computeSimResEnergies_mex( ...
                     obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
             else
-                obj.results.energies = computeSimResEnergies( ...
+                [T,U,V,H] = computeSimResEnergies( ...
                     obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
             end
+            obj.results.kineticEnergy   = T;
+            obj.results.potentialEnergy = U;
+            obj.results.strainEnergy    = V;
+            obj.results.totalEnergy     = H;
         end
 
 

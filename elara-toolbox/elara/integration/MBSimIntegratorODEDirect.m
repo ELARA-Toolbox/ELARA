@@ -94,7 +94,7 @@ classdef MBSimIntegratorODEDirect < MBSimIntegratorODE
             end
             tFullODE = toc;
 
-            simRes.metaDataSim.TotalTime = tSim;
+            simRes.computationTime = tSim;
 
             if obj.showConsoleOutput
                 % Display meta data

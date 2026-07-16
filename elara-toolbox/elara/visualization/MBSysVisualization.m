@@ -136,7 +136,7 @@ classdef MBSysVisualization < handle
                 obj
 
                 % SimResults object containing the simulation data
-                simRes          (1,1) MBSimResults
+                simRes          (1,1) elara.SimulationResults
 
                 % Figure handle to the parent figure
                 fig

@@ -10,7 +10,7 @@ function [gQuery, qQuery] = interpolateSimResultsTime(MBSys, simRes, tQuery)
         MBSys   (1,1) elara.internal.System
 
         % SimResults object containing the data to interpolate
-        simRes  (1,1) MBSimResults
+        simRes  (1,1) elara.SimulationResults
 
         % Vector with time query points
         tQuery  (:,1) double

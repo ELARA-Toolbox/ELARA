@@ -1,6 +1,6 @@
 function plotEnergies(simRes, opts)
     arguments
-        simRes          (1,1) MBSimResults
+        simRes          (1,1) elara.SimulationResults
         opts.nameStr (1,1) string = ""
     end
     fh = figure( ...
@@ -8,11 +8,11 @@ function plotEnergies(simRes, opts)
 
     ax = axes(fh);
 
-    plot(ax, simRes.tout, simRes.energies.H, 'LineWidth', 2);
+    plot(ax, simRes.tout, simRes.totalEnergy, 'LineWidth', 2);
     hold on;
-    plot(ax, simRes.tout, simRes.energies.T);
-    plot(ax, simRes.tout, simRes.energies.U);
-    plot(ax, simRes.tout, simRes.energies.V);
+    plot(ax, simRes.tout, simRes.kineticEnergy);
+    plot(ax, simRes.tout, simRes.potentialEnergy);
+    plot(ax, simRes.tout, simRes.strainEnergy);
 
     title(ax, 'Energies', 'interpreter', 'latex')
     grid on

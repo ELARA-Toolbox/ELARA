@@ -35,7 +35,7 @@ function simRes = getSimResFromStateTrajectory(MBSys, tout, q, q_dot)
     end
 
     % Assign to object
-    simRes = MBSimResults;
+    simRes = elara.SimulationResults;
     simRes.tout  = tout;
     simRes.q     = q;
     simRes.q_dot = q_dot;

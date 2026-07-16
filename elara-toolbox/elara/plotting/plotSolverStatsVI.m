@@ -1,7 +1,7 @@
 function figHandle = plotSolverStatsVI(simRes, opts)
     %% Plot statistics about the implicit solver
     arguments
-        simRes          (1,1) MBSimResults
+        simRes          (1,1) elara.SimulationResults
         opts.nameStr    (1,1) string = ""
     end
     if ~isempty(simRes.solverIterations)
@@ -13,7 +13,7 @@ function figHandle = plotSolverStatsVI(simRes, opts)
 
         % Residual Error
         ax = nexttile(t);
-        plot(ax, simRes.tout, simRes.solverError');
+        plot(ax, simRes.tout, simRes.solverResidual');
         title(ax, 'Residual Error', 'interpreter', 'latex')
         xlim(ax, [0, simRes.tout(end)])
         grid on

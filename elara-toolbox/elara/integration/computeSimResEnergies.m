@@ -1,9 +1,9 @@
-function simEnergies = computeSimResEnergies(MBSys, simPars, simRes, isVarInt, useFD) %#codegen
+function [T,U,V,H] = computeSimResEnergies(system, simPars, simRes, isVarInt, useFD) %#codegen
     %% Compute energy evolution for simulation results
     arguments (Input)
-        MBSys       (1,1) elara.SystemNum
+        system      (1,1) elara.SystemNum
         simPars     (1,1) elara.SimulationParameters
-        simRes      (1,1) MBSimResults
+        simRes      (1,1) elara.SimulationResults
 
         % Defines whether simulation results belong to a variational
         % integrator
@@ -25,7 +25,7 @@ function simEnergies = computeSimResEnergies(MBSys, simPars, simRes, isVarInt, u
 
     % Get system inputs for varInts
     if isVarInt
-        u = getIntegratorInputs(MBSys, simPars, simRes.tout);
+        u = getIntegratorInputs(system, simPars, simRes.tout);
         h = simRes.tout(2) - simRes.tout(1);
 
         % Get velocities via finite differences
@@ -54,43 +54,39 @@ function simEnergies = computeSimResEnergies(MBSys, simPars, simRes, isVarInt, u
             if iStep < nSteps
                 % Steps 1, ..., N-1: Left momentum
                 q_k1 = simRes.q(:,iStep+1);
-                p_k = computeLeftGeneralizedMomentum(MBSys, h, simPars, ...
+                p_k = computeLeftGeneralizedMomentum(system, h, simPars, ...
                     q_k, q_k1, g_k, simRes.eta(:,:,iStep), u(:,iStep), a);
             else
                 % Last step: Right momentum
                 q_k0 = simRes.q(:,iStep-1);
-                p_k = computeRightGeneralizedMomentum(MBSys, h, simPars, ...
+                p_k = computeRightGeneralizedMomentum(system, h, simPars, ...
                     q_k0, q_k, g_k, simRes.eta(:,:,iStep-1), u(:,iStep), a);
             end
-            T(iStep) = 1/2 * p_k.' / MBSys.computeMassMatrix(q_k) * p_k;
+            T(iStep) = 1/2 * p_k.' / system.computeMassMatrix(q_k) * p_k;
         else
             % ODE integrators: Directly compute kinetic energy from
             % time node velocities
             q_dot_k = q_dot(:,iStep);
-            T(iStep) = 1/2 * q_dot_k.' * MBSys.computeMassMatrix(q_k) * q_dot_k;
+            T(iStep) = 1/2 * q_dot_k.' * system.computeMassMatrix(q_k) * q_dot_k;
         end
 
-        for iFrm = 1:MBSys.nFrames
+        for iFrm = 1:system.nFrames
             % Potential energy (both frame CoM and attached masses)
-            g_a_k = g_k(:,:,iFrm) * MBSys.frames.g_a(:,:,iFrm);
+            g_a_k = g_k(:,:,iFrm) * system.frames.g_a(:,:,iFrm);
             U(iStep) = U(iStep) + simPars.g *(...
-                MBSys.frames.m(iFrm) * g_k(3,4,iFrm) + ...
-                MBSys.frames.m_a(iFrm) * g_a_k(3,4)...
+                system.frames.m(iFrm) * g_k(3,4,iFrm) + ...
+                system.frames.m_a(iFrm) * g_a_k(3,4)...
                 );
         end
 
         % Strain energy
-        V(iStep) = 1/2 * (q_k - MBSys.qRef).' ...
-            * (MBSys.cSys .* (q_k - MBSys.qRef));
+        V(iStep) = 1/2 * (q_k - system.qRef).' ...
+            * (system.cSys .* (q_k - system.qRef));
     end
 
     % Normalize Potential energy: Set initial value to 0
     U = U - U(1);
 
-    % Assign to object
-    simEnergies = MBSimEnergies;
-    simEnergies.H = T + U + V;
-    simEnergies.T = T;
-    simEnergies.U = U;
-    simEnergies.V = V;
+    % Total energy 
+    H = T + U + V;
 end

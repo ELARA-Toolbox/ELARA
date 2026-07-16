@@ -26,7 +26,7 @@ classdef (Abstract) MBSimIntegrator
         % Main integration function; must have arguments and output
         %   simRes = simulateSystem(obj, MBSim)
         % with classes:
-        %   simRes: MBSimResults
+        %   simRes: elara.SimulationResults
         %   MBSim: MB-Simulation
         simulateSystem
     end
