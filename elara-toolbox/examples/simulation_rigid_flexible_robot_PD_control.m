@@ -50,7 +50,7 @@ MBSim.system.qRef(1:nLinksRigid) = qDes;
 MBSimVI = MBSim;
 
 % Solver settings
-MBSimVI.integrator = MBSimIntegratorVarIntBroyden;
+MBSimVI.integrator = elara.integration.VIBroyden;
 MBSimVI.integrator.h = 2^-8;
 MBSimVI.integrator.JacobianIterationThreshold = 5;
 MBSimVI.integrator.errorMargin = 5e-12;
@@ -71,7 +71,7 @@ MBSimVI.animateSimResults("figureName", "AnimVI");
 MBSimODE = MBSim;
 
 % Solver settings
-MBSimODE.integrator = MBSimIntegratorODEDirect;
+MBSimODE.integrator = elara.integration.ODEDirect;
 MBSimODE.integrator.odeObject.Solver = "ode15s";
 MBSimODE.integrator.odeObject.AbsoluteTolerance = 1e-3;
 MBSimODE.integrator.odeObject.RelativeTolerance = 1e-3;

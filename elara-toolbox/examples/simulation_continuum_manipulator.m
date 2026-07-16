@@ -49,7 +49,7 @@ legend(arrayfun(@(x) sprintf("Input $u_%d$", x), 1:MBSim.system.nInputs), "Inter
 MBSimVI = MBSim;
 
 % Solver settings
-MBSimVI.integrator = MBSimIntegratorVarIntBroyden;
+MBSimVI.integrator = elara.integration.VIBroyden;
 MBSimVI.integrator.h = 2^-9;
 MBSimVI.integrator.JacobianIterationThreshold = 3;
 MBSimVI.integrator.errorMargin = 1e-9;
@@ -73,7 +73,7 @@ MBSimODE = MBSim;
 %MBSimODE.parameters.tEnd = 10;
 
 % Solver settings
-MBSimODE.integrator = MBSimIntegratorODEDirect;
+MBSimODE.integrator = elara.integration.ODEDirect;
 MBSimODE.integrator.odeObject.Solver = "ode15s";
 MBSimODE.integrator.odeObject.AbsoluteTolerance = 1e-5;
 MBSimODE.integrator.odeObject.RelativeTolerance = 1e-5;

@@ -1,4 +1,4 @@
-classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
+classdef ODEDirectFunctionBased < elara.internal.IntegratorODE
     %% elara.Simulation Integrator: ODE solver
     % based on the direct/explicit form of the equations of motion, where
     % all EOM terms (including mass matrix) are explicitly computed;

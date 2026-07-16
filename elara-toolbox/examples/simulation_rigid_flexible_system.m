@@ -55,7 +55,7 @@ fig.WindowState = "maximized";
 MBSimVI = MBSim;
 
 % Solver settings
-MBSimVI.integrator = MBSimIntegratorVarIntBroyden;
+MBSimVI.integrator = elara.integration.VIBroyden;
 MBSimVI.integrator.h = 2^-10;
 MBSimVI.integrator.JacobianIterationThreshold = 5;
 MBSimVI.integrator.errorMargin = 1e-11;
@@ -80,7 +80,7 @@ MBSimODE = MBSim;
 %MBSimODE.parameters.tEnd = 3;
 
 % Solver settings
-MBSimODE.integrator = MBSimIntegratorODEDirect;
+MBSimODE.integrator = elara.integration.ODEDirect;
 MBSimODE.integrator.odeObject.Solver = "ode15s";
 MBSimODE.integrator.odeObject.AbsoluteTolerance = 2e-3;
 MBSimODE.integrator.odeObject.RelativeTolerance = 2e-3;

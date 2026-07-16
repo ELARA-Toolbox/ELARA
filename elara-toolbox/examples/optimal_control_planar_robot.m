@@ -39,7 +39,7 @@ MBSimFwd.visualizeSystemConfig(q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
 % Solver settings
-MBSimFwd.integrator = MBSimIntegratorVarIntBroyden;
+MBSimFwd.integrator = elara.integration.VIBroyden;
 MBSimFwd.integrator.h = 2^-7;
 MBSimFwd.integrator.JacobianIterationThreshold = 5;
 MBSimFwd.integrator.errorMargin = 1e-11;

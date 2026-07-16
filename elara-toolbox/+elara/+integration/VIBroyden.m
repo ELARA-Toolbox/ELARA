@@ -1,4 +1,4 @@
-classdef MBSimIntegratorVarIntBroyden < MBSimIntegrator
+classdef VIBroyden < elara.internal.Integrator
     %% elara.Simulation Integrator: Variational Integrator with Broyden Solver
     %
     % Maximilian Herrmann

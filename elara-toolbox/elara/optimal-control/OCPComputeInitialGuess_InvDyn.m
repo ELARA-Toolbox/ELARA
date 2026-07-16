@@ -182,7 +182,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     MBSim.parameters.uSampleValues = uInit_ID;
 
     % Solver settings
-    MBSim.integrator = MBSimIntegratorVarIntBroyden;
+    MBSim.integrator = elara.integration.VIBroyden;
     MBSim.integrator.h = h_ID;
     MBSim.integrator.JacobianIterationThreshold = 2;
     MBSim.integrator.errorMargin = 1e-8;

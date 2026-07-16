@@ -13,7 +13,7 @@ classdef Simulation
         %% Used integrator
         % The integrator object contains all methods and settings required
         % to perform the integration
-        integrator  (1,1) MBSimIntegrator = MBSimIntegratorVarIntBroyden;
+        integrator  (1,1) elara.internal.Integrator = elara.integration.VIBroyden;
 
         %% System specification
 
