@@ -7,7 +7,7 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
     % Technical University of Munich
     properties
         % Link object that defines the link's properties
-        linkDef         (1,1) elara.internal.Link = elara.RigidLink;
+        link         (1,1) elara.internal.Link = elara.RigidLink;
     end
     properties (Access=public, SetObservable)
         % link Color
@@ -18,17 +18,17 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
         Name            (1,1) string
 
         % Draw the link's joint?
-        ShowJoint       (1,1) matlab.lang.OnOffSwitchState = true;
+        showJoint       (1,1) matlab.lang.OnOffSwitchState = true;
 
         % Draw the link's TCP frame (if defined)?
-        ShowTCPFrame    (1,1) matlab.lang.OnOffSwitchState = true;
+        showTCPFrame    (1,1) matlab.lang.OnOffSwitchState = true;
     end
     properties (SetAccess=protected)
         % Coordinate system object for the joint
-        cSysJ           (1,1) coordSysSE3
+        coordSysJ           (1,1) CoordSysSE3
 
         % Coordinate system object for the TCP
-        cSysTCP         (1,1) coordSysSE3
+        coordSysTCP         (1,1) CoordSysSE3
 
         % Object for the joint circle visualization
         jointPatch      (1,1) matlab.graphics.primitive.Patch
@@ -42,12 +42,12 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
     %% General drawing methods
     methods(Access=protected)
         function obj = drawTCPFrame(obj, parent)
-            obj.cSysTCP = coordSysSE3( obj.linkDef.g_B_TCP, ...
+            obj.coordSysTCP = CoordSysSE3( obj.link.g_B_TCP, ...
                 'scale', 0.07, ...
                 'name', "TCP", ...
                 'AxisColors', repmat(obj.Color.', [3,1]), ...
                 "parent", parent, ...
-                "Visible", obj.linkDef.hasTCP && obj.ShowTCPFrame ...
+                "Visible", obj.link.hasTCP && obj.showTCPFrame ...
                 );
         end
         function obj = drawJoint(obj, parent)
@@ -61,16 +61,16 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
 
             % Draw joint frames
             coordSysScale = 0.075;
-            obj.cSysJ = coordSysSE3( ...
-                inv(obj.linkDef.g_J_B), ...
+            obj.coordSysJ = CoordSysSE3( ...
+                inv(obj.link.g_J_B), ...
                 "scale", coordSysScale, ...
                 "name", sprintf("$J_{%s}$",obj.Name),  ...
                 "AxisColors", repmat(obj.Color.', [3,1]), ...
                 "parent", parent(1), ...
-                "Visible", obj.ShowJoint);
+                "Visible", obj.showJoint);
 
             % For revolute joints: Draw joint
-            if any(obj.linkDef.jointAxis(1:3))
+            if any(obj.link.jointAxis(1:3))
                 pointsAbs = obj.computeJointCirclePoints;
                 obj.jointPatch = patch( ...
                     'XData', pointsAbs(1,:), 'YData', pointsAbs(2,:), 'ZData', pointsAbs(3,:), ...
@@ -79,7 +79,7 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
                     "Parent", parent(1)...
                     );
             end
-            obj.jointPatch.Visible = obj.ShowJoint;
+            obj.jointPatch.Visible = obj.showJoint;
         end
         function pointsAbs = computeJointCirclePoints(obj)
             % Compute the absolute points for the circle that visualizes
@@ -87,13 +87,13 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
 
             % Compute transformation that defines the joint plane in
             % the inertial system
-            e_z = obj.linkDef.jointAxis(1:3) / norm(obj.linkDef.jointAxis(1:3));
+            e_z = obj.link.jointAxis(1:3) / norm(obj.link.jointAxis(1:3));
 
             % Find suitable x axis that is perpendicular to e_z
             I = eye(3);
             for ii = 1:3
-                if any(cross(obj.linkDef.jointAxis(1:3), I(:,ii)))
-                    e_x = cross(obj.linkDef.jointAxis(1:3), I(:,ii));
+                if any(cross(obj.link.jointAxis(1:3), I(:,ii)))
+                    e_x = cross(obj.link.jointAxis(1:3), I(:,ii));
                     break
                 end
             end
@@ -110,7 +110,7 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
             % Circle points in the plane written as homogeneous points
             % (4 dimensional, with appended 1)
             planePointsHomog = [xunit.',yunit.',zeros(nPoints+1,1), ones(nPoints+1,1)];
-            pointsAbs = obj.linkDef.g_J_B \ g_J1_xy * planePointsHomog.';
+            pointsAbs = obj.link.g_J_B \ g_J1_xy * planePointsHomog.';
         end
     end
 end

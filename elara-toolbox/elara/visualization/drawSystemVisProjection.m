@@ -40,12 +40,12 @@ function p = drawSystemVisProjection(vis, plane, planePos, opts)
     for iLink = 1:length(vis.linkVis)
         if isa(vis.linkVis{iLink}, "elara.visualization.FlexibleLinkVisualization")
             % Get 3D vertices of the beam edges
-            verts = vis.linkVis{iLink}.beamVis.hPatchBeam.Vertices();
+            verts = vis.linkVis{iLink}.beamVis.beamPatch.Vertices();
 
             % Compute homogeneous points
             vertsH = [verts, ones(size(verts,1),1)];
 
-            Faces = vis.linkVis{iLink}.beamVis.hPatchBeam.Faces;
+            Faces = vis.linkVis{iLink}.beamVis.beamPatch.Faces;
 
         elseif isa(vis.linkVis{iLink}, "elara.visualization.RigidLinkVisualization")
             % Get vertices of the bounding box in 3D space by explictily

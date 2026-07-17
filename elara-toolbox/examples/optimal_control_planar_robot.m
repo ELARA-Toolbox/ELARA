@@ -123,7 +123,7 @@ if COMPUTE_IG
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
     if ~isempty(OCP.x_TCP_F)
-        coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+        CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
     end
     drawWorkspace(OCP.workSpaceDef, "createFigure", false);
 
@@ -133,7 +133,7 @@ if COMPUTE_IG
     if ANIMATE_IG
         fig = init3Dplot('Name', "Animation Initial Guess");
         if ~isempty(OCP.x_TCP_F)
-            coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+            CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
         end
         drawWorkspace(OCP.workSpaceDef, "createFigure", false);
         MBSimIG.animateSimResults("figure", fig);
@@ -251,14 +251,14 @@ MBSimCasadi.plotAll;
 
 % Draw snapshots
 fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-coordSysSE3(gTCPDes);
+CoordSysSE3(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 15);
 TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 %% Animate results
 fig = init3Dplot('Name', "Animation Solution");
-coordSysSE3(gTCPDes);
+CoordSysSE3(gTCPDes);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 
 

@@ -7,45 +7,45 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
     % Technical University of Munich
     properties (SetObservable)
         % Draw the beam's tendons (if it has any)?
-        ShowTendons         (1,1) matlab.lang.OnOffSwitchState = true;
+        showTendons         (1,1) matlab.lang.OnOffSwitchState = true;
 
         % Show frames of the beam?
-        ShowBeamFrames      (1,1) matlab.lang.OnOffSwitchState = false;
+        showBeamFrames      (1,1) matlab.lang.OnOffSwitchState = false;
     end
     properties (SetAccess = protected)
         % Objects for the beam joint plots
         % (lines between joints and first / last nodes)
-        flexLinkJointPlot   (1,1) matlab.graphics.chart.primitive.Line
+        flexibleLinkJointPlot   (1,1) matlab.graphics.chart.primitive.Line
 
         % Object for beam visualization
-        beamVis             (1,1) elara.visualization.elasticBeam
+        beamVisualization             (1,1) elara.visualization.ElasticBeam
 
         % Objects for tendons
-        tendonVis           (:,1) elara.visualization.elasticBeam
+        tendonVisualization           (:,1) elara.visualization.ElasticBeam
     end
 
     %% Main Methods
     methods
-        function obj = FlexibleLinkVisualization(linkDef, g, opts)
+        function obj = FlexibleLinkVisualization(link, g, opts)
             % Construct an instance of this class
             arguments
-                linkDef (1,1)   elara.FlexibleLink;
+                link (1,1)   elara.FlexibleLink;
                 g       (4,4,:) double {mustBeSE3MatrixArray} = zeros(4,4,0);
 
                 % Additional drawing options
-                opts.ShowJoint      (1,1) matlab.lang.OnOffSwitchState = true;
-                opts.ShowTCPFrame   (1,1) matlab.lang.OnOffSwitchState = true;
-                opts.ShowTendons    (1,1) matlab.lang.OnOffSwitchState = true;
-                opts.ShowBeamFrames (1,1) matlab.lang.OnOffSwitchState = false;
+                opts.showJoint      (1,1) matlab.lang.OnOffSwitchState = true;
+                opts.showTCPFrame   (1,1) matlab.lang.OnOffSwitchState = true;
+                opts.showTendons    (1,1) matlab.lang.OnOffSwitchState = true;
+                opts.showBeamFrames (1,1) matlab.lang.OnOffSwitchState = false;
                 opts.Color          (3,1) double = lines(1);
                 opts.Name           (1,1) string = "";
             end
 
-            obj.linkDef      = linkDef;
-            obj.ShowJoint    = opts.ShowJoint;
-            obj.ShowTCPFrame = opts.ShowTCPFrame;
-            obj.ShowTendons  = opts.ShowTendons;
-            obj.ShowBeamFrames = opts.ShowBeamFrames;
+            obj.link      = link;
+            obj.showJoint    = opts.showJoint;
+            obj.showTCPFrame = opts.showTCPFrame;
+            obj.showTendons  = opts.showTendons;
+            obj.showBeamFrames = opts.showBeamFrames;
             obj.Color = opts.Color;
             obj.Name  = opts.Name;
 
@@ -57,11 +57,11 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
             % Superclass properties
             addlistener(obj,'Color','PostSet', @(src,evt)obj.onColorChanged);
             addlistener(obj,'Name','PostSet', @(src,evt)obj.onNameChanged);
-            addlistener(obj,'ShowJoint','PostSet', @(src,evt)obj.onShowJointChanged);
-            addlistener(obj,'ShowTCPFrame','PostSet', @(src,evt)obj.onShowTCPFrameChanged);
+            addlistener(obj,'showJoint','PostSet', @(src,evt)obj.onShowJointChanged);
+            addlistener(obj,'showTCPFrame','PostSet', @(src,evt)obj.onShowTCPFrameChanged);
             % Class properties
-            addlistener(obj,'ShowTendons','PostSet', @(src,evt)obj.onShowTendonsChanged);
-            addlistener(obj,'ShowBeamFrames','PostSet', @(src,evt)obj.onShowBeamFramesChanged);
+            addlistener(obj,'showTendons','PostSet', @(src,evt)obj.onShowTendonsChanged);
+            addlistener(obj,'showBeamFrames','PostSet', @(src,evt)obj.onShowBeamFramesChanged);
         end
 
         function obj = updateConfiguration(obj, g)
@@ -70,20 +70,20 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
                 g   (4,4,:) double %{mustBeSE3MatrixArray}
             end
 
-            if isempty(obj.beamVis.transfCS)
+            if isempty(obj.beamVisualization.crossSectionTransforms)
                 obj = obj.drawLink(g);
             end
 
 
             % Update beam
-            obj.beamVis.updateConfiguration(g);
+            obj.beamVisualization.updateConfiguration(g);
 
             % Update tendons
-            nCables = length(obj.linkDef.tendonActuation.x_td_funs);
-            if nCables && obj.ShowTendons
-                lBeam = obj.linkDef.L/obj.linkDef.nSeg;
-                sBeamNodes = 0:lBeam:obj.linkDef.L;
-                [g_cm, termNodes] = obj.linkDef.tendonActuation.getNodeData( ...
+            nCables = length(obj.link.tendonActuation.x_td_funs);
+            if nCables && obj.showTendons
+                lBeam = obj.link.L/obj.link.nSegments;
+                sBeamNodes = 0:lBeam:obj.link.L;
+                [g_cm, termNodes] = obj.link.tendonActuation.getNodeData( ...
                     sBeamNodes);
                 for iC = 1:nCables
                     g_c = zeros(4, 4, termNodes(iC));
@@ -92,7 +92,7 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
                         % Cable points initial configuration
                         g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
                     end
-                    obj.tendonVis(iC).updateConfiguration(g_c);
+                    obj.tendonVisualization(iC).updateConfiguration(g_c);
                 end
             end
         end
@@ -104,39 +104,39 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
             end
 
             % Draw beam
-            obj.beamVis = elara.visualization.elasticBeam(g, ...
-                "showFrames", obj.ShowBeamFrames, ...
-                "ShowLabels", obj.ShowBeamFrames, ...
+            obj.beamVisualization = elara.visualization.ElasticBeam(g, ...
+                "showFrames", obj.showBeamFrames, ...
+                "showLabels", obj.showBeamFrames, ...
                 "drawCrossSections", true, ...
                 "interpolateBeam", true, ...
                 "FaceAlpha", 0.3, ...
                 "Color",obj.Color, ...
-                "Height", obj.linkDef.beamPars.H, ...
-                "Width", obj.linkDef.beamPars.W ...
+                "Height", obj.link.beamParameters.height, ...
+                "Width", obj.link.beamParameters.width ...
                 );
 
             % Draw Joint and TCP frame
-            obj = drawJoint(obj, obj.beamVis.transfCS([1,end]));
-            obj = obj.drawTCPFrame(obj.beamVis.transfCS(end));
+            obj = drawJoint(obj, obj.beamVisualization.crossSectionTransforms([1,end]));
+            obj = obj.drawTCPFrame(obj.beamVisualization.crossSectionTransforms(end));
 
             % Links from/to joints
-            g_J1_B_inv = inv(obj.linkDef.g_J_B);
-            obj.flexLinkJointPlot = plot3( ...
+            g_J1_B_inv = inv(obj.link.g_J_B);
+            obj.flexibleLinkJointPlot = plot3( ...
                 [g_J1_B_inv(1,4), 0], ...
                 [g_J1_B_inv(2,4), 0], ...
                 [g_J1_B_inv(3,4), 0], ...
                 "Color", obj.Color, ...
                 "LineWidth",3, ...
-                "Parent", obj.beamVis.transfCS(1) ...
+                "Parent", obj.beamVisualization.crossSectionTransforms(1) ...
                 );
 
             % Tendons
-            nCables = length(obj.linkDef.tendonActuation.x_td_funs);
+            nCables = length(obj.link.tendonActuation.x_td_funs);
             if nCables
                 colorsTendons = lines(nCables);
-                lBeam = obj.linkDef.L/obj.linkDef.nSeg;
-                sBeamNodes = 0:lBeam:obj.linkDef.L;
-                [g_cm, termNodes] = obj.linkDef.tendonActuation.getNodeData( ...
+                lBeam = obj.link.L/obj.link.nSegments;
+                sBeamNodes = 0:lBeam:obj.link.L;
+                [g_cm, termNodes] = obj.link.tendonActuation.getNodeData( ...
                     sBeamNodes);
 
                 for iC = 1:nCables
@@ -147,7 +147,7 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
                         g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
                     end
 
-                    obj.tendonVis(iC) = elara.visualization.elasticBeam( g_c, ...
+                    obj.tendonVisualization(iC) = elara.visualization.ElasticBeam( g_c, ...
                         "edgeAlpha", 0, ...
                         "FaceAlpha", 0, ...
                         "DrawEdges", false, ...
@@ -157,8 +157,8 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
                         "interpolateBeam", true, ...
                         "Color", colorsTendons(iC,:), ...
                         "Height", 0.003, "Width", 0.003, ...
-                        "ShowFrames", false, ...
-                        "Visible", obj.ShowTendons...
+                        "showFrames", false, ...
+                        "Visible", obj.showTendons...
                         );
                 end
             end
@@ -167,19 +167,19 @@ classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
     %% Update methods for property changes
     methods(Access = private)
         function obj = onColorChanged(obj)
-            obj.cSysJ.AxisColors        = repmat(obj.Color.', [3,1]);
-            obj.cSysTCP.AxisColors      = repmat(obj.Color.', [3,1]);            
-            obj.flexLinkJointPlot.Color = obj.Color;
-            obj.jointPatch.FaceColor    = obj.Color;
-            obj.jointPatch.EdgeColor    = obj.Color;
-            obj.beamVis.Color           = obj.Color;
+            obj.coordSysJ.AxisColors        = repmat(obj.Color.', [3,1]);
+            obj.coordSysTCP.AxisColors      = repmat(obj.Color.', [3,1]);            
+            obj.flexibleLinkJointPlot.Color = obj.Color;
+            obj.jointPatch.FaceColor        = obj.Color;
+            obj.jointPatch.EdgeColor        = obj.Color;
+            obj.beamVisualization.Color     = obj.Color;
         end
         function obj = onNameChanged(obj)
         end
         function obj = onShowJointChanged(obj)
         end
         function obj = onShowTCPFrameChanged(obj)
-            obj.cSysTCP.Visible = obj.linkDef.hasTCP && obj.ShowTCPFrame;
+            obj.coordSysTCP.Visible = obj.link.hasTCP && obj.showTCPFrame;
         end
         function obj = onShowTendonsChanged(obj)
         end

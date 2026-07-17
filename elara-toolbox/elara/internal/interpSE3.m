@@ -83,10 +83,10 @@ function xi = computeDiscreteDeformations(g, l)
     end
 
     % Get number of discrete segments
-    nSeg = size(g, 3) - 1;
+    nSegments = size(g, 3) - 1;
 
-    xi = zeros(6, nSeg);
-    for iSeg = 1:nSeg
+    xi = zeros(6, nSegments);
+    for iSeg = 1:nSegments
         xi(:,iSeg) = cayInvSE3( g(:,:,iSeg) \ g(:,:,iSeg+1) ) / l(iSeg);
     end
 end

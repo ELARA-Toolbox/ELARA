@@ -20,7 +20,7 @@ function figHandles = plotBeamData(obj, opts)
             simData.x = squeeze(obj.results.g(1:3,4,frameIndices,:));
             simData.eta = obj.results.eta(:,frameIndices,:);
 
-            simData.xi = zeros(6,obj.links(iLink).nSeg, length(obj.results.tout));
+            simData.xi = zeros(6,obj.links(iLink).nSegments, length(obj.results.tout));
             for iStep = 1:length(obj.results.tout)
                 simData.xi(:,:,iStep) = obj.system.getLinkDeformations(obj.results.q(:,iStep), iLink);
             end
@@ -56,7 +56,7 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
 
     % Get nr. of nodes and segments
     nNodes = size(simData.R, 3);
-    nSeg   = size(simData.xi,2);
+    nSegments   = size(simData.xi,2);
 
     % Colors for plots with 3-dimensional data
     plotColors3 = lines(3);
@@ -70,13 +70,13 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
     nPlots = 5;
 
     if nNodes > nPlots
-        plotSegments = round(linspace(1, nSeg, nPlots));
+        plotSegments = round(linspace(1, nSegments, nPlots));
         plotNodes    = round(linspace(1, nNodes, nPlots));
 
         % Plot 2nd instead of first node since 1st node is always zero
         %plotNodes(1) = 2;
     else
-        plotSegments = 1:nSeg;
+        plotSegments = 1:nSegments;
         plotNodes = 1:nNodes;
     end
 
@@ -265,7 +265,7 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
 
     ax6 = gobjects(2, length(plotSegments));
 
-    %l = params.L / nSeg;
+    %l = params.L / nSegments;
 
     for iTile = 1:length(plotSegments)
 

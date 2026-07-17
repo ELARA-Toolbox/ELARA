@@ -17,7 +17,7 @@ function pars = beamParams_spring_steel_round(opts)
     end
 
     % Class Instance
-    pars = elara.BeamParams;
+    pars = elara.BeamParameters;
 
     % Struct with intermediate data
     baseParams = struct();
@@ -27,8 +27,8 @@ function pars = beamParams_spring_steel_round(opts)
     % Cross-Section geometry
     % H/W corresponds to the diameter of the circular cross-section
     radius = opts.radius;
-    pars.H = 2*radius;
-    pars.W = 2*radius;
+    pars.height = 2*radius;
+    pars.width = 2*radius;
     baseParams.A = radius^2 * pi;
 
     % Compute second moments of inertia (about x and y axes of the body-fixed
@@ -60,6 +60,6 @@ function pars = beamParams_spring_steel_round(opts)
     pars.d = 0;
 
     % Compute Generalized Stiffness and Inertia matrices
-    pars = pars.computeParams(baseParams);
+    pars = pars.computeParameters(baseParams);
     
 end

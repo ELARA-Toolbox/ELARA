@@ -49,7 +49,7 @@ classdef SystemSym < elara.internal.System
             arguments
                 MBSys  (1,1) elara.SystemSym
 
-                % Array of discrete deformations with size (6,nSeg) for
+                % Array of discrete deformations with size (6,nSegments) for
                 % the current link
                 xi      (:,:)
 
@@ -67,8 +67,8 @@ classdef SystemSym < elara.internal.System
                 linkFrames = (MBSys.linkFrameIndices(1, iLink)+1):MBSys.linkFrameIndices(2, iLink);
             end
 
-            nSeg = numel(linkFrames);
-            assert(size(xi,2) == nSeg, "Wrong dimensions for xi.")
+            nSegments = numel(linkFrames);
+            assert(size(xi,2) == nSegments, "Wrong dimensions for xi.")
 
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
@@ -122,7 +122,7 @@ classdef SystemSym < elara.internal.System
                 linkFrames = (MBSys.linkFrameIndices(1, iLink)+1):MBSys.linkFrameIndices(2, iLink);
             end
 
-            nSeg = numel(linkFrames);
+            nSegments = numel(linkFrames);
 
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
@@ -132,11 +132,11 @@ classdef SystemSym < elara.internal.System
                 );
 
             % Get coordinates and store them in array of size
-            % (nAllwd,nSeg)
+            % (nAllwd,nSegments)
             % Note: We assume all segments have same nr. of dof/allowed
             %       modes
             nAllwd = MBSys.frames.nDof(linkFrames(1));
-            psi = reshape(q(qIndices), nAllwd, nSeg);
+            psi = reshape(q(qIndices), nAllwd, nSegments);
 
             % Compute complete array of deformations
             % Note: We assume all segments have the same Ba matrix
@@ -300,7 +300,7 @@ classdef SystemSym < elara.internal.System
             end
             arguments (Output)
                 % Jacobian matrices with dimensions
-                % 6 x (nAllwd_1*nSeg1 + ... + nAllwdB*nSegB + nLinks) x nFrames
+                % 6 x (nAllwd_1*nSegments1 + ... + nAllwdB*nSegmentsB + nLinks) x nFrames
                 % where B is the nr. of flexible beams in the system
                 J       (:,:) cell
 

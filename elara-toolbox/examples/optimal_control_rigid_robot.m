@@ -78,7 +78,7 @@ OCP.nlpOpts.expand = false;
 %% Visualize reference configuration and target position
 
 [~, vis] = MBSim.visualizeSystemRefConf();
-coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
 drawWorkspace(OCP.workSpaceDef, "createFigure", false);
 
 
@@ -103,7 +103,7 @@ if COMPUTE_IG
 
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
-    coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+    CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
     drawWorkspace(OCP.workSpaceDef, "createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
@@ -232,12 +232,12 @@ MBSimCasadi.plotAll;
 
 % Draw snapshots
 fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-coordSysSE3(gTCPDes);
+CoordSysSE3(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
 
 % Animate results
 fig = init3Dplot('Name', "Animation Solution");
-coordSysSE3(gTCPDes);
+CoordSysSE3(gTCPDes);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 xlim([-0.2, 0.8]);
 ylim([-0.2, 0.3]);

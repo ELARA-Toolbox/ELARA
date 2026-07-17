@@ -21,7 +21,7 @@ MBSim.visualizeSystemRefConf;
 
 % Visualize desired configuration
 qDes = deg2rad([45,-45, 90,-80]);
-MBSim.visualizeSystemConfig([qDes, zeros(1,2*links(end).nSeg+1)]);
+MBSim.visualizeSystemConfig([qDes, zeros(1,2*links(end).nSegments+1)]);
 
 
 %% Specify Simulation Parameters

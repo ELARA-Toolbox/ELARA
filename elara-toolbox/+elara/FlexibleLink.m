@@ -16,7 +16,7 @@ classdef FlexibleLink < elara.internal.Link
         %% Flexible Link properties
 
         % Nr. of segments of the discretized beam
-        nSeg        (1,1) double {mustBeNonnegative}
+        nSegments        (1,1) double {mustBeNonnegative}
 
         % Length of the beam (from first to last cross section)
         L           (1,1) double {mustBeNonnegative}
@@ -26,9 +26,9 @@ classdef FlexibleLink < elara.internal.Link
         Bc          (6,:) double
 
         % Beam material
-        beamPars    (1,1) elara.BeamParams
+        beamParameters    (1,1) elara.BeamParameters
 
-        % Discrete deformations in the reference configuration (6,nSeg)
+        % Discrete deformations in the reference configuration (6,nSegments)
         xiRef       (6,:) double
 
         %%% For continuum manipulators
@@ -48,7 +48,7 @@ classdef FlexibleLink < elara.internal.Link
 
             %%% Validate properties of flexible links
             % Check for valid segment number
-            assert(link.nSeg > 1, ...
+            assert(link.nSegments > 1, ...
                 "Nr. of segments for flexible links must be specified and positive.");
 
             % Check that inertia tensor, mass and COM transf. arrays for

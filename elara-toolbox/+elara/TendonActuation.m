@@ -67,7 +67,7 @@ classdef TendonActuation
             assert(length(obj.x_td_funs) == length(obj.LTermination));
 
             % Vector with node arc length positions
-            %l = L / nSeg;
+            %l = L / nSegments;
             %sNodes = 0:l:L;
 
             nNodes  = length(sNodes);

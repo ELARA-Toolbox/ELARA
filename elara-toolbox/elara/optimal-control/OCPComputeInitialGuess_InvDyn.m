@@ -133,7 +133,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
         title("Initial Configuration")
         MBSim.visualizeSystemConfig(qF, "figureName", "Vis. Final Config");
         title("Final Configuration")
-        coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+        CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
 
 
         % Plot generated trajectory

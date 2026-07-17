@@ -1,4 +1,4 @@
-classdef coordSysSE3 < handle
+classdef CoordSysSE3 < handle
     %% Visualization of a 3D (cartesian) coordinate frame
     % with the pose by a SE3 matrix
     %
@@ -37,7 +37,7 @@ classdef coordSysSE3 < handle
     end
     %% Main methods
     methods
-        function obj = coordSysSE3(g, options)
+        function obj = CoordSysSE3(g, options)
             % Construct coordinate system
             arguments
                 % SE3 matrix that defines the system's pose

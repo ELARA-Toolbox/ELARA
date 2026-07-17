@@ -2,7 +2,7 @@ function link = systemDef_continuum_manipulator(opts)
     %% Define MBS System: One-link continuum manipulator
     arguments
         opts.d      (6,1) double = ones(6,1)*5e-3;
-        opts.nSeg   (1,1) uint8  = 5;
+        opts.nSegments   (1,1) uint8  = 5;
     end
 
     link =  elara.FlexibleLink;
@@ -12,14 +12,14 @@ function link = systemDef_continuum_manipulator(opts)
     link.parentLink   = 0;
     link.isCantilever = true;
     link.jointIsActuated = false;
-    link.nSeg         = opts.nSeg;
+    link.nSegments         = opts.nSegments;
     link.L            = 0.7;
     link.g_J_B        = eye(4);
     link.Ba = [ eye(3); zeros(3)];
     link.Bc = [ zeros(3); eye(3)];
-    link.xiRef = repmat([0;0;0;0;0;1], [1,link.nSeg]);
-    link.beamPars   = beamParams_spring_steel_round("radius", 1e-3);
-    link.beamPars.d = opts.d;
+    link.xiRef = repmat([0;0;0;0;0;1], [1,link.nSegments]);
+    link.beamParameters   = beamParams_spring_steel_round("radius", 1e-3);
+    link.beamParameters.d = opts.d;
 
     %% Add external masses
     % For spacer disks / end effector / payload
@@ -39,9 +39,9 @@ function link = systemDef_continuum_manipulator(opts)
     Mgen_b_cs = blkdiag(J_b, eye(3)*m_b);
 
     % Add to simPars
-    link.g_a = repmat(eye(4), [1,1,link.nSeg+1]);
-    link.m_a = zeros(link.nSeg+1,1);
-    link.M_a = zeros(6,6,link.nSeg+1);
+    link.g_a = repmat(eye(4), [1,1,link.nSegments+1]);
+    link.m_a = zeros(link.nSegments+1,1);
+    link.M_a = zeros(6,6,link.nSegments+1);
 
     link.m_a(end)     = m_b;
     link.M_a(:,:,end) = Mgen_b_cs;

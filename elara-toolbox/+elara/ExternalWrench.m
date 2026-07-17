@@ -1,4 +1,4 @@
-classdef ExternalWrenchDefinition
+classdef ExternalWrench
     %% Class that defines the external wrenches in a multibody simulation
     % that act on the system
     %
@@ -24,15 +24,11 @@ classdef ExternalWrenchDefinition
 
         % Maximum wrench applied; scaled based on type and current time
         % dimensions: 6,nFrames,nWrenchDefinitions
-        wrench               (6,:,:) double
+        maximumWrench               (6,:,:) double
     end
 
     methods
-        function obj = ExternalWrenchDefinition()
-            % No special constructor necessary
-        end
-
-        function obj = addWrench(obj, startTime, endTime, interpolationType, wrench)
+        function obj = addWrench(obj, startTime, endTime, interpolationType, maximumWrench)
             %% Add a wrench definition to the existing definitions
             arguments
                 obj
@@ -44,18 +40,18 @@ classdef ExternalWrenchDefinition
                 % Type of interpolation (1-6)
                 interpolationType    (1,1)   double
                 % Maximum wrench applied. Scaled based on type and current time
-                wrench               (6,:) double
+                maximumWrench               (6,:) double
             end
             obj.startTime(end+1)         = startTime;
             obj.endTime(end+1)           = endTime;
             obj.interpolationType(end+1) = interpolationType;
-            if isempty(obj.wrench)
-                obj.wrench = wrench;
+            if isempty(obj.maximumWrench)
+                obj.maximumWrench = maximumWrench;
             else
-                obj.wrench = cat(3, obj.wrench, wrench);
+                obj.maximumWrench = cat(3, obj.maximumWrench, maximumWrench);
             end
         end
-        function f_frame = getCurrentWrench(extWrenchDefinition, nFrames, t)
+        function f_frame = getCurrentWrench(externalWrench, nFrames, t)
             %% Compute external frame wrenches for current time
             %
             % Maximilian Herrmann
@@ -65,7 +61,7 @@ classdef ExternalWrenchDefinition
             % Technical University of Munich
             arguments (Input)
                 % Object defining the external wrenches
-                extWrenchDefinition (1,1) elara.ExternalWrenchDefinition
+                externalWrench (1,1) elara.ExternalWrench
 
                 % Nr. of frames
                 nFrames             (1,1) double
@@ -79,20 +75,20 @@ classdef ExternalWrenchDefinition
                 f_frame             (6,:) double
             end
 
-            nDefinitions = length(extWrenchDefinition.startTime);
+            nDefinitions = length(externalWrench.startTime);
 
             assert(...
-                (length(extWrenchDefinition.endTime) == nDefinitions) && ...
-                (length(extWrenchDefinition.interpolationType) == nDefinitions) && ...
-                (size(extWrenchDefinition.wrench,3) == nDefinitions), ...
+                (length(externalWrench.endTime) == nDefinitions) && ...
+                (length(externalWrench.interpolationType) == nDefinitions) && ...
+                (size(externalWrench.maximumWrench,3) == nDefinitions), ...
                 'Dimensions for wrench definition doe not match.');
 
             f_frame = zeros(6,nFrames);
 
             for iDef = 1:nDefinitions
-                t_start = extWrenchDefinition.startTime(iDef);
-                t_end = extWrenchDefinition.endTime(iDef);
-                interpType = extWrenchDefinition.interpolationType(iDef);
+                t_start = externalWrench.startTime(iDef);
+                t_end = externalWrench.endTime(iDef);
+                interpType = externalWrench.interpolationType(iDef);
 
                 if t_start > t && interpType ~= 6
                     continue
@@ -125,7 +121,7 @@ classdef ExternalWrenchDefinition
                         scalingFactor = 0;
                 end
 
-                f_frame = f_frame + scalingFactor * extWrenchDefinition.wrench(:,:,iDef);
+                f_frame = f_frame + scalingFactor * externalWrench.maximumWrench(:,:,iDef);
             end
         end
     end

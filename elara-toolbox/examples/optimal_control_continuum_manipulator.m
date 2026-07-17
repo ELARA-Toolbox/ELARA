@@ -18,7 +18,7 @@ COMPUTE_IG = 1;
 
 %% Define System
 
-links = systemDef_continuum_manipulator("nSeg", 4);
+links = systemDef_continuum_manipulator("nSegments", 4);
 
 MBSim = elara.Simulation(links, "displayInfo", false);
 
@@ -76,7 +76,7 @@ OCP.nlpOpts.expand = false;
 %% Visualize reference configuration and target position
 
 [~, vis] = MBSim.visualizeSystemRefConf();
-coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
 drawWorkspace(OCP.workSpaceDef, "createFigure", false);
 
 %% Compute Initial Guess
@@ -92,7 +92,7 @@ if COMPUTE_IG
 
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
-    coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+    CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
     drawWorkspace(OCP.workSpaceDef, "createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
@@ -184,14 +184,14 @@ MBSimCasadi.plotAll;
 
 % Draw snapshots
 fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-coordSysSE3(gTCPDes);
+CoordSysSE3(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
 TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 % Animate results
 fig = init3Dplot('Name', "Animation Solution");
-coordSysSE3(gTCPDes);
+CoordSysSE3(gTCPDes);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 
 %% End script

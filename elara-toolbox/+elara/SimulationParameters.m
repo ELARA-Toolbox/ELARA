@@ -46,9 +46,9 @@ classdef SimulationParameters
         % See elara.ExternalWrenchDefinition class for details.
 
         % Definition of body-fixed ext. wrenches
-        externalWrench_b (1,1) elara.ExternalWrenchDefinition
+        externalWrench_b (1,1) elara.ExternalWrench
 
         % Definition of spatial ext. wrenches
-        externalWrench_s (1,1) elara.ExternalWrenchDefinition
+        externalWrench_s (1,1) elara.ExternalWrench
     end
 end

@@ -84,10 +84,10 @@ function sys = assembleSystem(links, sys)
             % system
             if isempty(linkGraph.predecessors(iLink)) && sys.isCantilever
                 % First node and cantilever -> add one less node
-                nFrames = links(iLink).nSeg;
+                nFrames = links(iLink).nSegments;
             else
                 % Regular beam
-                nFrames = links(iLink).nSeg + 1;
+                nFrames = links(iLink).nSegments + 1;
             end
         end
 
@@ -242,22 +242,22 @@ function sys = assembleSystem(links, sys)
             end
 
             % Segment length for the current beam
-            l = links(iLink).L / links(iLink).nSeg;
+            l = links(iLink).L / links(iLink).nSegments;
 
             for iFrm = 1:nNodes
                 iCurFrame = linkFrames(iFrm);
                 iCurNode = nodeIndices(iFrm);
 
                 if isempty(links(iLink).M_a)
-                    MGen(:,:,iCurFrame)          = l*factors(iCurNode)*links(iLink).beamPars.Mgen;
-                    sys.frames.m(iCurFrame) = l*factors(iCurNode)*links(iLink).beamPars.m;
+                    MGen(:,:,iCurFrame)          = l*factors(iCurNode)*links(iLink).beamParameters.Mgen;
+                    sys.frames.m(iCurFrame) = l*factors(iCurNode)*links(iLink).beamParameters.m;
                 else
                     MGen(:,:,iCurFrame) = ...
                         + links(iLink).M_a(:,:,iCurNode) ...
-                        + l*factors(iCurNode)*links(iLink).beamPars.Mgen;
+                        + l*factors(iCurNode)*links(iLink).beamParameters.Mgen;
                     sys.frames.m(iCurFrame) = ...
                         + links(iLink).m_a(iCurNode) ...
-                        + l*factors(iCurNode)*links(iLink).beamPars.m;
+                        + l*factors(iCurNode)*links(iLink).beamParameters.m;
                     sys.frames.m_a(iCurFrame)     = links(iLink).m_a(iCurNode);
                     sys.frames.g_a(:,:,iCurFrame) = links(iLink).g_a(:,:,iCurNode);
                     sys.frames.x_a(:,iCurFrame)   = links(iLink).g_a(1:3,4,iCurNode);
@@ -302,7 +302,7 @@ function sys = assembleSystem(links, sys)
                 %%% Flexible joint
 
                 % Joint kinematics
-                l  = links(iCurLink).L / links(iCurLink).nSeg;
+                l  = links(iCurLink).L / links(iCurLink).nSegments;
                 Ba = links(iCurLink).Ba;
                 if ~(links(iCurLink).parentLink) && sys.isCantilever
                     segNrLocal = iFrm - sys.linkFrameIndices(1,iCurLink) + 1;
@@ -315,8 +315,8 @@ function sys = assembleSystem(links, sys)
                 sys.frames.xiC(:,iFrm) = links(iCurLink).Bc * links(iCurLink).Bc.' * links(iCurLink).xiRef(:,segNrLocal);
 
                 % Stiffness and dissipation
-                sys.cSys(frameQIndices) = l * Ba.' * diag(links(iCurLink).beamPars.Cgen);
-                sys.dSys(frameQIndices) = l * Ba.' * links(iCurLink).beamPars.d;
+                sys.cSys(frameQIndices) = l * Ba.' * diag(links(iCurLink).beamParameters.Cgen);
+                sys.dSys(frameQIndices) = l * Ba.' * links(iCurLink).beamParameters.d;
                 sys.qRef(frameQIndices) = Ba.' * links(iCurLink).xiRef(:,segNrLocal);
             otherwise
                 error("Invalid joint type specified.");
@@ -390,7 +390,7 @@ function sys = assembleSystem(links, sys)
             % Get cable actuation data for current link
             [g_m, termNodes] = links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
 
-            % Get local node nr. from iN = 0, ... , nSeg
+            % Get local node nr. from iN = 0, ... , nSegments
             if ~(links(iCurLink).parentLink) && sys.isCantilever
                 nodeIndexLocal = iFrm - sys.linkFrameIndices(1,iCurLink) + 2;
             else

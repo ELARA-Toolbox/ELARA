@@ -221,13 +221,13 @@ classdef Simulation
                     "ShowTendons", false ...
                     );
 
-                for iLink = 1:length(vis.linkVis)
+                for iLink = 1:length(vis.linkVisualization)
                     % Set colors of all links
-                    vis.linkVis(iLink).Color = snapShotColors(iStep, :);
+                    vis.linkVisualization(iLink).Color = snapShotColors(iStep, :);
 
                     % Disable labels of TCP frame
-                    vis.linkVis(iLink).cSysTCP.DrawLabels = false;
-                    vis.linkVis(iLink).cSysTCP.Visible = false;
+                    vis.linkVisualization(iLink).coordSysTCP.DrawLabels = false;
+                    vis.linkVisualization(iLink).coordSysTCP.Visible = false;
                 end
             end
 
