@@ -74,10 +74,10 @@ classdef MBSimIntegratorODEDirectFunctionBased < MBSimIntegratorODE
 
             if useMex
                 simRes = getSimResFromStateTrajectory_mex(MBSim.MBSys, tout, ...
-                    xout(1:MBSim.MBSys.nDoF,:), xout((MBSim.MBSys.nDoF+1):end,:));
+                    xout(:,1:MBSim.MBSys.nDoF).', xout(:,(MBSim.MBSys.nDoF+1):end).');
             else
                 simRes = getSimResFromStateTrajectory(MBSim.MBSys, tout, ...
-                    xout(1:MBSim.MBSys.nDoF,:), xout((MBSim.MBSys.nDoF+1):end,:));
+                    xout(:,1:MBSim.MBSys.nDoF).', xout(:,(MBSim.MBSys.nDoF+1):end).');
             end
 
             tFullODE = toc;
