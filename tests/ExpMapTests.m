@@ -1,5 +1,6 @@
 % Unit tests for the Exponential map functions
 %
+%
 % Maximilian Herrmann
 % Chair of Automatic Control
 % TUM School of Engineering and Design
@@ -7,6 +8,10 @@
 
 % Test tolerance
 tol = 1e-12;
+
+% Make randomized test inputs reproducible
+rng default;
+
 
 %% Exponential map SO3 / Test 1
 omega = rand(3,1);

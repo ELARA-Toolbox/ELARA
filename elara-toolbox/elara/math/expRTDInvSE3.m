@@ -34,14 +34,10 @@ function T = expRTDInvSE3( eta )
     % Check if we have non-zero rotation
     if phi
 
-        % Rotation axis n
-        n = om / phi;
-
         % Compute auxiliary terms
         % Note: The arguments for sinc are divided by pi since we need the
         % *unnormalized* sinc function, but MATLAB sinc() is the normalized
         % version.
-        alpha = sinc(phi/pi);
         beta  = sinc(phi/2/pi)^2;
         gamma = cos(phi/2) / sinc(phi/2/pi);
 
@@ -65,6 +61,6 @@ function T = expRTDInvSE3( eta )
             DdexpInv,   dexpInv
             ];
     else
-        T = eye(6);
+        T = [eye(3), zeros(3); -0.5*skewSO3(v), eye(3)];
     end
 end
