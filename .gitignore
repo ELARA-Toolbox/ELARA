@@ -1,3 +1,9 @@
+# build folder
+elara-toolbox/build/**
+
+# Exclude directory placeholders
+!elara-toolbox/build/.gitkeep
+
 # Autosave files
 *.asv
 *.m~
