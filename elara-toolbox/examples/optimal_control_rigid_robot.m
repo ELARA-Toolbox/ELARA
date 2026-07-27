@@ -9,8 +9,8 @@
 clear
 close all
 
-% Add example system folder if it's not on the path
-% addpath("exampleSystems");
+% Make sure example system folder is on the path
+addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "exampleSystems"));
 
 %% Script settings
 

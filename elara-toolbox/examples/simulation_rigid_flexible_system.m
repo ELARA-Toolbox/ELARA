@@ -7,8 +7,9 @@
 
 clear
 close all
-addpath("exampleSystems");
 
+% Make sure example system folder is on the path
+addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "exampleSystems"));
 
 %% Define System
 
