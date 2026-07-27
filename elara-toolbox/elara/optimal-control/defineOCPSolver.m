@@ -22,12 +22,12 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     % Check end time and time step and display warning if the time step is
     % not an even divisor of the end time (important for simulation studies)
     if rem(OCP.tF, OCP.h*OCP.nSteps)
-        warning("OCP time step (h=%.3e) not an even divisor of the end time (%.3f)!", OCP.h, OCP.tEnd);
+        warning("OCP time step (h=%.3e) is not an even divisor of the end time (%.3f)!", OCP.h, OCP.tEnd);
     end
 
     % Verify that the TCP is defined for the system
     if ~OCP.system.indexTCPFrame
-        warning("No TCP frame defined in the elara.internal.System object. Using last frame as the TCP frame.")
+        warning("No TCP frame defined in the ELARA System object. Using last system frame as the TCP frame.")
         indexTCPFrame = OCP.system.nFrames;
     else
         indexTCPFrame = OCP.system.indexTCPFrame;
