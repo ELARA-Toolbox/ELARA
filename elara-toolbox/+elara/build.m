@@ -15,13 +15,10 @@ cfg.InlineBetweenUserFunctions = 'Always';
 cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = true;
 
-%% Compile functions
-
 % Get target path (build folder)
-thisFile = mfilename("fullpath");
-buildFolder = fileparts(thisFile);
-toolboxRoot = fileparts(buildFolder);
-targetDir = fullfile(toolboxRoot, "build");
+targetDir = fullfile(elara.internal.getToolboxRootFolder, "build");
+
+%% Compile functions
 
 fprintf("Compiling MEX functions...\n\n");
 
@@ -35,7 +32,9 @@ functionNames = [
     "computeSimResEnergies"
     ];
 
-parfor iFun = 1:numel(functionNames)
+for iFun = 1:numel(functionNames)
+    fprintf("Compiling function %d/%d (%s)...\n", ...
+        iFun, numel(functionNames), functionNames(iFun));
     codegen("-d", targetDir, "-o", ...
         fullfile(targetDir, functionNames(iFun) + "_mex"), ...
         "-config", cfg, functionNames(iFun));
