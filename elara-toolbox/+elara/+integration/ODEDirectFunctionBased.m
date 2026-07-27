@@ -74,10 +74,10 @@ classdef ODEDirectFunctionBased < elara.internal.IntegratorODE
 
             if useMex
                 simRes = getSimResFromStateTrajectory_mex(MBSim.system, tout, ...
-                    xout(1:MBSim.system.nDoF,:), xout((MBSim.system.nDoF+1):end,:));
+                    xout(:,1:MBSim.system.nDoF).', xout(:,(MBSim.system.nDoF+1):end).');
             else
                 simRes = getSimResFromStateTrajectory(MBSim.system, tout, ...
-                    xout(1:MBSim.system.nDoF,:), xout((MBSim.system.nDoF+1):end,:));
+                    xout(:,1:MBSim.system.nDoF).', xout(:,(MBSim.system.nDoF+1):end).');
             end
 
             tFullODE = toc;

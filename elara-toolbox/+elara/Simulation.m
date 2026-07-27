@@ -102,7 +102,12 @@ classdef Simulation
                 options.createFigure  (1,1) logical = true;
 
                 % Show inertial frame of the system?
-                options.ShowInertialFrame (1,1) logical = true;
+                options.ShowInertialFrame  (1,1) logical = true;
+
+                % Function handle for a color map used to specify link
+                % colors in the form colors = cmap(n), where n is the nr.
+                % of link
+                options.linkColorMap       (1,1) function_handle = @lines;
             end
             g = obj.system.computeFwdKin(q);
             if options.createFigure
@@ -116,7 +121,8 @@ classdef Simulation
                 fig = gcf;
             end
             vis = elara.visualization.SystemVisualization(obj.system, obj.links, g, ...
-                "ShowInertialFrame", options.ShowInertialFrame);
+                "ShowInertialFrame", options.ShowInertialFrame, ...
+                "linkColorMap", options.linkColorMap);
         end
 
         function MBVisAnim = animateSimResults(obj, opts)

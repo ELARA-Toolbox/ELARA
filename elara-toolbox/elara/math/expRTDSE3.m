@@ -64,6 +64,6 @@ function T = expRTDSE3( eta )
             Ddexp,   dexp
             ];
     else
-        T = eye(6);
+        T = [eye(3), zeros(3);  0.5*skewSO3(v), eye(3)];
     end
 end

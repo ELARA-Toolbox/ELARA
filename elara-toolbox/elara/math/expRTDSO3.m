@@ -40,6 +40,6 @@ function T = expRTDSO3( om )
             + beta / 2 * omH ...
             + (1 - alpha ) * skewSO3(n)^2;
     else
-        T = eye(6);
+        T = eye(3);
     end
 end
