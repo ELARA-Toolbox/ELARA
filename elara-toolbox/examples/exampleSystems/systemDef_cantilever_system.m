@@ -1,8 +1,7 @@
 function links = systemDef_cantilever_system
-    %% Define MBS System: Rigid-flexible MB system
+    %% Define MBS System: Rigid-flexible Multibody System
 
-    %% Link 1: Cantilever link
-
+    %% Link 1: Flexible cantilever link
     links(1) = elara.FlexibleLink;
 
     links(1).parentLink = 0;
@@ -18,7 +17,6 @@ function links = systemDef_cantilever_system
 
 
     %% Link 2: Rigid link
-
     links(2) = elara.RigidLink;
 
     links(2).parentLink = 1;
@@ -38,10 +36,10 @@ function links = systemDef_cantilever_system
 
     %% Link 3: Rigid link
 
-    % Transf. link 2 COM -> link 3 joint
+    % Transformation link 2 COM -> link 3 joint
     g_COM2_J3 = SE3Matrix(eye(3), [0,0,0.3]);
 
-    % Transf. link 3 joint -> link 3 COM
+    % Transformation link 3 joint -> link 3 COM
     g_J3_COM3 = SE3Matrix(eye(3), [0,0,0.3]);
 
     links(3) = elara.RigidLink;

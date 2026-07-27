@@ -1,6 +1,6 @@
 function pars = beamParams_spring_steel_round(opts)
     %% Beam parameters for spring steel rod with circular cross-section
-    % As identified in Semesterarbeit Tobias Farger (WS23/24, #563)
+    % As identified in the semester thesis from Tobias Farger (WS23/24, #563)
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

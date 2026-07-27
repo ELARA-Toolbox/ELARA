@@ -71,7 +71,7 @@ function link = systemDef_continuum_manipulator(opts)
     % Cell array of function handles; defines the individual cable paths
     link.tendonActuation.x_td_funs = {
         @(s)x_m_fun_straight(s,0.02, 0)
-        @(s)x_m_fun_straight(s,0.02, 120) 
+        @(s)x_m_fun_straight(s,0.02, 120)
         @(s)x_m_fun_straight(s,0.02, 240)
         @(s)x_m_fun_helical(s, 0.02, link.L)
         };
@@ -81,7 +81,7 @@ function link = systemDef_continuum_manipulator(opts)
 
     % Lengths at which the cables terminate along the link length
     link.tendonActuation.LTermination = [
-        link.L, link.L, link.L,link.L 
+        link.L, link.L, link.L,link.L
         ];
 
     %% Define TCP
