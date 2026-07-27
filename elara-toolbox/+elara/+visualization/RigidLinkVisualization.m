@@ -145,7 +145,7 @@ classdef RigidLinkVisualization < elara.internal.LinkVisualization
             obj.coordSysTCP.Visible = obj.link.hasTCP && obj.showTCPFrame;
         end
         function obj = onShowLinkFrameChanged(obj)
-            obj.cSysRef.Visible = obj.ShowLinkFrame;
+            obj.coordSysRef.Visible = obj.showLinkFrame;
         end
     end
 end
