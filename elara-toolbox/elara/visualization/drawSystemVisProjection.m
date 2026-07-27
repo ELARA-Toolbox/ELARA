@@ -35,26 +35,26 @@ function p = drawSystemVisProjection(vis, plane, planePos, opts)
             error("Plane not implemented");
     end
 
-    p = gobjects(length(vis.linkVis),1);
+    p = gobjects(length(vis.linkVisualization),1);
 
-    for iLink = 1:length(vis.linkVis)
-        if isa(vis.linkVis{iLink}, "elara.visualization.FlexibleLinkVisualization")
+    for iLink = 1:length(vis.linkVisualization)
+        if isa(vis.linkVisualization(iLink), "elara.visualization.FlexibleLinkVisualization")
             % Get 3D vertices of the beam edges
-            verts = vis.linkVis{iLink}.beamVis.beamPatch.Vertices();
+            verts = vis.linkVisualization(iLink).beamVisualization.beamPatch.Vertices();
 
             % Compute homogeneous points
             vertsH = [verts, ones(size(verts,1),1)];
 
-            Faces = vis.linkVis{iLink}.beamVis.beamPatch.Faces;
+            Faces = vis.linkVisualization(iLink).beamVisualization.beamPatch.Faces;
 
-        elseif isa(vis.linkVis{iLink}, "elara.visualization.RigidLinkVisualization")
+        elseif isa(vis.linkVisualization(iLink), "elara.visualization.RigidLinkVisualization")
             % Get vertices of the bounding box in 3D space by explictily
             % applying the transformations stored in the graphics objects
-            vertsH = (vis.linkVis{iLink}.transf.Matrix ....
-                * vis.linkVis{iLink}.transfBB.Matrix ...
-                * [vis.linkVis{iLink}.patchBB.Vertices, ones(8,1)].').';
+            vertsH = (vis.linkVisualization(iLink).configurationTransform.Matrix ....
+                * vis.linkVisualization(iLink).boundingBoxTransform.Matrix ...
+                * [vis.linkVisualization(iLink).boundingBoxPatch.Vertices, ones(8,1)].').';
 
-            Faces = vis.linkVis{iLink}.patchBB.Faces;
+            Faces = vis.linkVisualization(iLink).boundingBoxPatch.Faces;
         end
 
         % Project onto 2D plane
