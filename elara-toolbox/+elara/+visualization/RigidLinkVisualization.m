@@ -136,13 +136,16 @@ classdef RigidLinkVisualization < elara.internal.LinkVisualization
             obj.boundingBoxPatch.EdgeColor    = obj.Color;
         end
         function obj = onNameChanged(obj)
+            % TODO
         end
         function obj = onShowJointChanged(obj)
+            % TODO
         end
         function obj = onShowTCPFrameChanged(obj)
             obj.coordSysTCP.Visible = obj.link.hasTCP && obj.showTCPFrame;
         end
         function obj = onShowLinkFrameChanged(obj)
+            obj.cSysRef.Visible = obj.ShowLinkFrame;
         end
     end
 end

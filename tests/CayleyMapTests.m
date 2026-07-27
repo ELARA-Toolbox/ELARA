@@ -1,4 +1,4 @@
-% Unit tests for the Cayley functions
+% Unit tests for the Cayley-map functions
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
@@ -7,6 +7,9 @@
 
 % Test tolerance
 tol = 1e-12;
+
+% Make randomized test inputs reproducible
+rng default;
 
 
 %% Cayley map SO3 / Test 1

@@ -11,7 +11,7 @@ else
         "Please verify your installation.")
 end
 
-%% Check for compiled mexfiles
+%% Check for compiled mex files
 
 mexFileNames = [
     "integrateMBSDynamics_Broyden_mex"
