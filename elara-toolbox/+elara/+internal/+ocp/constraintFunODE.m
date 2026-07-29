@@ -77,7 +77,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
 
 
     % For spline input parameterization: Add input contraints
-    % Todo: Not nice to do it here; better would be in the solveOCP
+    % Todo: Not nice to do it here; better would be in the solve function
     % function, but there we don't have access to the decision variables
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))
         % Only enforce limits at the time nodes, not the stage values

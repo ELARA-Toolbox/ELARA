@@ -1,4 +1,4 @@
-function [x_sol, u_sol, sol, stats] = solveOCP(OCP, xInit, uInit, opts)
+function [x_sol, u_sol, sol, stats] = solve(OCP, xInit, uInit, opts)
     %% Solve an OCP with CasADi NLP solver
     %
     % Maximilian Herrmann
@@ -62,7 +62,7 @@ function [x_sol, u_sol, sol, stats] = solveOCP(OCP, xInit, uInit, opts)
         end
         if 0%~isempty(OCP.qF)
             % Final time constraint for q currently implemented as explicit
-            % constraint in solveOCP()
+            % constraint in the OCP solve function
             lb_q_nlp(:,end) = OCP.qF;
             ub_q_nlp(:,end) = OCP.qF;
         end

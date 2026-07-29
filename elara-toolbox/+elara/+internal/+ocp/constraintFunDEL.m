@@ -114,7 +114,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
 
 
     % For spline input parameterization: Add input contraints
-    % Todo: Not nice to do it here; better would be in the solveOCP
+    % Todo: Not nice to do it here; better would be in the solve function
     % function, but there we don't have access to the decision variables
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))
         c_u = u(1:end-1);

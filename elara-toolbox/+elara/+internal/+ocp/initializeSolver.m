@@ -1,4 +1,4 @@
-function [NLPSolver, constrDef] = initializeOCPSolver(OCP, opts)
+function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     %% Define an OCP with CasADi NLP solver
     %
     % Maximilian Herrmann
@@ -121,10 +121,10 @@ function [NLPSolver, constrDef] = initializeOCPSolver(OCP, opts)
     tic;
 
     if OCP.discretization.type == "varint"
-        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.ocp.constraintFunDEL(OCP, x_C, u_C, ...
+        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.internal.ocp.constraintFunDEL(OCP, x_C, u_C, ...
             "useCasadiStepFunctions", opts.useCasadiStepFunctions);
     else
-        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.ocp.constraintFunODE(OCP, x_C, u_C);
+        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.internal.ocp.constraintFunODE(OCP, x_C, u_C);
     end
     g_F = g{end};
 

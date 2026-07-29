@@ -144,7 +144,7 @@ classdef Problem
                 % Draw debug plots (constraint Jacobian etc.)?
                 opts.showDebugPlots (1,1) logical = false;
             end
-            [obj.NLPSolver, obj.constrDef] = elara.internal.initializeOCPSolver(obj, ...
+            [obj.NLPSolver, obj.constrDef] = elara.internal.ocp.initializeSolver(obj, ...
                 "showDebugPlots", opts.showDebugPlots, ...
                 "useCasadiStepFunctions", opts.useCasadiStepFunctions);
 
@@ -167,7 +167,7 @@ classdef Problem
                 "Cannot start solver: NLP solver not initizalized. Call initSolver() first.");
 
             % Solve problem
-            [x_sol, u_sol_z, sol, stats] = elara.internal.solveOCP(obj, xInit, uInit, ...
+            [x_sol, u_sol_z, sol, stats] = elara.internal.ocp.solve(obj, xInit, uInit, ...
                 "solWarmStart", opts.solWarmStart);
         end
         function fh = plotConstraintResiduals(obj, q, u, opts)
