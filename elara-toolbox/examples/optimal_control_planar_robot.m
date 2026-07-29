@@ -127,7 +127,7 @@ if COMPUTE_IG
     end
     OCP.workspace.visualize("createFigure", false);
 
-    fh_IG = plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess");
+    fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess");
 
     % Animate results
     if ANIMATE_IG
@@ -197,7 +197,7 @@ end
 
 % Plot solution data
 OCP_ODE.plotConstraintResiduals(x_sol, u_sol_z, "figureName", "Constr. Res. Solution");
-plotOCPqu(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
+elara.ocp.plot.coordinatesInputs(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
 %% Define DEL OCP Solver
 
@@ -229,7 +229,7 @@ else
     u_sol = u_sol_z;
 end
 
-plotOCPqu(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
+elara.ocp.plot.coordinatesInputs(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
 
 if ~OCP_DEL.useSplineInputs
     disp("Objective function components solution:")

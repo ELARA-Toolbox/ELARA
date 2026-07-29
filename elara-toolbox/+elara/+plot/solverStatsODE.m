@@ -1,4 +1,4 @@
-function figHandle = plotSolverStatsODE(simRes, opts)
+function figHandle = solverStatsODE(simRes, opts)
     %% Plot statistics about for ODE solver
     arguments
         simRes          (1,1) elara.SimulationResults

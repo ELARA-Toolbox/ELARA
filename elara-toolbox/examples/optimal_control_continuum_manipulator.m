@@ -100,7 +100,7 @@ else
     u_init = repmat(OCP.u0, [1, OCP.nSteps+1]);
 end
 
-plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
+elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
 
 gOptStatic = MBSim.system.computeFwdKin(qOptStatic);
 g_TCP = gOptStatic(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
@@ -161,7 +161,7 @@ else
     u_sol = u_sol_z;
 end
 
-plotOCPqu(OCP, q_sol, u_sol, "plotDerivatives", true, "FDOrder", 2);
+elara.ocp.plot.coordinatesInputs(OCP, q_sol, u_sol, "plotDerivatives", true, "FDOrder", 2);
 
 if ~OCP.useSplineInputs
     disp("Objective function components solution:")

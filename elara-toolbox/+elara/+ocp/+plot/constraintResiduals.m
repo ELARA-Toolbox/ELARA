@@ -1,4 +1,4 @@
-function fh = plotOCPConstraintResiduals(OCP, q, u, opts)
+function fh = constraintResiduals(OCP, q, u, opts)
     %% Plot OCP Constraints residuals for a given trajectory
     arguments
         OCP         (1,1) elara.ocp.Problem

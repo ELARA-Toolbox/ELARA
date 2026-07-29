@@ -1,4 +1,4 @@
-function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(system)
+function [fhLinkGraph, fhFrameGraph] = systemGraphs(system)
     %% Plot Topology Graphs of a MB System
 
     arguments

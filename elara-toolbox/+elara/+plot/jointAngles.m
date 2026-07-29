@@ -1,4 +1,4 @@
-function figHandle = plotJointAngles(MBSys, simRes, opts)
+function figHandle = jointAngles(MBSys, simRes, opts)
     arguments
         MBSys           (1,1) elara.abstract.System
         simRes          (1,1) elara.SimulationResults

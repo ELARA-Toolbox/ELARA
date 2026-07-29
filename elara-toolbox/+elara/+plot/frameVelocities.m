@@ -1,4 +1,4 @@
-function figHandles = plotFrameVelocities(obj, opts)
+function figHandles = frameVelocities(obj, opts)
     %% Plot Frame Velocities
     % Plot velocities of:
     %  * all rigid links (reference/COM frame)

@@ -63,7 +63,7 @@ MBSimVI = MBSimVI.simulateSystem;
 % Plotting
 MBSimVI.plotAll;
 MBSimVI = MBSimVI.computeEnergies;
-plotEnergies(MBSimVI.results);
+elara.plot.energies(MBSimVI.results);
 
 % Animate results
 MBSimVI.animateSimResults("figureName", "AnimVI");
@@ -86,7 +86,7 @@ MBSimODE = MBSimODE.simulateSystem;
 % Plotting
 MBSimODE.plotAll;
 MBSimODE = MBSimODE.computeEnergies;
-plotEnergies(MBSimODE.results);
+elara.plot.energies(MBSimODE.results);
 
 % Animate results
 MBSimODE.animateSimResults("figureName", "AnimODE");

@@ -181,7 +181,7 @@ classdef Problem
 
                 opts.figureName (1,1) string = "Constraint Residuals";
             end
-            fh = plotOCPConstraintResiduals(obj, q, u, ...
+            fh = elara.ocp.plot.constraintResiduals(obj, q, u, ...
                 "figureName", opts.figureName);
         end
         function obj = clearSolver(obj)

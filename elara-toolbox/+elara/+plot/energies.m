@@ -1,4 +1,4 @@
-function plotEnergies(simRes, opts)
+function energies(simRes, opts)
     arguments
         simRes          (1,1) elara.SimulationResults
         opts.nameStr (1,1) string = ""

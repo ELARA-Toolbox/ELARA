@@ -1,4 +1,4 @@
-function fh = plotFramePositions(obj, opts)
+function fh = framePositions(obj, opts)
     %% Plot Frame Positions
     % Plot positions of:
     %  * all rigid links (reference/COM frame)

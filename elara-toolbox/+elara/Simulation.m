@@ -51,7 +51,7 @@ classdef Simulation
                 if options.displayInfo
                     printLinkProperties(links);
                     printFrameProperties(obj.system);
-                    plotSystemGraphs(obj.system);
+                    elara.plot.systemGraphs(obj.system);
                     printInputProperties(obj.system);
                 end
             end
@@ -293,17 +293,17 @@ classdef Simulation
                 nameStr = strcat(obj.Name, ": ");
             end
             % Various plots
-            fhs(1) = plotJointAngles(obj.system, obj.results, "nameStr", nameStr);
-            fhs(2) = plotFramePositions(obj, "nameStr", nameStr);
-            fhs_vel = plotFrameVelocities(obj, "nameStr", nameStr);
-            fhs_beam = plotBeamData(obj, "nameStr", nameStr);
+            fhs(1) = elara.plot.jointAngles(obj.system, obj.results, "nameStr", nameStr);
+            fhs(2) = elara.plot.framePositions(obj, "nameStr", nameStr);
+            fhs_vel = elara.plot.frameVelocities(obj, "nameStr", nameStr);
+            fhs_beam = elara.plot.beamData(obj, "nameStr", nameStr);
 
             % Solver stats: Depend on the chosen solver
             switch obj.integrator.type
                 case "varint"
-                    fh_stats = plotSolverStatsVI(obj.results, "nameStr", nameStr);
+                    fh_stats = elara.plot.solverStatsVI(obj.results, "nameStr", nameStr);
                 case "ode"
-                    fh_stats = plotSolverStatsODE(obj.results, "nameStr", nameStr);
+                    fh_stats = elara.plot.solverStatsODE(obj.results, "nameStr", nameStr);
                 otherwise
                     error("Solver not implemented.");
             end

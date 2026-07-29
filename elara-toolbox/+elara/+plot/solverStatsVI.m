@@ -1,4 +1,4 @@
-function figHandle = plotSolverStatsVI(simRes, opts)
+function figHandle = solverStatsVI(simRes, opts)
     %% Plot statistics about the implicit solver
     arguments
         simRes          (1,1) elara.SimulationResults

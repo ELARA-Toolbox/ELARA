@@ -1,4 +1,4 @@
-function figHandles = plotBeamData(sim, opts)
+function figHandles = beamData(sim, opts)
     %% Plot Beam node / segment data
 
     %% TODO: Rewrite this entire function! (28.01.25)

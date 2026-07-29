@@ -1,4 +1,4 @@
-function fhs = plotOCPqu(OCP, q, u, opts)
+function fhs = coordinatesInputs(OCP, q, u, opts)
     %% Plot coordinates and inputs of a solved OCP
     %
     % Maximilian Herrmann

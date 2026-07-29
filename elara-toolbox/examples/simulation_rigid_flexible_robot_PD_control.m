@@ -84,7 +84,7 @@ MBSimODE = MBSimODE.simulateSystem;
 % Plotting
 MBSimODE.plotAll;
 MBSimODE = MBSimODE.computeEnergies;
-plotEnergies(MBSimODE.results);
+elara.plot.energies(MBSimODE.results);
 
 % Animate results
 MBSimODE.animateSimResults("figureName", "AnimODE");

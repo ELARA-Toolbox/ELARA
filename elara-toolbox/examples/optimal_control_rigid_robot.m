@@ -92,14 +92,14 @@ OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(MBSim, OCP);
 [q_init_ode, qd_init_ode, u_init_ode] = elara.ocp.computeInitialGuessInvDyn( ...
     MBSim, OCP, "invDynMethod", "ODE", "createDebugPlots", false);
 
-fh_IG_ode = plotOCPqu(OCP, q_init_ode, u_init_ode, "figureName", "Initial Guess ODE", "plotDerivatives", true);
+fh_IG_ode = elara.ocp.plot.coordinatesInputs(OCP, q_init_ode, u_init_ode, "figureName", "Initial Guess ODE", "plotDerivatives", true);
 
 % Compute Initial Guess
 if COMPUTE_IG
     [q_init, qd_init, u_init, MBSimIG] = elara.ocp.computeInitialGuessInvDyn( ...
         MBSim, OCP, "createDebugPlots", false, "invDynMethod", "ODE");
 
-    fh_IG = plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
+    fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
 
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
@@ -164,10 +164,10 @@ if 1
 
     % Plot solution data
     OCP_ODE.plotConstraintResiduals(x_sol, u_sol_z, "figureName", "Constr. Res. Solution");
-    plotOCPqu(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
+    elara.ocp.plot.coordinatesInputs(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
     if OCP.runningCostActive(5)
-        fh = plotOCPTCPTraj(MBSim, OCP, q_sol);
+        fh = elara.ocp.plot.TCPTrajectory(MBSim, OCP, q_sol);
     end
 end
 
@@ -204,7 +204,7 @@ else
     u_sol = u_sol_z;
 end
 
-plotOCPqu(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
+elara.ocp.plot.coordinatesInputs(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
 
 if ~OCP.useSplineInputs
     disp("Objective function components solution:")
@@ -214,7 +214,7 @@ if ~OCP.useSplineInputs
 end
 
 if OCP.runningCostActive(5)
-    fh = plotOCPTCPTraj(MBSim, OCP, q_sol);
+    fh = elara.ocp.plot.TCPTrajectory(MBSim, OCP, q_sol);
 end
 
 %% Post-process etc.

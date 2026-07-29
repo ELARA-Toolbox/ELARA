@@ -1,4 +1,4 @@
-function fh = plotOCPTCPTraj(MBSim, OCP, q_sol)
+function fh = TCPTrajectory(MBSim, OCP, q_sol)
     %% Plot TCP Trajectory of OCP Solution
     %   Detailed explanation goes here
     arguments (Input)
