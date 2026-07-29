@@ -135,7 +135,7 @@ end
 %% Define DEL OCP Solver
 
 OCP.Name = "VI";
-OCP.discretization = elara.ocp.IntegratorVI;
+OCP.discretization = elara.ocp.DiscretizationVI;
 
 OCP = OCP.initSolver("useCasadiStepFunctions", true);
 

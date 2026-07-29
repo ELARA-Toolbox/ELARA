@@ -1,5 +1,5 @@
-classdef IntegratorImplicitMidpoint < elara.abstract.OCPDiscretizationODE
-    %% Class defining an Implicit Midpoint Rule Integrator for an OCP
+classdef DiscretizationImplicitMidpoint < elara.abstract.OCPDiscretizationODE
+    %% Class defining an implicit-midpoint discretization for an OCP
     properties(SetAccess=private)
         timeStepStageValues = 0.5;
     end

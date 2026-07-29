@@ -173,7 +173,7 @@ end
 %% Define ODE OCP Solver
 
 OCP_ODE = OCP;
-OCP_ODE.discretization = elara.ocp.IntegratorRK("RK4");
+OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK4");
 OCP_ODE.Name = "RK4";
 
 qDotInit = diff2ndOrder(q_init, OCP_ODE.h);
@@ -203,7 +203,7 @@ plotOCPqu(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
 OCP_DEL = OCP;
 OCP_DEL.Name ="VI";
-OCP_DEL.discretization = elara.ocp.IntegratorVI;
+OCP_DEL.discretization = elara.ocp.DiscretizationVI;
 
 OCP_DEL = OCP_DEL.initSolver("useCasadiStepFunctions", true);
 

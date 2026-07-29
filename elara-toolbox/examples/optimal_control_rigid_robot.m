@@ -143,7 +143,7 @@ end
 
 if 1
     OCP_ODE = OCP;
-    OCP_ODE.discretization = elara.ocp.IntegratorRK("RK2");
+    OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK2");
     OCP_ODE.Name = "RK2";
     x_init = [q_init; qd_init];
 
@@ -175,7 +175,7 @@ end
 %% Define DEL OCP Solver
 OCP_DEL = OCP;
 OCP_DEL.Name ="VI";
-OCP_DEL.discretization = elara.ocp.IntegratorVI;
+OCP_DEL.discretization = elara.ocp.DiscretizationVI;
 
 OCP_DEL = OCP_DEL.initSolver;
 

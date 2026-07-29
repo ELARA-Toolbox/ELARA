@@ -1,5 +1,5 @@
-classdef IntegratorVI < elara.abstract.OCPDiscretization
-    %% Class defining a Variational Integrator for OCP discretization
+classdef DiscretizationVI < elara.abstract.OCPDiscretization
+    %% Class defining a variational discretization for an OCP
     properties
         % Generalized trapezoidal rule factor of the interior integration
         % steps (only relevant for dissipation)

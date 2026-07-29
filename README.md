@@ -65,7 +65,7 @@ The optimal-control examples demonstrate:
 
 1. Creating an `elara.ocp.Problem`.
 2. Using `MBSystemSym(links)` for CasADi-compatible dynamics.
-3. Selecting an OCP discretization such as `elara.ocp.IntegratorVI` or `elara.ocp.IntegratorRK`.
+3. Selecting an OCP discretization such as `elara.ocp.DiscretizationVI` or `elara.ocp.DiscretizationRK`.
 4. Initializing the NLP solver with `initSolver`.
 5. Solving with `solve` and post-processing the resulting trajectory.
 
@@ -165,9 +165,9 @@ Otherwise, choose `h` according to the requirements on integration error and run
 
 Available OCP discretizations include:
 
-- `elara.ocp.IntegratorVI`: First/second-order variational/discrete Euler-Lagrange transcription (DMOC)
-- `elara.ocp.IntegratorRK`: Second-/fourth-order ODE transcription with explicit Runge-Kutta integration (`RK2` and `RK4`)
-- `elara.ocp.IntegratorImplicitMidpoint`: Second-order ODE transcription with implicit midpoint rule
+- `elara.ocp.DiscretizationVI`: First/second-order variational/discrete Euler-Lagrange transcription (DMOC)
+- `elara.ocp.DiscretizationRK`: Second-/fourth-order ODE transcription with explicit Runge-Kutta integration (`RK2` and `RK4`)
+- `elara.ocp.DiscretizationImplicitMidpoint`: Second-order ODE transcription with implicit midpoint rule
 
 The helper `elara.ocp.computeInitialGuessInvDyn` can generate inverse-dynamics-based initial guesses for trajectory-optimization problems.
 

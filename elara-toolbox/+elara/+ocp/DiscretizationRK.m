@@ -1,5 +1,5 @@
-classdef IntegratorRK < elara.abstract.OCPDiscretizationODE
-    %% Class defining an RK Integrator for an OCP
+classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
+    %% Class defining an RK discretization for an OCP
     properties
         method (1,1) string {mustBeMember(method, ["RK2", "RK4"])} = "RK4";
     end
@@ -7,7 +7,7 @@ classdef IntegratorRK < elara.abstract.OCPDiscretizationODE
         timeStepStageValues
     end
     methods
-        function obj = IntegratorRK(method)
+        function obj = DiscretizationRK(method)
             arguments
                 method (1,1) string {mustBeMember(method, ["RK2", "RK4"])} = "RK4";
             end

@@ -111,7 +111,7 @@ classdef Problem
 
         %% Discretization
         % Object defining the OCP discretization
-        discretization (1,1) elara.abstract.OCPDiscretization = elara.ocp.IntegratorVI;
+        discretization (1,1) elara.abstract.OCPDiscretization = elara.ocp.DiscretizationVI;
     end
     properties(SetAccess=protected)
         %% "Internal" properties for solver definition
