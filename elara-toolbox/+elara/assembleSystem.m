@@ -291,7 +291,7 @@ function sys = assembleSystem(links, sys)
                 %%% Screw joint
 
                 % Joint kinematics
-                sys.frames.X(:,iFrm)       = lAdSE3Inv(links(iCurLink).g_J_B) * links(iCurLink).jointAxis;
+                sys.frames.X(:,iFrm)       = elara.SE3.AdInv(links(iCurLink).g_J_B) * links(iCurLink).jointAxis;
                 sys.frames.g_ref(:,:,iFrm) = links(iCurLink).g_ref;
 
                 % Stiffness and dissipation

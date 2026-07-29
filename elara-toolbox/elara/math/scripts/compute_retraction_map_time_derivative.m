@@ -15,7 +15,7 @@ syms xi_t(t) xi xi_dot [6,1]
 
 
 %% Derivative
-RTD = cayRTDSE3(xi_t)
+RTD = elara.SE3.dcay(xi_t)
 RTD_dt = diff(RTD, t)
 RTD_dt = subs(RTD_dt, diff(xi_t,t), xi_dot);
 RTD_dt = subs(RTD_dt, xi_t, xi)
@@ -24,17 +24,17 @@ RTD_dt = subs(RTD_dt, xi_t, xi)
 % Save as file
 matlabFunction( ...
     RTD_dt, ...
-    'File', '../cayRTDSE3dt', ...
+    'File', '../../../+elara/+SE3/dcayDerivative', ...
     'Vars', {xi, xi_dot} ...
     );
 
-cayRTDSE3dt(rand(6,1), rand(6,1))
-timeit(@() cayRTDSE3dt(rand(6,1), rand(6,1)))
+elara.SE3.dcayDerivative(rand(6,1), rand(6,1))
+timeit(@() elara.SE3.dcayDerivative(rand(6,1), rand(6,1)))
 
 
 %% Inverse
 
-RTDInv = cayRTDInvSE3(xi_t)
+RTDInv = elara.SE3.dcayInv(xi_t)
 RTDInv_dt = diff(RTDInv, t)
 RTDInv_dt = subs(RTDInv_dt, diff(xi_t,t), xi_dot);
 RTDInv_dt = subs(RTDInv_dt, xi_t, xi)
@@ -44,11 +44,11 @@ RTDInv_dt = subs(RTDInv_dt, xi_t, xi)
 % Save as file
 matlabFunction( ...
     RTDInv_dt, ...
-    'File', '../cayRTDInvSE3dt', ...
+    'File', '../../../+elara/+SE3/dcayInvDerivative', ...
     'Vars', {xi, xi_dot} ...
     );
-cayRTDInvSE3dt(rand(6,1), rand(6,1))
-timeit(@() cayRTDInvSE3dt(rand(6,1), rand(6,1)))
+elara.SE3.dcayInvDerivative(rand(6,1), rand(6,1))
+timeit(@() elara.SE3.dcayInvDerivative(rand(6,1), rand(6,1)))
 
 
 

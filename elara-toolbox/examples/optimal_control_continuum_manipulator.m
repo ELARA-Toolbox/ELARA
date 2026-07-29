@@ -76,7 +76,7 @@ OCP.nlpOptions.expand = false;
 %% Visualize reference configuration and target position
 
 [~, vis] = MBSim.visualizeSystemRefConf();
-CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 OCP.workspace.visualize("createFigure", false);
 
 %% Compute Initial Guess
@@ -92,7 +92,7 @@ if COMPUTE_IG
 
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
-    CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+    CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
     OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
@@ -172,7 +172,7 @@ end
 %% Post-process etc.
 
 disp('Post processing...')
-gTCPDes = SE3Matrix(eye(3), OCP.x_TCP_F);
+gTCPDes = elara.SE3.matrix(eye(3), OCP.x_TCP_F);
 
 q_dot_Sol = diff(q_sol, 1, 2) / OCP.h;
 q_dot_Sol_full = [q_dot_Sol, nan(OCP.system.nDoF,1)];

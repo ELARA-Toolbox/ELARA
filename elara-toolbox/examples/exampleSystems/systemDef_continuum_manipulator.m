@@ -86,5 +86,5 @@ function link = systemDef_continuum_manipulator(opts)
 
     %% Define TCP
     link.hasTCP = true;
-    link.g_B_TCP = SE3Matrix(eye(3), [0,0,0.01]);
+    link.g_B_TCP = elara.SE3.matrix(eye(3), [0,0,0.01]);
 end

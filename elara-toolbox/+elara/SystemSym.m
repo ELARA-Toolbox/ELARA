@@ -155,26 +155,26 @@ classdef SystemSym < elara.abstract.System
             end
             arguments (Output)
                 % SE3 Matrices with relative configurations between body frames
-                g_rel   (:,1) SE3
+                g_rel   (:,1) elara.SE3.Element
             end
             f = getSE3Functions(q);
-            g_rel = createArray(MBSys.nFrames,1, "SE3");
+            g_rel = createArray(MBSys.nFrames,1, "elara.SE3.Element");
             for iFrm = 1:MBSys.nFrames
                 indices = double(MBSys.frames.qIndices(1,iFrm):MBSys.frames.qIndices(2,iFrm)); % Casadi fix: Explicitly convert to double; unit16 integers do not work as indices
                 qi = q(indices);
                 switch MBSys.frames.jointType(iFrm)
                     case 1
                         %%% Screw joint
-                        g_screw = SE3;
-                        g_ref = SE3(MBSys.frames.g_ref(1:3,1:3,iFrm),MBSys.frames.g_ref(1:3,4,iFrm));
-                        [g_screw.R, g_screw.x] = f.expSE3Screw(MBSys.frames.X(1:3,iFrm), MBSys.frames.X(4:6,iFrm), qi);
+                        g_screw = elara.SE3.Element;
+                        g_ref = elara.SE3.Element(MBSys.frames.g_ref(1:3,1:3,iFrm),MBSys.frames.g_ref(1:3,4,iFrm));
+                        [g_screw.R, g_screw.x] = f.SE3.expScrew(MBSys.frames.X(1:3,iFrm), MBSys.frames.X(4:6,iFrm), qi);
                         g_rel(iFrm) = g_ref * g_screw;
                     case 2
                         %%% Flexible joint
                         Ba = MBSys.frames.Ba(iFrm);
                         om = (Ba(1:3,:) * qi + MBSys.frames.xiC(1:3,iFrm));
                         v  = (Ba(4:6,:) * qi + MBSys.frames.xiC(4:6,iFrm));
-                        [g_rel(iFrm).R, g_rel(iFrm).x] = f.caySE3(om*MBSys.frames.l(iFrm), v*MBSys.frames.l(iFrm));
+                        [g_rel(iFrm).R, g_rel(iFrm).x] = f.SE3.cay(om*MBSys.frames.l(iFrm), v*MBSys.frames.l(iFrm));
                     otherwise
                         error("Invalid joint type specified.");
                 end
@@ -191,19 +191,19 @@ classdef SystemSym < elara.abstract.System
 
                 % Array of relative configurations between body frames
                 % dimensions (nFrames, 1)
-                g_rel   (:,1) SE3
+                g_rel   (:,1) elara.SE3.Element
             end
             arguments (Output)
                 % Absolute configurations of all body frames
-                g       (:,1) SE3
+                g       (:,1) elara.SE3.Element
             end
 
             %% Compute kinematics
             % Kinematics without Joint Frames, Section 2.3 (CoM Frames = Body Frames only)
-            g = createArray(MBSys.nFrames,1, "SE3");
+            g = createArray(MBSys.nFrames,1, "elara.SE3.Element");
 
             % First frame
-            g0 = SE3(MBSys.g0(1:3,1:3), MBSys.g0(1:3,4));
+            g0 = elara.SE3.Element(MBSys.g0(1:3,1:3), MBSys.g0(1:3,4));
             g(1) = g0 * g_rel(1);
 
             % Other frames
@@ -224,11 +224,11 @@ classdef SystemSym < elara.abstract.System
             end
             arguments (Output)
                 % Absolute configurations of all body frames
-                g       (:,1) SE3
+                g       (:,1) elara.SE3.Element
 
                 % Relative configurations between body frames (joint
                 % transformations)
-                g_rel   (:,1) SE3
+                g_rel   (:,1) elara.SE3.Element
             end
             % Compute relative joint transformations
             g_rel = MBSys.computeJointTransformations(q);
@@ -248,7 +248,7 @@ classdef SystemSym < elara.abstract.System
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
-                g_rel   (:,1) SE3
+                g_rel   (:,1) elara.SE3.Element
             end
             arguments (Output)
                 % Cell array with dimensions nFrames x nFrames
@@ -275,14 +275,14 @@ classdef SystemSym < elara.abstract.System
                                 om = (Ba(1:3,:) * q(qIndices) + MBSys.frames.xiC(1:3,iFrm))*MBSys.frames.l(iFrm);
                                 v  = (Ba(4:6,:) * q(qIndices) + MBSys.frames.xiC(4:6,iFrm))*MBSys.frames.l(iFrm);
                                 J{iFrm, iBlock} = ...
-                                    MBSys.frames.l(iFrm) * f.cayRTDSE3( -om, -v ) ...
+                                    MBSys.frames.l(iFrm) * f.SE3.dcay(-om, -v) ...
                                     * MBSys.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
                         if iBlock < iFrm && ismember(iBlock, MBSys.frames.ancestors(:,iFrm))
-                            J{iFrm, iBlock} = f.lAdSE3Inv( g_rel(iFrm).R, g_rel(iFrm).x ) ...
+                            J{iFrm, iBlock} = f.SE3.AdInv(g_rel(iFrm).R, g_rel(iFrm).x) ...
                                 * J{MBSys.frames.parent(iFrm),iBlock};
                         end
                     end
@@ -305,7 +305,7 @@ classdef SystemSym < elara.abstract.System
                 J       (:,:) cell
 
                 % Relative configurations between body frames
-                g_rel   (:,1) SE3
+                g_rel   (:,1) elara.SE3.Element
             end
             % Compute relative joint transformations
             g_rel = MBSys.computeJointTransformations(q);
@@ -332,7 +332,7 @@ classdef SystemSym < elara.abstract.System
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
-                g_rel       (:,1) SE3
+                g_rel       (:,1) elara.SE3.Element
             end
             arguments (Output)
                 % Derivative of Jacobian matrix
@@ -344,7 +344,7 @@ classdef SystemSym < elara.abstract.System
             %%%% omega, v
 
             f = getSE3Functions(q);
-            fcayRTDSE3dt = getCayRTDSE3dtFunction(q);
+            fSE3DcayDerivative = getCayRTDSE3dtFunction(q);
 
             % Array holding all Jacobians
             J_dot = cell(MBSys.nFrames, MBSys.nFrames);
@@ -358,7 +358,7 @@ classdef SystemSym < elara.abstract.System
                         switch MBSys.frames.jointType(iFrm)
                             case 1
                                 J_dot{iFrm, iBlock} = ...
-                                    f.sadSE3(eta{iBlock}(1:3),eta{iBlock}(4:6)) * MBSys.frames.X(:,iFrm);
+                                    f.SE3.smallAd(eta{iBlock}(1:3),eta{iBlock}(4:6)) * MBSys.frames.X(:,iFrm);
                             case 2
                                 l = MBSys.frames.l(iFrm);
                                 Ba = MBSys.frames.Ba(iFrm);
@@ -368,15 +368,15 @@ classdef SystemSym < elara.abstract.System
                                 v_dot  = Ba(4:6,:) * q_dot(qIndices)*l;
 
                                 J_dot{iFrm, iBlock} = l * ( ...
-                                    f.sadSE3(eta{iBlock}(1:3), eta{iBlock}(4:6)) * f.cayRTDSE3(-om, -v) ...
-                                    + fcayRTDSE3dt(-om, -v, -om_dot, -v_dot ) ...
+                                    f.SE3.smallAd(eta{iBlock}(1:3), eta{iBlock}(4:6)) * f.SE3.dcay(-om, -v) ...
+                                    + fSE3DcayDerivative(-om, -v, -om_dot, -v_dot ) ...
                                     ) * MBSys.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
                         if ismember(iBlock, MBSys.frames.ancestors(:,iFrm))
-                            J_dot{iFrm, iBlock} = f.lAdSE3Inv( g_rel(iFrm).R, g_rel(iFrm).x ) ...
+                            J_dot{iFrm, iBlock} = f.SE3.AdInv(g_rel(iFrm).R, g_rel(iFrm).x) ...
                                 * J_dot{MBSys.frames.parent(iFrm),iBlock};
                         end
                     end
@@ -415,7 +415,7 @@ classdef SystemSym < elara.abstract.System
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
-                g_rel       (:,1) SE3
+                g_rel       (:,1) elara.SE3.Element
             end
             f = getSE3Functions(g_rel(1).R);
 
@@ -442,13 +442,13 @@ classdef SystemSym < elara.abstract.System
                                 % Discrete deformation gradient cable routing
                                 % Tangent vector is in elements 4:6
                                 g_rel_c = g_cm_i1 \ g_rel(iFrm) * g_cm_i2;
-                                [~, v_c] = f.cayInvSE3( g_rel_c.R, g_rel_c.x );
+                                [~, v_c] = f.SE3.cayInv(g_rel_c.R, g_rel_c.x);
                                 v_c = v_c / l;
 
                                 % Compute matrix entry
                                 B{iFrm, uIndices(iC)} = ...
                                     -l / norm(v_c) * MBSys.frames.Ba(iFrm).' * [
-                                    1/2 * ( skewSO3( g_cm_i1.x + g_cm_i2.x ) ) * v_c;
+                                    1/2 * ( elara.SO3.skew( g_cm_i1.x + g_cm_i2.x ) ) * v_c;
                                     v_c
                                     ];
                             end
@@ -536,10 +536,10 @@ classdef SystemSym < elara.abstract.System
                 MBSys         (1,1) elara.SystemSym
 
                 % Cell array of relative configurations at time step k
-                g_rel_k     (:,1) SE3
+                g_rel_k     (:,1) elara.SE3.Element
 
                 % Cell array of relative configurations at time step k+1
-                g_rel_k1    (:,1) SE3
+                g_rel_k1    (:,1) elara.SE3.Element
 
                 % Time step
                 h           (1,1)
@@ -556,13 +556,13 @@ classdef SystemSym < elara.abstract.System
             % Recursive computation for all frames
             for iFrm = 1:MBSys.nFrames
                 if iFrm > 1
-                    g_eta = SE3;
-                    [g_eta.R, g_eta.x] = f.caySE3(h*eta_k{iFrm-1, 1}, h*eta_k{iFrm-1, 2});
+                    g_eta = elara.SE3.Element;
+                    [g_eta.R, g_eta.x] = f.SE3.cay(h*eta_k{iFrm-1, 1}, h*eta_k{iFrm-1, 2});
                     g_rel = g_rel_k(iFrm) \ g_eta * g_rel_k1(iFrm);
                 else
                     g_rel = g_rel_k(iFrm) \ g_rel_k1(iFrm);
                 end
-                [om_k, v_k] = f.cayInvSE3(g_rel.R, g_rel.x);
+                [om_k, v_k] = f.SE3.cayInv(g_rel.R, g_rel.x);
                 eta_k{iFrm,1} = om_k / h;
                 eta_k{iFrm,2} = v_k / h;
             end

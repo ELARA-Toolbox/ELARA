@@ -98,7 +98,7 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
                 end
             end
             e_y = cross(e_x, e_z);
-            g_J1_xy = SE3Matrix([e_x, e_y, -e_z], zeros(3,1));
+            g_J1_xy = elara.SE3.matrix([e_x, e_y, -e_z], zeros(3,1));
 
             % Compute circle points in local xy plane
             r = 0.05;

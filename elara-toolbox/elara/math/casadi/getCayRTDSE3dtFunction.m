@@ -1,5 +1,5 @@
 function f = getCayRTDSE3dtFunction(q)
-    %% Get function handles for cayRTDSE3dt Function
+    %% Get function handles for the SE(3) dcay derivative
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -17,7 +17,7 @@ function f = getCayRTDSE3dtFunction(q)
     persistent fun
 
     if isa(q, "double")
-        f = @cayRTDSE3dt_sep;
+        f = @dcayDerivativeSeparate;
     else
         if isempty(fun)
 
@@ -26,17 +26,16 @@ function f = getCayRTDSE3dtFunction(q)
             vS      = casadi.MX.sym('v', 3, 1);
             vS2     = casadi.MX.sym('v2', 3, 1);
 
-            T = cayRTDSE3dt_sep(omS, vS, omS2, vS2);
+            T = dcayDerivativeSeparate(omS, vS, omS2, vS2);
 
-            fun = casadi.Function('cayRTDSE3dt', ...
+            fun = casadi.Function('SE3_dcayDerivative', ...
                 {omS, vS, omS2, vS2}, {T});
         end
         f = fun;
     end
 
-    function RTD_dt = cayRTDSE3dt_sep(om, v, om_dot, v_dot)
-        % Wrapper for cayRTDSE3dt for separate omega, v inputs (instead of
-        % xi)
-        RTD_dt = cayRTDSE3dt([om; v], [om_dot; v_dot]);
+    function RTD_dt = dcayDerivativeSeparate(om, v, om_dot, v_dot)
+        % Wrapper for elara.SE3.dcayDerivative with separate omega and v inputs
+        RTD_dt = elara.SE3.dcayDerivative([om; v], [om_dot; v_dot]);
     end
 end

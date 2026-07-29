@@ -13,8 +13,8 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
         q_1     (:,1)
 
         % Externally computed kinematic quantities
-        g_0     (:,1) SE3
-        g_rel_0 (:,1) SE3
+        g_0     (:,1) elara.SE3.Element
+        g_rel_0 (:,1) elara.SE3.Element
         eta_0   (:,2) cell
 
         % Vector of inputs at initial time t0 (1,nInputs)
@@ -59,7 +59,7 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
         f_frame_b_i = ...
             - h*(1-a)*f_frame_0_b_ext(:, iFrm) ...
             + h*(1-a)*f_frame_0_b{iFrm} ...
-            + f.cayRTDInvSE3(eta_0{iFrm,1}*h, eta_0{iFrm,2}*h).' * MBSys.frames.MGen{iFrm} * vertcat(eta_0{iFrm,:});
+            + f.SE3.dcayInv(eta_0{iFrm,1}*h, eta_0{iFrm,2}*h).' * MBSys.frames.MGen{iFrm} * vertcat(eta_0{iFrm,:});
         % Distribute node terms to coordinates
         for iB = 1:MBSys.nFrames
             if ~isempty(J_0{iFrm,iB})

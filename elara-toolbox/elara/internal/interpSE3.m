@@ -61,7 +61,7 @@ function gQuery = interpSE3(gInput, sInput, sQuery)
                 lRel = sQuery(iSQuery) - sInput(iNextNode-1);
 
                 % Compute configuration
-                gQuery(:,:,iSQuery,iStep) = g0*caySE3(lRel * xiStep(:,iNextNode-1));
+                gQuery(:,:,iSQuery,iStep) = g0*elara.SE3.cay(lRel * xiStep(:,iNextNode-1));
             end
         end
     end
@@ -87,6 +87,6 @@ function xi = computeDiscreteDeformations(g, l)
 
     xi = zeros(6, nSegments);
     for iSeg = 1:nSegments
-        xi(:,iSeg) = cayInvSE3( g(:,:,iSeg) \ g(:,:,iSeg+1) ) / l(iSeg);
+        xi(:,iSeg) = elara.SE3.cayInv( g(:,:,iSeg) \ g(:,:,iSeg+1) ) / l(iSeg);
     end
 end

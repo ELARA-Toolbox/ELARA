@@ -123,7 +123,7 @@ if COMPUTE_IG
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
     if ~isempty(OCP.x_TCP_F)
-        CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+        CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
     end
     OCP.workspace.visualize("createFigure", false);
 
@@ -133,7 +133,7 @@ if COMPUTE_IG
     if ANIMATE_IG
         fig = init3Dplot('Name', "Animation Initial Guess");
         if ~isempty(OCP.x_TCP_F)
-            CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
+            CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
         end
         OCP.workspace.visualize("createFigure", false);
         MBSimIG.animateSimResults("figure", fig);
@@ -239,7 +239,7 @@ end
 %% Post-process etc.
 
 disp('Post processing...')
-gTCPDes = SE3Matrix(eye(3), OCP_DEL.x_TCP_F);
+gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 
 [q_dot, ~] = diff2ndOrder(q_sol, OCP_DEL.h);
 

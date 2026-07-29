@@ -32,8 +32,8 @@ function links = systemDef_rigid_flexible_robot(opts)
     linkF.beamParameters   = beamParams_ASA_round("radius", 2.75e-3);
     linkF.beamParameters.d = opts.dBeam;
     linkF.jointAxis  = [1 0 0 0 0 0].';
-    linkF.g_ref = SE3Matrix([0, 0, 1; 0 1 0; -1, 0, 0], [lR(end)/2+0.05,0,0]);
-    linkF.g_J_B = SE3Matrix(eye(3), [0;0;0.1]);
+    linkF.g_ref = elara.SE3.matrix([0, 0, 1; 0 1 0; -1, 0, 0], [lR(end)/2+0.05,0,0]);
+    linkF.g_J_B = elara.SE3.matrix(eye(3), [0;0;0.1]);
     linkF.d     = opts.dJoints;
 
     % External masses for the beam: Mass for the joint and an end effector
@@ -64,7 +64,7 @@ function links = systemDef_rigid_flexible_robot(opts)
 
     % Add TCP definition
     linkF.hasTCP = true;
-    linkF.g_B_TCP = SE3Matrix(eye(3), [0,0,0]);
+    linkF.g_B_TCP = elara.SE3.matrix(eye(3), [0,0,0]);
 
 
     %% Assemble system links

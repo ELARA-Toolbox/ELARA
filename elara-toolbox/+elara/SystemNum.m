@@ -161,11 +161,11 @@ classdef SystemNum < elara.abstract.System
                 switch MBSys.frames.jointType(iFrm)
                     case 1
                         %%% Screw joint
-                        g_rel(:,:,iFrm) = MBSys.frames.g_ref(:,:,iFrm) * expSE3Screw(MBSys.frames.X(:,iFrm), qi);
+                        g_rel(:,:,iFrm) = MBSys.frames.g_ref(:,:,iFrm) * elara.SE3.expScrew(MBSys.frames.X(:,iFrm), qi);
                     case 2
                         %%% Flexible joint
                         xi = MBSys.frames.Ba(iFrm) * qi + MBSys.frames.xiC(:,iFrm);
-                        g_rel(:,:,iFrm) = caySE3(xi*MBSys.frames.l(iFrm));
+                        g_rel(:,:,iFrm) = elara.SE3.cay(xi*MBSys.frames.l(iFrm));
                     otherwise
                         error("Invalid joint type specified.");
                 end
@@ -262,14 +262,14 @@ classdef SystemNum < elara.abstract.System
                             case 2
                                 xi = MBSys.frames.Ba(iFrm) * q(qIndices) + MBSys.frames.xiC(:,iFrm);
                                 J(:,qIndices,iFrm) = ...
-                                    MBSys.frames.l(iFrm) * cayRTDSE3( -xi * MBSys.frames.l(iFrm) ) ...
+                                    MBSys.frames.l(iFrm) * elara.SE3.dcay( -xi * MBSys.frames.l(iFrm) ) ...
                                     * MBSys.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
                         if ii < iFrm && ismember(ii, MBSys.frames.ancestors(:,iFrm))
-                            J(:,qIndices,iFrm) = lAdSE3Inv( g_rel(:,:,iFrm) ) ...
+                            J(:,qIndices,iFrm) = elara.SE3.AdInv( g_rel(:,:,iFrm) ) ...
                                 * J(:,qIndices,MBSys.frames.parent(iFrm));
                         end
                     end
@@ -338,21 +338,21 @@ classdef SystemNum < elara.abstract.System
                         switch MBSys.frames.jointType(iFrm)
                             case 1
                                 J_dot(:,qIndices,iFrm) = ...
-                                    sadSE3(eta(:,ii)) * MBSys.frames.X(:,iFrm);
+                                    elara.SE3.smallAd(eta(:,ii)) * MBSys.frames.X(:,iFrm);
                             case 2
                                 xi     = MBSys.frames.Ba(iFrm) * q(qIndices) + MBSys.frames.xiC(:,iFrm);
                                 xi_dot = MBSys.frames.Ba(iFrm) * q_dot(qIndices);
                                 l = MBSys.frames.l(iFrm);
                                 J_dot(:,qIndices,iFrm) = l * ( ...
-                                    + sadSE3(eta(:,ii)) * cayRTDSE3(-xi*l) ...
-                                    + cayRTDSE3dt(-xi*l, -xi_dot*l ) ...
+                                    + elara.SE3.smallAd(eta(:,ii)) * elara.SE3.dcay(-xi*l) ...
+                                    + elara.SE3.dcayDerivative(-xi*l, -xi_dot*l ) ...
                                     ) * MBSys.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
                         if ismember(ii, MBSys.frames.ancestors(:,iFrm))
-                            J_dot(:,qIndices,iFrm) = lAdSE3Inv( g_rel(:,:,iFrm) ) ...
+                            J_dot(:,qIndices,iFrm) = elara.SE3.AdInv( g_rel(:,:,iFrm) ) ...
                                 * J_dot(:,qIndices,MBSys.frames.parent(iFrm));
                         end
                     end
@@ -415,7 +415,7 @@ classdef SystemNum < elara.abstract.System
 
                                 % Discrete deformation gradient cable routing
                                 % Tangent vector is in elements 4:6
-                                xi_c = cayInvSE3( g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2 ) / l;
+                                xi_c = elara.SE3.cayInv( g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2 ) / l;
 
                                 % Compute matrix entry
                                 b_i = MBSys.frames.Ba(iFrm).' * [
@@ -512,12 +512,12 @@ classdef SystemNum < elara.abstract.System
             % Recursive computation for all frames
             for iFrm = 1:MBSys.nFrames
                 if iFrm > 1
-                    eta_k(:,iFrm) = cayInvSE3( ...
-                        invSE3Matrix(g_rel_k(:,:,iFrm)) * caySE3(h*eta_k(:,iFrm-1)) * g_rel_k1(:,:,iFrm) ...
+                    eta_k(:,iFrm) = elara.SE3.cayInv( ...
+                        elara.SE3.invertMatrix(g_rel_k(:,:,iFrm)) * elara.SE3.cay(h*eta_k(:,iFrm-1)) * g_rel_k1(:,:,iFrm) ...
                         ) *hInv;
                 else
-                    eta_k(:,iFrm) = cayInvSE3( ...
-                        invSE3Matrix(g_rel_k(:,:,iFrm)) * g_rel_k1(:,:,iFrm) ) *hInv;
+                    eta_k(:,iFrm) = elara.SE3.cayInv( ...
+                        elara.SE3.invertMatrix(g_rel_k(:,:,iFrm)) * g_rel_k1(:,:,iFrm) ) *hInv;
                 end
             end
         end

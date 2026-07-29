@@ -212,6 +212,6 @@ function f_inertia_k = computeInertiaTerm(MBSys, eta_k0, h)
     % Compute the inertial term of the DEL equations
     f_inertia_k = zeros(6, MBSys.nFrames);
     for iFrm = 1:MBSys.nFrames
-        f_inertia_k(:, iFrm) = cayRTDInvSE3(-eta_k0(:,iFrm)*h).' * MBSys.frames.MGen(:,:,iFrm) * eta_k0(:,iFrm);
+        f_inertia_k(:, iFrm) = elara.SE3.dcayInv(-eta_k0(:,iFrm)*h).' * MBSys.frames.MGen(:,:,iFrm) * eta_k0(:,iFrm);
     end
 end

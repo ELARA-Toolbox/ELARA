@@ -18,10 +18,10 @@ function links = systemDef_planarNLinkPendulum(opts)
     l = 1;
 
     % Transformations from joint 1 -> joint 2 in each (serial) link
-    g_J1_J2  = SE3Matrix(eye(3), [l,0,0]);
+    g_J1_J2  = elara.SE3.matrix(eye(3), [l,0,0]);
 
     % Transformations from joint 1 -> COM in each (serial) link
-    g_J1_COM = SE3Matrix(eye(3), [l/2,0,0]);
+    g_J1_COM = elara.SE3.matrix(eye(3), [l/2,0,0]);
 
     % Transformations from COM -> joint 2
     g_COM_J2 = g_J1_COM \ g_J1_J2;

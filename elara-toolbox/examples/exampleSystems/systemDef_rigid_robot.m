@@ -24,18 +24,18 @@ function links = systemDef_rigid_robot(opts)
     % Constant transformations in the joints
     % (between adjacent joint frames)
     g_J_const(:,:,1) = eye(4);
-    g_J_const(:,:,2) = SE3Matrix([0, -1, 0; 0 0 -1; 1, 0, 0], zeros(3,1));
+    g_J_const(:,:,2) = elara.SE3.matrix([0, -1, 0; 0 0 -1; 1, 0, 0], zeros(3,1));
     g_J_const(:,:,3) = eye(4);
 
     % Transformations from joint 1 -> joint 2 in each (serial) link
-    g_J1_J2(:,:,1)  = SE3Matrix(eye(3), [0,0,l(1)]);
-    g_J1_J2(:,:,2)  = SE3Matrix(eye(3), [l(2),0,0]);
-    g_J1_J2(:,:,3)  = SE3Matrix(eye(3), [l(3),0,0]);
+    g_J1_J2(:,:,1)  = elara.SE3.matrix(eye(3), [0,0,l(1)]);
+    g_J1_J2(:,:,2)  = elara.SE3.matrix(eye(3), [l(2),0,0]);
+    g_J1_J2(:,:,3)  = elara.SE3.matrix(eye(3), [l(3),0,0]);
 
     % Transformations from joint 1 -> COM in each (serial) link
-    g_J1_COM(:,:,1) = SE3Matrix(eye(3), [0,0,l(1)/2]);
-    g_J1_COM(:,:,2) = SE3Matrix(eye(3), [l(2)/2,0,0]);
-    g_J1_COM(:,:,3) = SE3Matrix(eye(3), [l(3)/2,0,0]);
+    g_J1_COM(:,:,1) = elara.SE3.matrix(eye(3), [0,0,l(1)/2]);
+    g_J1_COM(:,:,2) = elara.SE3.matrix(eye(3), [l(2)/2,0,0]);
+    g_J1_COM(:,:,3) = elara.SE3.matrix(eye(3), [l(3)/2,0,0]);
 
     % Transformations from COM -> joint 2
     g_COM_J2 = zeros(4,4,nLinks);
@@ -137,6 +137,6 @@ function links = systemDef_rigid_robot(opts)
 
     % Add TCP definition
     links(3).hasTCP = true;
-    links(3).g_B_TCP = SE3Matrix(eye(3), [l(3)/2;0;0]);
+    links(3).g_B_TCP = elara.SE3.matrix(eye(3), [l(3)/2;0;0]);
 
 end

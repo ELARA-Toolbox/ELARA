@@ -15,8 +15,8 @@ function DEL_res_N = DELResidualFinalStep_noKinematics( ...
         q_N      (:,1)
 
         % Externally computed kinematic quantities
-        g_N      (:,1) SE3
-        g_rel_N  (:,1) SE3
+        g_N      (:,1) elara.SE3.Element
+        g_rel_N  (:,1) elara.SE3.Element
         eta_N0   (:,2) cell
  
         % Vector of inputs at final time tF (1,nInputs)
@@ -63,7 +63,7 @@ function DEL_res_N = DELResidualFinalStep_noKinematics( ...
         f_frame_b_i = ...
             + h*a*f_frame_N_b_ext(:, iFrm) ...
             - h*a*f_frame_k_b{iFrm} ...
-            + f.cayRTDInvSE3(-eta_N0{iFrm,1}*h, -eta_N0{iFrm,2}*h).' * MBSys.frames.MGen{iFrm} * vertcat(eta_N0{iFrm,:});
+            + f.SE3.dcayInv(-eta_N0{iFrm,1}*h, -eta_N0{iFrm,2}*h).' * MBSys.frames.MGen{iFrm} * vertcat(eta_N0{iFrm,:});
 
         % Distribute frame terms to coordinates
         for iB = 1:MBSys.nFrames

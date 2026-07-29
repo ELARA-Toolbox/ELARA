@@ -32,17 +32,17 @@ function f = getSE3FunctionsCasadi
     xS      = casadi.SX.sym('x', 3, 1);
     xS2     = casadi.SX.sym('x2', 3, 1);
  
-    c3S     = casadi.SX.sym('c', 3, 1); % Only used for skewSO3 function
+    c3S     = casadi.SX.sym('c', 3, 1); % Only used for SO(3) skew function
 
-    %% skewSO3
-    f.skewSO3 = casadi.Function('skewSO3', ...
+    %% SO(3) skew
+    f.SO3.skew = casadi.Function('SO3_skew', ...
         {c3S}, {[ 0, -c3S(3), c3S(2); c3S(3), 0, -c3S(1); -c3S(2), c3S(1), 0]}, ...
         {'omega'}, {'omegaHat'}, funOpts);
 
-    omHS  = f.skewSO3(omS);
-    omHS2 = f.skewSO3(omS2);
-    vHS   = f.skewSO3(vS);
-    xHS   = f.skewSO3(xS);
+    omHS  = f.SO3.skew(omS);
+    omHS2 = f.SO3.skew(omS2);
+    vHS   = f.SO3.skew(vS);
+    xHS   = f.SO3.skew(xS);
 
 
     %% expSO3Screw
@@ -58,7 +58,7 @@ function f = getSE3FunctionsCasadi
     clear R
 
 
-    %% expSE3Screw
+    %% SE(3) screw exponential
     % Exponential map for SE(3) with constant screw axis
 
     % Formula (2.14), p. 28 in [MLS94]
@@ -67,83 +67,83 @@ function f = getSE3FunctionsCasadi
     % Formula (2.36), p. 42 in [MLS94]
     x = (eyeF(3) - R)*omHS2*vS2 + omS2*omS2.'*vS2*thetaS2;
 
-    f.expSE3Screw = casadi.Function('expSE3Screw', ...
+    f.SE3.expScrew = casadi.Function('SE3_expScrew', ...
         {omS2, vS2, thetaS2}, {R, x}, ...
         {'omega', 'v', 'theta'}, {'R', 'x'}, funOpts);
 
     clear R x
 
 
-    %% caySO3
+    %% SO(3) Cayley map
     % Cayley map for SO(3)
     R = eyeF(3) + 4 / (4 + omS.'*omS) * (omHS + ( omHS*omHS / 2 ));
-    f.caySO3 = casadi.Function('caySO3', ...
+    f.SO3.cay = casadi.Function('SO3_cay', ...
         {omS}, {R}, ...
         {'omega'}, {'R'}, funOpts);
 
     clear R
 
-    %% cayInvSO3
+    %% SO(3) inverse Cayley map
     % Inverse cayley map for SO(3)
     omegaH = 2 / (1 + trace(RS) ) * (RS - RS.');
     omega = [ omegaH(3,2); omegaH(1,3); omegaH(2,1) ];
-    f.cayInvSO3 = casadi.Function('cayInvSO3', ...
+    f.SO3.cayInv = casadi.Function('SO3_cayInv', ...
         {RS}, {omega}, ...
         {'R'}, {'omega'}, funOpts);
 
     clear omegaH omega
 
 
-    %% caySE3
+    %% SE(3) Cayley map
     % Cayley map for SE(3): cay : se(3) -> SE(3)
     % Source: [Dem+14, p.10], eq. 19
 
-    R = f.caySO3(omS2);
+    R = f.SO3.cay(omS2);
     x = ( 4 / (4 + omS2.'*omS2) ) * ( eyeF(3) + (1/2) * omHS2 + 1/4 * (omS2*omS2.') ) * vS2;
 
-    f.caySE3 = casadi.Function('caySE3', ...
+    f.SE3.cay = casadi.Function('SE3_cay', ...
         {omS2, vS2}, {R, x}, ...
         {'omega', 'v'}, {'R', 'x'}, funOpts);
 
     clear R x
 
-    %% cayInvSE3
+    %% SE(3) inverse Cayley map
     % Inverse cayley map for SE(3)
-    omega = f.cayInvSO3(RS2);
+    omega = f.SO3.cayInv(RS2);
     v  = 2 * ( (RS2 + eyeF(3)) \ xS2 );
 
-    f.cayInvSE3 = casadi.Function('cayInvSE3', ...
+    f.SE3.cayInv = casadi.Function('SE3_cayInv', ...
         {RS2, xS2}, {omega, v}, ...
         {'R', 'x'}, {'omega', 'v'}, funOpts);
 
     clear omega v
 
-    %% cayRTDSO3
+    %% SO(3) right-trivialized Cayley derivative
     % Right-Trivialized Derivative of the Cayley map for SO(3) in Matrix
     % form
     % Source: [KM11], eq. 31, [Dem+14] eq. 17
     T = 2 / (4 + omS.'*omS) * ( 2*eyeF(3) + omHS );
 
-    f.cayRTDSO3 = casadi.Function('cayRTDSO3', ...
+    f.SO3.dcay = casadi.Function('SO3_dcay', ...
         {omS}, {T}, ...
         {'omega'}, {'T'}, funOpts);
 
     clear T
 
-    %% cayRTDInvSO3
+    %% SO(3) inverse right-trivialized Cayley derivative
     % Inverse Right-Trivialized Derivative of the Cayley map for SO(3) in
     % matrix form
 
     TInv = eyeF(3) - ((1/2) * omHS) + ((1/4) * (omS * omS.') );
 
-    f.cayRTDInvSO3 = casadi.Function('cayRTDInvSO3', ...
+    f.SO3.dcayInv = casadi.Function('SO3_dcayInv', ...
         {omS}, {TInv}, ...
         {'omega'}, {'TInv'}, funOpts);
     
     clear TInv
 
 
-    %% cayRTDSE3
+    %% SE(3) right-trivialized Cayley derivative
     % Right-Trivialized Derivative of the Cayley map for SE(3) in Matrix
     % form
 
@@ -154,14 +154,14 @@ function f = getSE3FunctionsCasadi
         eyeF(3) + ( 1 / (4 + omS.'*omS) * ( 2*omHS + omHS^2 ) ) ...
         ];
 
-    f.cayRTDSE3 = casadi.Function('cayRTDSE3', ...
+    f.SE3.dcay = casadi.Function('SE3_dcay', ...
         {omS, vS}, {T}, ...
         {'omega', 'v'}, {'T'}, funOpts);
 
     clear T
 
 
-    %% cayRTDInvSE3
+    %% SE(3) inverse right-trivialized Cayley derivative
     % Inverse Right-Trivialized Derivative of the Cayley map for SE(3) in
     % matrix form
 
@@ -172,45 +172,45 @@ function f = getSE3FunctionsCasadi
         eyeF(3) - (1/2) * omHS ...
         ];
 
-    f.cayRTDInvSE3 = casadi.Function('cayRTDInvSE3', ...
+    f.SE3.dcayInv = casadi.Function('SE3_dcayInv', ...
         {omS, vS}, {TInv}, ...
         {'omega', 'v'}, {'TInv'}, funOpts);
     
     clear TInv
 
 
-    %% lAdSE3
+    %% SE(3) Ad
     % Ad operator in matrix form
     Ad = [
         RS,            zerosF(3,3);
         xHS*RS, RS;
         ];
-    f.lAdSE3 = casadi.Function('lAdSE3', ...
+    f.SE3.Ad = casadi.Function('SE3_Ad', ...
         {RS, xS}, {Ad}, ...
         {'R', 'x'}, {'Ad'}, funOpts);
 
     clear Ad
 
 
-    %% lAdSE3Inv
+    %% SE(3) inverse Ad
     % Inverse Ad operator in matrix form
     AdInv = [
         RS.',             zerosF(3,3);
         -RS.'*xHS, RS.'
         ];
-    f.lAdSE3Inv = casadi.Function('lAdSE3Inv', ...
+    f.SE3.AdInv = casadi.Function('SE3_AdInv', ...
         {RS, xS}, {AdInv}, ...
         {'R', 'x'}, {'AdInv'}, funOpts);
 
     clear AdInv
 
-    %% sadSE3
+    %% SE(3) small ad
     % (small) ad operator in matrix form
     sad = [
         omHS, zerosF(3,3);
         vHS,  omHS;
         ];
-   f.sadSE3 = casadi.Function('sadSE3', ...
+   f.SE3.smallAd = casadi.Function('SE3_smallAd', ...
         {omS, vS}, {sad}, ...
         {'omega', 'v'}, {'ad'}, funOpts);
 

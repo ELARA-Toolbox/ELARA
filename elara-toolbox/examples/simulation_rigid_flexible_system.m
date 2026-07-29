@@ -22,7 +22,7 @@ RRef0 = [
     0  1 0
     -1 0 0
     ];
-MBSim.system.g0 = SE3Matrix(RRef0, zeros(3,1));
+MBSim.system.g0 = elara.SE3.matrix(RRef0, zeros(3,1));
 
 % Visualize reference configuration
 MBSim.visualizeSystemRefConf;

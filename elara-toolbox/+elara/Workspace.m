@@ -82,7 +82,7 @@ classdef Workspace
                 ];
 
             % Transform into global frame
-            g = SE3Matrix(eul2rotm(eul), x);
+            g = elara.SE3.matrix(eul2rotm(eul), x);
             for iV = 1:size(verts,1)
                 v_i = g*[verts(iV,:).';1];
                 verts(iV,:) = v_i(1:3);

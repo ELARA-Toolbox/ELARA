@@ -57,7 +57,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
         opti.subject_to(u < OCP.uMax);
     end
     % TCP constraint
-    g_TCP = g(indexTCPFrame) * SE3(MBSys.g_B_TCP(1:3,1:3), MBSys.g_B_TCP(1:3,4));
+    g_TCP = g(indexTCPFrame) * elara.SE3.Element(MBSys.g_B_TCP(1:3,1:3), MBSys.g_B_TCP(1:3,4));
     if OCP.addTCPFinalTimeConstraint
         opti.subject_to( (g_TCP.x ) ==  OCP.x_TCP_F);
     end

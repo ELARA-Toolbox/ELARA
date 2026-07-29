@@ -9,7 +9,7 @@ function gSE3 = SE3MatArray2SE3Array(gNum)
         gNum  double {mustBeSE3MatrixArray}
     end
     arguments (Output)
-        gSE3  SE3
+        gSE3  elara.SE3.Element
     end
     dims = size(gNum);
     dims = dims(3:end);
@@ -19,7 +19,7 @@ function gSE3 = SE3MatArray2SE3Array(gNum)
         dims = [dims, 1];
     end
     n = numel(gNum)/16;
-    gSE3 = createArray(dims,"SE3");
+    gSE3 = createArray(dims,"elara.SE3.Element");
     gNum1D = reshape(gNum, 4, 4, []);
     for iG = 1:n
         gSE3(iG).R = gNum1D(1:3,1:3,iG);

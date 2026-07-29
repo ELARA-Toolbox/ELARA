@@ -51,8 +51,8 @@ cJ = cM/12 * diag([cY^2 + cZ^2, cX^2 + cZ^2, cX^2 + cY^2]); % Inertia tensor
 links(2).parentLink = 1;
 links(2).jointIsActuated = 1;
 links(2).jointAxis  = [0 0 1 0 0 0].';
-links(2).g_J_B      = SE3Matrix(eye(3), [cX/2-0.02,-cY/2+0.02,0]);
-links(2).g_ref      = SE3Matrix(eye(3), [cX/2-0.02,-cY/2+0.02,0]);
+links(2).g_J_B      = elara.SE3.matrix(eye(3), [cX/2-0.02,-cY/2+0.02,0]);
+links(2).g_ref      = elara.SE3.matrix(eye(3), [cX/2-0.02,-cY/2+0.02,0]);
 links(2).m          = cM;
 links(2).J          = cJ;
 links(2).d          = 0*1e-4;
@@ -72,7 +72,7 @@ MBSim = elara.Simulation(links, "displayInfo", true);
 % Specify pose of the first beam frame: Beam lies in the XY-plane and is
 % aligned with global x axis
 RRef0 = [0 0 1; 0 1 0; -1 0 0];
-MBSim.system.g0 = SE3Matrix(RRef0, zeros(3,1));
+MBSim.system.g0 = elara.SE3.matrix(RRef0, zeros(3,1));
 
 
 %% Visualize reference configuration

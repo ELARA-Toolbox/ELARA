@@ -26,12 +26,12 @@ function [X] = skew(x)
     elseif length(x) == 3
         % so(3) hat map
         % e.g. [Lee08, p. 28]
-        X = skewSO3(x);
+        X = elara.SO3.skew(x);
     elseif length(x) == 6
         % se(3) hat map
         % e.g. [Lee08, p. 38]
         X = [
-            skewSO3(x(1:3)), x(4:end);
+            elara.SO3.skew(x(1:3)), x(4:end);
             zeros(1, 3),     0
             ];
     else

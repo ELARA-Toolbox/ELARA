@@ -4,7 +4,7 @@ function f_frame_b = bodyFixedFrameForces(MBSys, g, f_frame_s, g_grav)
         MBSys       (1,1) elara.SystemSym
 
         % Absolute configurations of all frames
-        g           (1,:) SE3
+        g           (1,:) elara.SE3.Element
 
         % Spatial forces (twists) of all frames
         f_frame_s   (6,:)

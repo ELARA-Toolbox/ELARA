@@ -129,7 +129,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     g_F = g{end};
 
     % TCP constraint at final time
-    g_TCP_F = g_F(indexTCPFrame) * SE3(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
+    g_TCP_F = g_F(indexTCPFrame) * elara.SE3.Element(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
     if OCP.addTCPFinalTimeConstraint
         fprintf("\n   Adding final time TCP position constraint...\n")
         c = [c; {g_TCP_F.x - OCP.x_TCP_F}];
@@ -174,7 +174,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     J_TCP_tr = casadi.MX.zeros(1,1);
     if OCP.runningCostActive(5)
         for iStep = 1:OCP.nSteps + 1
-            g_TCP_k = g{iStep}(indexTCPFrame) * SE3(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
+            g_TCP_k = g{iStep}(indexTCPFrame) * elara.SE3.Element(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
 
             % Factor for trapezoidal rule integration
             % First and last step have factor 1/2

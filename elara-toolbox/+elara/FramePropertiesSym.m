@@ -32,6 +32,6 @@ classdef FramePropertiesSym < elara.abstract.FrameProperties
         % Dimensions: (4, 4, 2, nFrames, nCablesMax),
         % where nCablesMax is the largest nr. of cables of all
         % cable-actuated flexible links
-        g_cm        (2,:,:) SE3
+        g_cm        (2,:,:) elara.SE3.Element
     end
 end

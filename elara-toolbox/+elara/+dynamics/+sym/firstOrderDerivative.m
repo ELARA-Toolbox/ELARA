@@ -97,7 +97,7 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
             + f_frame_b_C{iFrm} ...
             ...% Coriolis Term
             + MBSys.frames.MGen{iFrm} * JdotTerm{iFrm} ...
-            - f.sadSE3(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * MBSys.frames.MGen{iFrm} * eta{iFrm};
+            - f.SE3.smallAd(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * MBSys.frames.MGen{iFrm} * eta{iFrm};
         % Distribute node terms to coordinates
         for iB = 1:MBSys.nFrames
             if ~isempty(J{iFrm,iB})
