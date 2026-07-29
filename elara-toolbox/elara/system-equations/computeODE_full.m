@@ -12,7 +12,7 @@ function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
         % Input vector
         u           (:,1) double
 
-        MBSys       (1,1) elara.internal.System
+        MBSys       (1,1) elara.abstract.System
 
         simPars     (1,1) elara.SimulationParameters
     end

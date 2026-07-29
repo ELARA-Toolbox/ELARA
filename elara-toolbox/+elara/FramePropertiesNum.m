@@ -1,4 +1,4 @@
-classdef FramePropertiesNum < elara.internal.FrameProperties
+classdef FramePropertiesNum < elara.abstract.FrameProperties
     %% MBSystemframes Class (numeric representation)
     % Class that holds all frame-related data for all abstract frames
     % in a multibody system, e.g., joint kinematics and inertia properties.

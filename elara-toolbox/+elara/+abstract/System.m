@@ -1,5 +1,5 @@
 classdef (Abstract) System
-    %% elara.internal.System class
+    %% elara.abstract.System class
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.
     %
@@ -85,9 +85,9 @@ classdef (Abstract) System
     end
     methods
         function obj = System(links)
-            %% Constructor for elara.internal.System
+            %% Constructor for elara.abstract.System
             arguments
-                links (:,1) elara.internal.Link = elara.RigidLink.empty;
+                links (:,1) elara.abstract.Link = elara.RigidLink.empty;
             end
             % Assemble system if links are given
             if ~isempty(links)

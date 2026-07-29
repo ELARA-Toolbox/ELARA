@@ -7,7 +7,7 @@ function res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1,
     %  * We're using the complete trapezoidal rule for the first step
     %    for true second-order accuracy
     arguments
-        MBSys   (1,1) elara.internal.System
+        MBSys   (1,1) elara.abstract.System
         h       (1,1)
         simPars (1,1) elara.SimulationParameters
 

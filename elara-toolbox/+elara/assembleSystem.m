@@ -7,10 +7,10 @@ function sys = assembleSystem(links, sys)
 
     arguments
         % Array of links defining the system
-        links   (1,:) elara.internal.Link
+        links   (1,:) elara.abstract.Link
 
-        % (Empty) elara.internal.System object, in which the system is stored
-        sys     (1,1) elara.internal.System
+        % (Empty) elara.abstract.System object, in which the system is stored
+        sys     (1,1) elara.abstract.System
     end
 
 

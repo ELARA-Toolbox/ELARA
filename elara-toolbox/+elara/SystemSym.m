@@ -1,4 +1,4 @@
-classdef SystemSym < elara.internal.System
+classdef SystemSym < elara.abstract.System
     %% elara.SystemSym class for symbolic variables
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.

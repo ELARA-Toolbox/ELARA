@@ -1,4 +1,4 @@
-classdef VIBroyden < elara.internal.Integrator
+classdef VIBroyden < elara.abstract.Integrator
     %% elara.Simulation Integrator: Variational Integrator with Broyden Solver
     %
     % Maximilian Herrmann
@@ -38,7 +38,7 @@ classdef VIBroyden < elara.internal.Integrator
 
     methods
         function simRes = simulateSystem(obj, MBSim)
-            %% Simulate elara.internal.System: Variational integrator, Broyden solver
+            %% Simulate elara.abstract.System: Variational integrator, Broyden solver
             arguments
                 obj     (1,1)
                 MBSim   (1,1) elara.Simulation

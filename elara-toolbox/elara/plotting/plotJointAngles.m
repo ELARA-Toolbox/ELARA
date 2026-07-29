@@ -1,6 +1,6 @@
 function figHandle = plotJointAngles(MBSys, simRes, opts)
     arguments
-        MBSys           (1,1) elara.internal.System
+        MBSys           (1,1) elara.abstract.System
         simRes          (1,1) elara.SimulationResults
         opts.nameStr    (1,1) string = ""
     end

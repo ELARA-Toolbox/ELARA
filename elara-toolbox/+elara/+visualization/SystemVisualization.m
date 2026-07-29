@@ -9,7 +9,7 @@ classdef SystemVisualization < handle
         system              (1,1) elara.SystemNum
 
         % Array of link visualization systemVisualizationects
-        linkVisualization   (1,:) elara.internal.LinkVisualization
+        linkVisualization   (1,:) elara.abstract.LinkVisualization
     end
     properties(SetObservable)
         showInertialFrame   (1,1) logical = true;
@@ -28,9 +28,9 @@ classdef SystemVisualization < handle
         function systemVisualization = SystemVisualization(system, links, g, options)
             % Construct an instance of this class
             arguments
-                system   (1,1) elara.internal.System
+                system   (1,1) elara.abstract.System
 
-                links   (1,:) elara.internal.Link = elara.RigidLink.empty();
+                links   (1,:) elara.abstract.Link = elara.RigidLink.empty();
 
                 % Array of SE3 matrices defining the system's configuration
                 g       (4,4,:) double {mustBeSE3MatrixArray} = zeros(4,4,0)
@@ -74,7 +74,7 @@ classdef SystemVisualization < handle
             %% Initialize drawing for the full system
             arguments
                 systemVisualization     (1,1) elara.visualization.SystemVisualization
-                links   (:,1) elara.internal.Link
+                links   (:,1) elara.abstract.Link
 
                 % Color map used to specify link colors
                 linkColorMap (1,1) function_handle

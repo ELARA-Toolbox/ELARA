@@ -7,7 +7,7 @@ function [gQuery, qQuery] = interpolateSimResultsTime(MBSys, simRes, tQuery)
     % Technical University of Munich
     arguments
         % System definition
-        MBSys   (1,1) elara.internal.System
+        MBSys   (1,1) elara.abstract.System
 
         % SimResults object containing the data to interpolate
         simRes  (1,1) elara.SimulationResults

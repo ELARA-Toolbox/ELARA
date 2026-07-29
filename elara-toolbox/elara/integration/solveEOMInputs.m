@@ -7,7 +7,7 @@ function [u, solInfo] = solveEOMInputs(MBSys, res_k, q_k, lb, ub)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        MBSys (1,1) elara.internal.System
+        MBSys (1,1) elara.abstract.System
 
         % DEL residual at current time step k
         res_k (:,1) double

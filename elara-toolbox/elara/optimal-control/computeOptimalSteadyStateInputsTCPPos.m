@@ -1,7 +1,7 @@
 function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPars)
     %% Compute optimal steady-state system inputs for given TCP position
     arguments
-        MBSys    (1,1) elara.internal.System
+        MBSys    (1,1) elara.abstract.System
         OCP      (1,1) OCPDefinition
         simPars  (1,1) elara.SimulationParameters
     end
@@ -15,7 +15,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
 
      % Verify that the TCP is defined for the system
     if ~MBSys.indexTCPFrame
-        warning("No TCP frame defined in the elara.internal.System object. Using last frame as the TCP frame.")
+        warning("No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
         indexTCPFrame = MBSys.nFrames;
     else
         indexTCPFrame = MBSys.indexTCPFrame;

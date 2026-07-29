@@ -1,4 +1,4 @@
-classdef RigidLink < elara.internal.Link
+classdef RigidLink < elara.abstract.Link
     % Class defining a Rigid Link in a multibody system
     %
     % Maximilian Herrmann

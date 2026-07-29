@@ -6,7 +6,7 @@ function u = getIntegratorInputs(MBSys, simPars, tout)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        MBSys       (1,1) elara.internal.System
+        MBSys       (1,1) elara.abstract.System
         simPars     (1,1) elara.SimulationParameters
         tout        (:,1) double
     end

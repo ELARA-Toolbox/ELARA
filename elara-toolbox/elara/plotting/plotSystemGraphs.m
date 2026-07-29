@@ -2,7 +2,7 @@ function [fhLinkGraph, fhFrameGraph] = plotSystemGraphs(system)
     %% Plot Topology Graphs of a MB System
 
     arguments
-        system (1,1) elara.internal.System
+        system (1,1) elara.abstract.System
     end
 
     linkGraph  = digraph(system.LinkAdjacencyMatrix);

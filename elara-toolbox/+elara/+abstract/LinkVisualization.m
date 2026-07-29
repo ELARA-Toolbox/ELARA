@@ -7,7 +7,7 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
     % Technical University of Munich
     properties
         % Link object that defines the link's properties
-        link         (1,1) elara.internal.Link = elara.RigidLink;
+        link         (1,1) elara.abstract.Link = elara.RigidLink;
     end
     properties (Access=public, SetObservable)
         % link Color

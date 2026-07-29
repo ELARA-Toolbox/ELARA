@@ -1,4 +1,4 @@
-classdef RigidLinkVisualization < elara.internal.LinkVisualization
+classdef RigidLinkVisualization < elara.abstract.LinkVisualization
     %% Class to visualize a rigid link in a multibody system
     %
     % Maximilian Herrmann

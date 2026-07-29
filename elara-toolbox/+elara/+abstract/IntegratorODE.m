@@ -1,4 +1,4 @@
-classdef (Abstract) IntegratorODE < elara.internal.Integrator
+classdef (Abstract) IntegratorODE < elara.abstract.Integrator
     %% Abstract class defining an ODE integrator for a ELARA Simulation
     %
     % Maximilian Herrmann

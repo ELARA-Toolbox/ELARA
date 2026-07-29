@@ -13,12 +13,12 @@ classdef Simulation
         %% Used integrator
         % The integrator object contains all methods and settings required
         % to perform the integration
-        integrator  (1,1) elara.internal.Integrator = elara.integration.VIBroyden;
+        integrator  (1,1) elara.abstract.Integrator = elara.integration.VIBroyden;
 
         %% System specification
 
         % Link definitions
-        links       (:,1) elara.internal.Link
+        links       (:,1) elara.abstract.Link
 
         % ELARA system definition
         system      (1,1) elara.SystemNum
@@ -36,7 +36,7 @@ classdef Simulation
             % Create instance of this class
             % If links are given (optionally), assemble the MB system from them
             arguments
-                links               (:,1) elara.internal.Link = elara.RigidLink.empty;
+                links               (:,1) elara.abstract.Link = elara.RigidLink.empty;
                 options.displayInfo (1,1) logical           = true;
                 options.Name        (1,1) string            = "";
             end

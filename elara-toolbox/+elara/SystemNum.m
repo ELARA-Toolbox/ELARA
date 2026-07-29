@@ -1,5 +1,5 @@
-classdef SystemNum < elara.internal.System
-    %% elara.internal.System class for numeric variables
+classdef SystemNum < elara.abstract.System
+    %% elara.abstract.System class for numeric variables
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.
     %

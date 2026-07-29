@@ -1,4 +1,4 @@
-classdef FlexibleLinkVisualization < elara.internal.LinkVisualization
+classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
     %% Class to visualize a flexible link in a multibody system
     %
     % Maximilian Herrmann

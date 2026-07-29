@@ -1,4 +1,4 @@
-classdef FlexibleLink < elara.internal.Link
+classdef FlexibleLink < elara.abstract.Link
     % Class defining a Flexible Link in a multibody system
     %
     % Maximilian Herrmann

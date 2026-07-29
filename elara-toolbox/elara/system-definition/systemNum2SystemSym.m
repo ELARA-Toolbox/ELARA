@@ -1,5 +1,5 @@
 function MBSysSym = systemNum2SystemSym(MBSysNum)
-    %% Convert instances of the elara.internal.System and elara.SystemSym class
+    %% Convert instances of the elara.abstract.System and elara.SystemSym class
     % between each other (small helper function)
     % See https://www.mathworks.com/matlabcentral/answers/350158-convert-a-struct-to-an-object-of-a-class
     arguments
