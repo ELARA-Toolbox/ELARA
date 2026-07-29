@@ -15,11 +15,11 @@ end
 
 mexFileNames = [
     "integrateMBSDynamics_Broyden_mex"
-    "computeFirstOrderSystemRHS_mex"
-    "computeFirstOrderMassMatrix_mex"
-    "computeFirstOrderSystemRHS_MInv_mex"
+    "firstOrderRHS_mex"
+    "firstOrderMassMatrix_mex"
+    "firstOrderDerivative_mex"
     "getSimResFromStateTrajectory_mex"
-    "computeStaticResiduum_mex"
+    "staticResidual_mex"
     "computeSimResEnergies_mex"
     ];
 fileExists = zeros(size(mexFileNames));

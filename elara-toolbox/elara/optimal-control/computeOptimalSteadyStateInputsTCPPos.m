@@ -33,8 +33,8 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
 
 
     % Statics/force balance constraint
-    %[res_statics, x] = computeStaticResiduum_casadi(sysFuns, q, u);
-    [res_statics, g] = computeStaticResiduum_casadi(MBSysSym, simPars, q, u);
+    %[res_statics, x] = elara.statics.sym.residual(sysFuns, q, u);
+    [res_statics, g] = elara.statics.sym.residual(MBSysSym, simPars, q, u);
     opti.subject_to( res_statics == 0 );
 
     % Workspace constraint

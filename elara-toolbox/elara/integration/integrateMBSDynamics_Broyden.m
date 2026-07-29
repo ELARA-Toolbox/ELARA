@@ -87,7 +87,7 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     f_frame_0_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, 0);
     f_frame_0_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, 0);
     
-    f_frame_0_b = -h*(1-a)*f_frame_0_b + h*(1-a)*computeBodyfixedFrameForces(g_0, f_frame_0_s, MBSys, simPars);
+    f_frame_0_b = -h*(1-a)*f_frame_0_b + h*(1-a)*elara.dynamics.num.bodyFixedFrameForces(g_0, f_frame_0_s, MBSys, simPars);
 
     % Generalized Forces (stresses, actuation and initial momentum)
     f_gen_0 = h*(1-a)*MBSys.cSys .* (q_k - MBSys.qRef) ...
@@ -154,7 +154,7 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
         % * Inertia term
         f_frame_k_b = ...
             - h*f_frame_k_b ...
-            + h*computeBodyfixedFrameForces(g_k, f_frame_k_s, MBSys, simPars) ...
+            + h*elara.dynamics.num.bodyFixedFrameForces(g_k, f_frame_k_s, MBSys, simPars) ...
             - computeInertiaTerm(MBSys, eta_k0, h);
 
         % Compute Generalized Forces (stresses and actuation)

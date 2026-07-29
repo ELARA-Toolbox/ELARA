@@ -34,7 +34,7 @@ function [u, solInfo] = computeInverseDynamicsODE(MBSim, q, qd, qdd, lbu, ubu)
 
     %% Compute Inputs
     for k = 1:nSteps+1
-        res_k = computeODE_full(0, q(:,k), qd(:,k), qdd(:,k), uZero, MBSys, simPars);
+        res_k = elara.dynamics.num.secondOrderODEResidual(0, q(:,k), qd(:,k), qdd(:,k), uZero, MBSys, simPars);
 
         % Compute Inputs
         if isFullyActuated

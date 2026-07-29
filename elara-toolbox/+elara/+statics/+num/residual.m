@@ -1,4 +1,4 @@
-function res = computeStaticResiduum(MBSys, simPars, q, u)
+function res = residual(MBSys, simPars, q, u)
     %% Compute Residuum of Static Equilbrium Equation
     arguments
         % Multibody system
@@ -32,7 +32,7 @@ function res = computeStaticResiduum(MBSys, simPars, q, u)
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + computeBodyfixedFrameForces(g, f_frame_s, MBSys, simPars);
+    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, MBSys, simPars);
 
     % Compute sum of generalized forces
     res = f_gen;

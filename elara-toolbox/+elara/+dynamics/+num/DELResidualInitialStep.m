@@ -1,4 +1,4 @@
-function [res_0, eta_0] = computeDELResiduumFirstStep(MBSys, h, simPars, q_0, q_1, u_0, a, MGenCell)
+function [res_0, eta_0] = DELResidualInitialStep(MBSys, h, simPars, q_0, q_1, u_0, a, MGenCell)
     %% Compute the Residuum for the first step in DEL integration
     % i.e., step 0 -> 1,
     % according to the formula in [Obe08, p.50]
@@ -36,5 +36,5 @@ function [res_0, eta_0] = computeDELResiduumFirstStep(MBSys, h, simPars, q_0, q_
     eta_0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_0,  g_rel_1, h);
 
     % Evaluate DEL
-    res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, simPars.qDot0, a, MGenCell);
+    res_0 = elara.dynamics.num.DELResidualInitialStep_noKinematics(MBSys, h, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, simPars.qDot0, a, MGenCell);
 end

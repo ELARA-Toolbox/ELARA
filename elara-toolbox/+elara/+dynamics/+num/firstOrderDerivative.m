@@ -1,24 +1,24 @@
-function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
-    %% Compute the full second-order ODE
+function f_fo = firstOrderDerivative(t, x, MBSys, simPars) %#codegen
+    %% Compute the Right-Hand Side of the EOMs in first-order form (with inverted Mass Matrix)
     arguments (Input)
         % Integration time (from ode solver)
         t           (1,1) double
 
-        % Configuration vector and its derivatives (nDof,1)
-        q           (:,1) double
-        q_dot       (:,1) double
-        q_ddot      (:,1) double
+        % State vector [q; q_dot] (2*nDof,1)
+        x           (:,1) double
 
-        % Input vector
-        u           (:,1) double
-
-        MBSys       (1,1) elara.abstract.System
+        MBSys       (1,1) elara.SystemNum
 
         simPars     (1,1) elara.SimulationParameters
     end
     arguments (Output)
-        f        (:,1) double
+        f_fo        (:,1) double
     end
+
+    %% Get configuration and velocity
+    q     = x(1:MBSys.nDoF);
+    q_dot = x((MBSys.nDoF+1):end);
+
 
     %% Relative Kinematics
 
@@ -33,13 +33,27 @@ function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
     end
     J_dot = MBSys.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
 
+    %% Prepare system inputs
+    % Constant inputs
+    if ~isempty(simPars.uConst) && size(simPars.uConst,1) == MBSys.nInputs
+        u_k = simPars.uConst;
+    else
+        u_k = zeros(MBSys.nInputs, 1);
+    end
+
+    % Time-varying inputs
+    if (~isempty(simPars.uSampleValues) && size(simPars.uSampleValues,1) == MBSys.nInputs ) && ...
+            ~isempty(simPars.uSampleTimes) && ...
+            size(simPars.uSampleValues,2) == size(simPars.uSampleTimes,1)
+        u_k = u_k + interp1(simPars.uSampleTimes, simPars.uSampleValues.', t, 'linear', 0).';
+    end
 
     %% Evaluate EOM
 
     % Generalized forces (stress, dissipation and system inputs)
     f_gen = MBSys.cSys .* (q - MBSys.qRef) ...
         + MBSys.dSys .* q_dot ...
-        - MBSys.computeInputMatrix(q) * u;
+        - MBSys.computeInputMatrix(q) * u_k;
 
     % External frame forces from the environment
     f_frame_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, t);
@@ -47,7 +61,7 @@ function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + computeBodyfixedFrameForces(g, f_frame_s, MBSys, simPars);
+    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, MBSys, simPars);
 
     % Compute sum of generalized forces
     for iFrm = 1:MBSys.nFrames
@@ -60,8 +74,6 @@ function f = computeODE_full(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
             );
     end
 
-    %% Assemble full second-order ODE
-    M = MBSys.computeMassMatrix(q);
-    f = -(M*q_ddot + f_gen );
-
+    %% Assemble first-order RHS
+    f_fo = [q_dot; -MBSys.computeMassMatrix(q)\f_gen];
 end

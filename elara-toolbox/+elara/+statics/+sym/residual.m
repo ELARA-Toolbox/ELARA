@@ -1,4 +1,4 @@
-function [res, g, g_rel] = computeStaticResiduum_casadi(MBSys, simPars, q, u)
+function [res, g, g_rel] = residual(MBSys, simPars, q, u)
     %% Compute Residuum of Static Equilbrium Equation
     arguments
         % Multibody system
@@ -35,8 +35,8 @@ function [res, g, g_rel] = computeStaticResiduum_casadi(MBSys, simPars, q, u)
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    %f_frame_b = -f_frame_b + computeBodyfixedFrameForces(g, f_frame_s, MBSys, simPars);
-    f_frame_b_C = computeBodyfixedFrameForces_sym(MBSys, g, f_frame_s, simPars.g);
+    %f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, MBSys, simPars);
+    f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(MBSys, g, f_frame_s, simPars.g);
 
     % Compute sum of generalized forces
     resC = cell(MBSys.nFrames, 1);

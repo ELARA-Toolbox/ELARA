@@ -1,4 +1,4 @@
-function DEL_res_N = computeDELResiduumFinalStep_casadi_extKin( ...
+function DEL_res_N = DELResidualFinalStep_noKinematics( ...
         MBSys, simPars, q_N0, q_N, g_N, g_rel_N, eta_N0, u_N, ...
         qDotF, h, a)
     %% Compute Residuum of DEL Equation
@@ -53,7 +53,7 @@ function DEL_res_N = computeDELResiduumFinalStep_casadi_extKin( ...
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_k_b = computeBodyfixedFrameForces_sym(MBSys, g_N, f_frame_N_s_ext, simPars.g);
+    f_frame_k_b = elara.dynamics.sym.bodyFixedFrameForces(MBSys, g_N, f_frame_N_s_ext, simPars.g);
 
 
     %% Evaluate DEL / Compute Residual

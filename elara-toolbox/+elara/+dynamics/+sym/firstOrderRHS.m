@@ -1,4 +1,4 @@
-function f_fo = computeFirstOrderSystemRHS_sym(t, x, MBSys, simPars, u)
+function f_fo = firstOrderRHS(t, x, MBSys, simPars, u)
     %% Compute the Right-Hand Side of the EOMs in first-order form
     arguments (Input)
         % Integration time (from ode solver)
@@ -60,7 +60,7 @@ function f_fo = computeFirstOrderSystemRHS_sym(t, x, MBSys, simPars, u)
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + computeBodyfixedFrameForces_sym(g, f_frame_s, MBSys, simPars);
+    f_frame_b = -f_frame_b + elara.dynamics.sym.bodyFixedFrameForces(MBSys, g, f_frame_s, simPars.g);
 
     % Compute sum of generalized forces
     for iFrm = 1:MBSys.nFrames

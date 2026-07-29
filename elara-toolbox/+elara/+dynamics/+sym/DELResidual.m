@@ -1,4 +1,4 @@
-function DEL_res_k = computeDELResiduum_casadi(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
+function DEL_res_k = DELResidual(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
     %% Compute Residuum of DEL Equation
     arguments
         % Multibody system
@@ -44,7 +44,7 @@ function DEL_res_k = computeDELResiduum_casadi(MBSys, simPars, q_k0, q_k, q_k1, 
 
 
     %% Get Residual
-    DEL_res_k = computeDELResiduum_casadi_extKin(MBSys, simPars, ...
+    DEL_res_k = elara.dynamics.sym.DELResidual_noKinematics(MBSys, simPars, ...
         q_k0, q_k, q_k1, g_k, g_rel_k, eta_k, eta_k0, ...
         u_k, f_frame_k_b_ext, f_frame_k_s_ext, h, a);
 end

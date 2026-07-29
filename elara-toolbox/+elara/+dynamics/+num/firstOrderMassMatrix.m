@@ -1,4 +1,4 @@
-function M_fo = computeFirstOrderMassMatrix(t, x, MBSys)
+function M_fo = firstOrderMassMatrix(t, x, MBSys)
     %% Compute the overall mass matrix for a multibody system in first-order form
     % I.e., the mass matrix diag(I, M) with dimension 2*nDof x 2*nDof
     arguments (Input)

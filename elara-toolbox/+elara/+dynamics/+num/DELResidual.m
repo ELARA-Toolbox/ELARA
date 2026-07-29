@@ -1,4 +1,4 @@
-function DEL_res_k = computeDELResiduum(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
+function DEL_res_k = DELResidual(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
     %% Compute Residuum of DEL Equation
     % only in terms of coordinates q (at time steps k-1, k, k+1)
     arguments
@@ -37,7 +37,7 @@ function DEL_res_k = computeDELResiduum(MBSys, simPars, q_k0, q_k, q_k1, u_k, h,
     f_frame_k_b_ext = zeros(6, MBSys.nFrames);
     f_frame_k_s_ext = zeros(6, MBSys.nFrames);
 
-    DEL_res_k = computeDELResiduum_extKin(MBSys, simPars, ...
+    DEL_res_k = elara.dynamics.num.DELResidual_noKinematics(MBSys, simPars, ...
         q_k0, q_k, q_k1, g_k, g_rel_k, eta_k, eta_k0, u_k, ...
         f_frame_k_b_ext, f_frame_k_s_ext, h, a);
 end

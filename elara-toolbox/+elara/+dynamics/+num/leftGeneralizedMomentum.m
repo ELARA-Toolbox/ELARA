@@ -1,4 +1,4 @@
-function p_k = computeLeftGeneralizedMomentum(MBSys, h, simPars, q_k, q_k1, g_k, eta_k, u_k, a)
+function p_k = leftGeneralizedMomentum(MBSys, h, simPars, q_k, q_k1, g_k, eta_k, u_k, a)
     %% Compute the (forced) "Left" Generalized Momentum p_k
     % based on the forced discrete Legendre transform F- L_d (q_k, q_k1)
     arguments
@@ -26,7 +26,7 @@ function p_k = computeLeftGeneralizedMomentum(MBSys, h, simPars, q_k, q_k1, g_k,
 
     % Frame forces
     f_frame_k_s = zeros(6, MBSys.nFrames);    
-    f_frame_k_b = h*(1-a)*computeBodyfixedFrameForces(g_k, f_frame_k_s, MBSys, simPars);
+    f_frame_k_b = h*(1-a)*elara.dynamics.num.bodyFixedFrameForces(g_k, f_frame_k_s, MBSys, simPars);
 
     % Generalized Forces (stresses, actuation and dissipation)
     f_gen_k = ...

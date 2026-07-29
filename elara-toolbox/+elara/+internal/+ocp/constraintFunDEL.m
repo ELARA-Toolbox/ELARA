@@ -35,7 +35,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         q_k1Sym = casadi.MX.sym('q_k1', MBSys.nDoF, 1);
         u_kSym  = casadi.MX.sym('u_k', MBSys.nInputs, 1);
 
-        DEL_res_k_sym = computeDELResiduum_casadi(MBSys, simPars, q_k0Sym, q_kSym, q_k1Sym, u_kSym, h, aStep);
+        DEL_res_k_sym = elara.dynamics.sym.DELResidual(MBSys, simPars, q_k0Sym, q_kSym, q_k1Sym, u_kSym, h, aStep);
         stepFun = casadi.Function('FStep', {q_k0Sym, q_kSym, q_k1Sym, u_kSym }, {DEL_res_k_sym});
     end
 
@@ -53,7 +53,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     [g_k1, g_rel_k1] = MBSys.computeFwdKin(q{2});
     eta_k = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
 
-    c_DEL{1} = computeDELResiduumFirstStep_casadi_extKin( MBSys, simPars, ...
+    c_DEL{1} = elara.dynamics.sym.DELResidualInitialStep_noKinematics( MBSys, simPars, ...
         q{1}, q{2}, g_k, g_rel_k, eta_k, u{1}, OCP.qDot0, h, aFirstLast);
 
     lb_c{1,1} = zeros(MBSys.nDoF, 1);
@@ -89,7 +89,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         if opts.useCasadiStepFunctions
             c_DEL{k} = stepFun(q{k-1}, q{k}, q{k+1}, u{k});
         else
-            c_DEL{k} = computeDELResiduum_casadi_extKin( ...
+            c_DEL{k} = elara.dynamics.sym.DELResidual_noKinematics( ...
                 MBSys, simPars, q{k-1}, q{k}, q{k+1}, g_k, g_rel_k, ...
                 eta_k, eta_k0, u{k}, f_frame_k_b_ext, f_frame_k_s_ext, h, aStep);
         end
@@ -148,7 +148,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         [g_N1, g_rel_N1] = MBSys.computeFwdKin(q{nSteps+1});
         eta_N = MBSys.computeDiscreteAbsoluteVelocities(g_rel_N, g_rel_N1, h);
 
-        c_DEL_N1 = computeDELResiduumFinalStep_casadi_extKin( MBSys, simPars, ...
+        c_DEL_N1 = elara.dynamics.sym.DELResidualFinalStep_noKinematics( MBSys, simPars, ...
             q{nSteps}, q{nSteps+1}, g_N1, g_rel_N1, ...
             eta_N, u{nSteps+1}, OCP.qDotF, h, aFirstLast);
 

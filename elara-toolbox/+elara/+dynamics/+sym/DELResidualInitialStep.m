@@ -1,4 +1,4 @@
-function DEL_res_k = computeDELResiduumFirstStep_casadi(MBSys, simPars, q_0, q_1, u_0, qDot0, h, a)
+function DEL_res_k = DELResidualInitialStep(MBSys, simPars, q_0, q_1, u_0, qDot0, h, a)
     %% Compute the Residuum for the first step in DEL integration
     arguments
         % Multibody system
@@ -31,5 +31,5 @@ function DEL_res_k = computeDELResiduumFirstStep_casadi(MBSys, simPars, q_0, q_1
     eta_0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_0, g_rel_1, h);
 
     %% Get residual
-    DEL_res_k = computeDELResiduumFirstStep_casadi_extKin(MBSys, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a);
+    DEL_res_k = elara.dynamics.sym.DELResidualInitialStep_noKinematics(MBSys, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a);
 end

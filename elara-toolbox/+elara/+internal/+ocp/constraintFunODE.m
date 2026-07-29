@@ -29,7 +29,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     % Define Casadi RHS Function
     xSym = casadi.MX.sym('x', 2*MBSys.nDoF, 1);
     uSym = casadi.MX.sym('x', MBSys.nInputs, 1);
-    Fsym = computeFirstOrderSystemRHS_MInv_casadi(0, xSym, uSym, MBSys, simPars);
+    Fsym = elara.dynamics.sym.firstOrderDerivative(0, xSym, uSym, MBSys, simPars);
     FFun = casadi.Function('FFun', {xSym, uSym}, {Fsym});
 
     x_kSym  = casadi.MX.sym('x_k', 2*MBSys.nDoF, 1);

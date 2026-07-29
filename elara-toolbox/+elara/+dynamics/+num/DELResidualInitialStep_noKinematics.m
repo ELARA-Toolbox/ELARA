@@ -1,4 +1,4 @@
-function res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, a, MGenCell)
+function res_0 = DELResidualInitialStep_noKinematics(MBSys, h, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, a, MGenCell)
     %% Compute the Residuum for the first step in DEL integration
     % i.e., step 0 -> 1,
     % according to the formula in [Obe08, p.50]
@@ -49,7 +49,7 @@ function res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, q_0, q_1,
     % Frame forces at first step
     f_frame_0_b_ext = zeros(6, MBSys.nFrames);
     f_frame_0_s_ext = zeros(6, MBSys.nFrames);
-    f_frame_0_b = (1-a)*computeBodyfixedFrameForces(g_0, f_frame_0_s_ext, MBSys, simPars);
+    f_frame_0_b = (1-a)*elara.dynamics.num.bodyFixedFrameForces(g_0, f_frame_0_s_ext, MBSys, simPars);
 
     % Generalized Forces (stresses, actuation and dissipation)
     f_gen_0 = ...

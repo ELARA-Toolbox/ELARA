@@ -1,4 +1,4 @@
-function [res_N, eta_N0] = computeDELResiduumFinalStep(MBSys, h, simPars, q_N0, q_N, u_N, qDotEnd, a)
+function [res_N, eta_N0] = DELResidualFinalStep(MBSys, h, simPars, q_N0, q_N, u_N, qDotEnd, a)
     %% Compute Residuum for the final step N-1 -> N
     arguments
         MBSys   (1,1) elara.abstract.System
@@ -29,7 +29,7 @@ function [res_N, eta_N0] = computeDELResiduumFinalStep(MBSys, h, simPars, q_N0, 
     f_frame_N_b_ext = zeros(6, MBSys.nFrames);
     f_frame_N_s_ext = zeros(6, MBSys.nFrames);
     f_frame_N_b = -a*f_frame_N_b_ext ...
-        + a*computeBodyfixedFrameForces(g_N, f_frame_N_s_ext, MBSys, simPars);
+        + a*elara.dynamics.num.bodyFixedFrameForces(g_N, f_frame_N_s_ext, MBSys, simPars);
 
     % Generalized Forces (stresses, actuation and dissipation)
     f_gen_N = ...

@@ -1,4 +1,4 @@
-function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) %#codegen
+function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
     %% Compute the Right-Hand Side of the EOMs in first-order form (with inverted Mass Matrix)
     arguments (Input)
         % Integration time (from ode solver)
@@ -73,7 +73,7 @@ function f_fo = computeFirstOrderSystemRHS_MInv_casadi(t, x, u, MBSys, simPars) 
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b_C = computeBodyfixedFrameForces_sym(MBSys, g, f_frame_s, simPars.g);
+    f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(MBSys, g, f_frame_s, simPars.g);
 
     % Compute J_dot * eta
     JdotTerm = cell(MBSys.nFrames,1);

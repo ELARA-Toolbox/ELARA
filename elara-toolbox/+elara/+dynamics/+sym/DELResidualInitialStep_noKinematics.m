@@ -1,4 +1,4 @@
-function DEL_res_k = computeDELResiduumFirstStep_casadi_extKin( ...
+function DEL_res_k = DELResidualInitialStep_noKinematics( ...
         MBSys, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a)
     %% Compute the Residuum for the first step in DEL integration
     % Index convention: Same as in literature; i.e., starting at 0
@@ -49,7 +49,7 @@ function DEL_res_k = computeDELResiduumFirstStep_casadi_extKin( ...
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_0_b = computeBodyfixedFrameForces_sym(MBSys, g_0, f_frame_0_s_ext, simPars.g);
+    f_frame_0_b = elara.dynamics.sym.bodyFixedFrameForces(MBSys, g_0, f_frame_0_s_ext, simPars.g);
 
 
     %% Evaluate DEL / Compute Residual

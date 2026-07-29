@@ -33,7 +33,7 @@ classdef ODEDirect < elara.abstract.IntegratorODE
             end
 
             % Check if compiled mex files are available
-            useMex = exist("computeFirstOrderSystemRHS_mex", "file");
+            useMex = exist("firstOrderRHS_mex", "file");
 
             % Initial states for the first-order system
             x0 = [
@@ -43,17 +43,17 @@ classdef ODEDirect < elara.abstract.IntegratorODE
 
             if obj.useMassMatrixForm
                 if useMex
-                    odeFun  = @(t,x) computeFirstOrderSystemRHS_mex(t, x, MBSim.system, MBSim.parameters);
-                    massFun = @(t,x) computeFirstOrderMassMatrix_mex(t, x, MBSim.system);
+                    odeFun  = @(t,x) firstOrderRHS_mex(t, x, MBSim.system, MBSim.parameters);
+                    massFun = @(t,x) firstOrderMassMatrix_mex(t, x, MBSim.system);
                 else
-                    odeFun  = @(t,x) computeFirstOrderSystemRHS(t, x, MBSim.system, MBSim.parameters);
-                    massFun = @(t,x) computeFirstOrderMassMatrix(t, x, MBSim.system);
+                    odeFun  = @(t,x) elara.dynamics.num.firstOrderRHS(t, x, MBSim.system, MBSim.parameters);
+                    massFun = @(t,x) elara.dynamics.num.firstOrderMassMatrix(t, x, MBSim.system);
                 end
             else
                 if useMex
-                    odeFun = @(t,x) computeFirstOrderSystemRHS_MInv_mex(t, x, MBSim.system, MBSim.parameters);
+                    odeFun = @(t,x) firstOrderDerivative_mex(t, x, MBSim.system, MBSim.parameters);
                 else
-                    odeFun = @(t,x) computeFirstOrderSystemRHS_MInv(t, x, MBSim.system, MBSim.parameters);
+                    odeFun = @(t,x) elara.dynamics.num.firstOrderDerivative(t, x, MBSim.system, MBSim.parameters);
                 end
             end
 

@@ -54,12 +54,12 @@ function [T,U,V,H] = computeSimResEnergies(system, simPars, simRes, isVarInt, us
             if iStep < nSteps
                 % Steps 1, ..., N-1: Left momentum
                 q_k1 = simRes.q(:,iStep+1);
-                p_k = computeLeftGeneralizedMomentum(system, h, simPars, ...
+                p_k = elara.dynamics.num.leftGeneralizedMomentum(system, h, simPars, ...
                     q_k, q_k1, g_k, simRes.eta(:,:,iStep), u(:,iStep), a);
             else
                 % Last step: Right momentum
                 q_k0 = simRes.q(:,iStep-1);
-                p_k = computeRightGeneralizedMomentum(system, h, simPars, ...
+                p_k = elara.dynamics.num.rightGeneralizedMomentum(system, h, simPars, ...
                     q_k0, q_k, g_k, simRes.eta(:,:,iStep-1), u(:,iStep), a);
             end
             T(iStep) = 1/2 * p_k.' / system.computeMassMatrix(q_k) * p_k;

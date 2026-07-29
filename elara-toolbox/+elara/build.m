@@ -24,11 +24,21 @@ fprintf("Compiling MEX functions...\n\n");
 
 functionNames = [
     "integrateMBSDynamics_Broyden"
-    "computeFirstOrderSystemRHS"
-    "computeFirstOrderMassMatrix"
-    "computeFirstOrderSystemRHS_MInv"
+    "elara.dynamics.num.firstOrderRHS"
+    "elara.dynamics.num.firstOrderMassMatrix"
+    "elara.dynamics.num.firstOrderDerivative"
     "getSimResFromStateTrajectory"
-    "computeStaticResiduum"
+    "elara.statics.num.residual"
+    "computeSimResEnergies"
+    ];
+
+outputNames = [
+    "integrateMBSDynamics_Broyden"
+    "firstOrderRHS"
+    "firstOrderMassMatrix"
+    "firstOrderDerivative"
+    "getSimResFromStateTrajectory"
+    "staticResidual"
     "computeSimResEnergies"
     ];
 
@@ -36,7 +46,7 @@ for iFun = 1:numel(functionNames)
     fprintf("Compiling function %d/%d (%s)...\n", ...
         iFun, numel(functionNames), functionNames(iFun));
     codegen("-d", targetDir, "-o", ...
-        fullfile(targetDir, functionNames(iFun) + "_mex"), ...
+        fullfile(targetDir, outputNames(iFun) + "_mex"), ...
         "-config", cfg, functionNames(iFun));
 end
 

@@ -270,7 +270,7 @@ classdef Simulation
             isVarInt = obj.integrator.type ==  "varint";
 
             % Check if compiled mex files are available
-            if exist("computeFirstOrderSystemRHS_mex", "file")
+            if exist("firstOrderRHS_mex", "file")
                 [T,U,V,H] = computeSimResEnergies_mex( ...
                     obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
             else

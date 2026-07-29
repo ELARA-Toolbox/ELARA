@@ -45,7 +45,7 @@ function [u, solInfo] = computeInverseDynamicsDEL(MBSim, q, qd, h, lbu, ubu)
     [g_k,  g_rel_k]  = MBSys.computeFwdKin(q(:,1));
     [g_k1, g_rel_k1] = MBSys.computeFwdKin(q(:,2));
     eta_k = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
-    res_0 = computeDELResiduumFirstStep_extKin(MBSys, h, simPars, ...
+    res_0 = elara.dynamics.num.DELResidualInitialStep_noKinematics(MBSys, h, simPars, ...
         q(:,1), q(:,2), g_k, g_rel_k, eta_k, uZero, qd(:,1), a);
 
     % Compute Inputs
@@ -78,7 +78,7 @@ function [u, solInfo] = computeInverseDynamicsDEL(MBSim, q, qd, h, lbu, ubu)
         f_frame_k_s_ext = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, tout(k));
 
         % Get residuum
-        res_k = computeDELResiduum_extKin(MBSys, simPars, ...
+        res_k = elara.dynamics.num.DELResidual_noKinematics(MBSys, simPars, ...
             q(:,k-1), q(:,k), q(:,k+1), g_k, g_rel_k, eta_k, eta_k0, ...
             uZero, f_frame_k_b_ext, f_frame_k_s_ext, h, a);
 
@@ -96,7 +96,7 @@ function [u, solInfo] = computeInverseDynamicsDEL(MBSim, q, qd, h, lbu, ubu)
     end
 
     %% Final step
-    res_N1 = computeDELResiduumFinalStep( ...
+    res_N1 = elara.dynamics.num.DELResidualFinalStep( ...
         MBSys, h, simPars, q(:,nSteps), q(:,nSteps+1), uZero, qd(:,nSteps+1), a);
 
     % Compute Inputs

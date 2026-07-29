@@ -1,5 +1,5 @@
-function f_fo = computeFirstOrderSystemRHS_MInv(t, x, MBSys, simPars) %#codegen
-    %% Compute the Right-Hand Side of the EOMs in first-order form (with inverted Mass Matrix)
+function f_fo = firstOrderRHS(t, x, MBSys, simPars) %#codegen
+    %% Compute the Right-Hand Side of the EOMs in first-order form
     arguments (Input)
         % Integration time (from ode solver)
         t           (1,1) double
@@ -61,7 +61,7 @@ function f_fo = computeFirstOrderSystemRHS_MInv(t, x, MBSys, simPars) %#codegen
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + computeBodyfixedFrameForces(g, f_frame_s, MBSys, simPars);
+    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, MBSys, simPars);
 
     % Compute sum of generalized forces
     for iFrm = 1:MBSys.nFrames
@@ -75,5 +75,6 @@ function f_fo = computeFirstOrderSystemRHS_MInv(t, x, MBSys, simPars) %#codegen
     end
 
     %% Assemble first-order RHS
-    f_fo = [q_dot; -MBSys.computeMassMatrix(q)\f_gen];
+    f_fo = [q_dot; -f_gen];
+
 end

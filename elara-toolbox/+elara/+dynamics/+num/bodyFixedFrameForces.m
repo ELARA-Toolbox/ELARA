@@ -1,4 +1,4 @@
-function f_frame_b = computeBodyfixedFrameForces(g, f_frame_s, MBSys, simPars)
+function f_frame_b = bodyFixedFrameForces(g, f_frame_s, MBSys, simPars)
     %% Compute the body-fixed forces for all frames: Gravity and Ext. Forces
     %
     f_frame_b = zeros(6,MBSys.nFrames);
