@@ -1,4 +1,4 @@
-classdef OCPDefinition
+classdef Problem
     %% Class that fully defines an Optimal Control Problem (OCP)
     %
     % Maximilian Herrmann
@@ -9,7 +9,7 @@ classdef OCPDefinition
         Name    (1,1) string
 
         % End time
-        tF      (1,1)
+        tEnd      (1,1)
 
         % Sample time
         h       (1,1)
@@ -34,17 +34,17 @@ classdef OCPDefinition
         simPars (1,1) elara.SimulationParameters
 
         % Workspace definition
-        workSpaceDef    (1,1) workspaceDefinition
+        workspace    (1,1) elara.Workspace
 
         % Struct with CasADi NLP options (given to the NLP object)
-        nlpOpts         (1,1) struct
+        nlpOptions         (1,1) struct
 
         %% System Definition
         system          (1,1) elara.SystemSym
 
         %% Cost function definition
-        % wRx: Cost function weights
-        % iRx: Defines which costs to include (same components as wRx)
+        % Weight vectors define the contribution of each cost term.
+        % Active vectors select which corresponding terms are included.
 
         % Running cost with elements:
         %  Norm u
@@ -52,19 +52,19 @@ classdef OCPDefinition
         %  Norm u_ddot
         %  Norm q_ddot
         %  TCP error (trajectory tracking)
-        wRC     (5,1) double
-        iRC     (5,1) logical = true;
+        runningCostWeights     (5,1) double
+        runningCostActive      (5,1) logical = true;
 
         % Final time cost with elements:
         %   Norm u
         %   Norm q
         %   TCP Error
-        wFC     (3,1) double
-        iFC     (3,1) logical = true;
+        finalCostWeights     (3,1) double
+        finalCostActive      (3,1) logical = true;
 
         % Order of the finite differences used for the derivatives of u and
         % q in the cost function
-        FDOrder (1,1) double {mustBeMember(FDOrder, [2,4])} = 2;
+        finiteDifferenceOrder (1,1) double {mustBeMember(finiteDifferenceOrder, [2,4])} = 2;
 
 
         %% Input parameterization
@@ -90,7 +90,7 @@ classdef OCPDefinition
         addTCPFinalTimeConstraint (1,1) logical = false;
 
         % Coordinates at the final time:
-        % Will be enforced as constraints at tF
+        % Will be enforced as constraints at tEnd
         % If left empty, will not be considered
         qF      (:,1)
 
@@ -110,8 +110,8 @@ classdef OCPDefinition
 
 
         %% Discretization
-        % OCP Integrator object defining the OCP's discretization
-        discretization (1,1) OCPIntegrator = OCPIntegratorVI;
+        % Object defining the OCP discretization
+        discretization (1,1) elara.abstract.OCPDiscretization = elara.ocp.IntegratorVI;
     end
     properties(SetAccess=protected)
         %% "Internal" properties for solver definition
@@ -136,7 +136,7 @@ classdef OCPDefinition
         function obj = initSolver(obj, opts)
             %% Initialize NLP solver for the OCP
             arguments
-                obj     (1,1) OCPDefinition
+                obj     (1,1) elara.ocp.Problem
 
                 % Use a casadi function to evaluate the DEL in each time step
                 opts.useCasadiStepFunctions (1,1) logical = false;
@@ -144,7 +144,7 @@ classdef OCPDefinition
                 % Draw debug plots (constraint Jacobian etc.)?
                 opts.showDebugPlots (1,1) logical = false;
             end
-            [obj.NLPSolver, obj.constrDef] = defineOCPSolver(obj, ...
+            [obj.NLPSolver, obj.constrDef] = elara.internal.initializeOCPSolver(obj, ...
                 "showDebugPlots", opts.showDebugPlots, ...
                 "useCasadiStepFunctions", opts.useCasadiStepFunctions);
 
@@ -152,7 +152,7 @@ classdef OCPDefinition
         function [x_sol, u_sol_z, sol, stats] = solve(obj, xInit, uInit, opts)
             %% Solve OCP
             arguments
-                obj         (1,1) OCPDefinition
+                obj         (1,1) elara.ocp.Problem
 
                 % Initial guess
                 xInit       (:,:) double % can be configuration q or state x!
@@ -167,13 +167,13 @@ classdef OCPDefinition
                 "Cannot start solver: NLP solver not initizalized. Call initSolver() first.");
 
             % Solve problem
-            [x_sol, u_sol_z, sol, stats] = solveOCP(obj, xInit, uInit, ...
+            [x_sol, u_sol_z, sol, stats] = elara.internal.solveOCP(obj, xInit, uInit, ...
                 "solWarmStart", opts.solWarmStart);
         end
         function fh = plotConstraintResiduals(obj, q, u, opts)
             %% Plot OCP Constraints residuals for a given trajectory
             arguments
-                obj         (1,1) OCPDefinition
+                obj         (1,1) elara.ocp.Problem
 
                 % Trajectory, for which the residuals should be evaluated
                 q       (:,:) double % (nDoF, nSteps+1) or (2*nDoF, nSteps+1)
@@ -194,7 +194,7 @@ classdef OCPDefinition
             % Compute the basis matrix of the input B-spline
             % (and its derivatives)
             arguments
-                obj                     (1,1) OCPDefinition
+                obj                     (1,1) elara.ocp.Problem
 
                 % Vector of stage values / sub-samples of input values in
                 % each standard time interval defined by OCP.tout.
@@ -216,7 +216,7 @@ classdef OCPDefinition
     %% Get methods
     methods
         function nSteps = get.nSteps(obj)
-            nSteps = round(obj.tF/obj.h);
+            nSteps = round(obj.tEnd/obj.h);
         end
         function tout = get.tout(obj)
             tout = (0 : obj.h : obj.h*obj.nSteps).';

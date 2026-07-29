@@ -1,4 +1,4 @@
-function [x_TCP_traj, fhs] = generateDesiredTCPTrajLinear(MBSim, OCP, opts)
+function [x_TCP_traj, fhs] = computeLinearReferenceTCPTrajectory(MBSim, OCP, opts)
     %% Generate desired TCP trajectory: Linear Trajectory in R3 from x0 to xF
     %
     % Maximilian Herrmann
@@ -7,7 +7,7 @@ function [x_TCP_traj, fhs] = generateDesiredTCPTrajLinear(MBSim, OCP, opts)
     % Technical University of Munich
     arguments (Input)
         MBSim   (1,1) elara.Simulation
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
 
         % Pre- and post-actuation times
         % (where the trajectory is kept constant)

@@ -2,7 +2,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
     %% Compute optimal steady-state system inputs for given TCP position
     arguments
         MBSys    (1,1) elara.abstract.System
-        OCP      (1,1) OCPDefinition
+        OCP      (1,1) elara.ocp.Problem
         simPars  (1,1) elara.SimulationParameters
     end
 
@@ -22,7 +22,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
     end
 
     % Casadi function for signed workspace distance function
-    [dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(MBSys.nFrames, OCP.workSpaceDef);
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSys.nFrames);
 
 
     %% Define and solve optimization problem
@@ -75,7 +75,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
     J = a2 * 1/2*sumsqr(u) ...
         + a3 * 1/2 * sumsqr(q);
 
-    if OCP.iFC(end) || OCP.iRC(end)
+    if OCP.finalCostActive(end) || OCP.runningCostActive(end)
         J = J + a1 * 1/2*sumsqr((OCP.x_TCP_F - g_TCP.x));
     end
 

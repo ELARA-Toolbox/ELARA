@@ -1,4 +1,4 @@
-function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
+function [NLPSolver, constrDef] = initializeOCPSolver(OCP, opts)
     %% Define an OCP with CasADi NLP solver
     %
     % Maximilian Herrmann
@@ -6,7 +6,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
 
         % Use a casadi function to evaluate the DEL in each time step
         opts.useCasadiStepFunctions (1,1) logical = false;
@@ -21,7 +21,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
 
     % Check end time and time step and display warning if the time step is
     % not an even divisor of the end time (important for simulation studies)
-    if rem(OCP.tF, OCP.h*OCP.nSteps)
+    if rem(OCP.tEnd, OCP.h*OCP.nSteps)
         warning("OCP time step (h=%.3e) is not an even divisor of the end time (%.3f)!", OCP.h, OCP.tEnd);
     end
 
@@ -35,7 +35,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
 
     % Verify that TCP trajectory is specified if the TCP tracking cost is
     % active
-    if OCP.iRC(5)
+    if OCP.runningCostActive(5)
         assert(~isempty(OCP.x_TCP_traj), ...
             "No TCP trajectory specified but TCP tracking cost active.");
         assert(size(OCP.x_TCP_traj,2) == OCP.nSteps+1, ...
@@ -110,10 +110,10 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
         udd = horzcat(udd_C{:});
     else
         u = horzcat(u_C{:});
-        [ud, udd] = diffHigherOrder(u, OCP.h, OCP.FDOrder);
+        [ud, udd] = diffHigherOrder(u, OCP.h, OCP.finiteDifferenceOrder);
     end
     q = horzcat(q_C{:});
-    [~, qdd]  = diffHigherOrder(q, OCP.h, OCP.FDOrder);
+    [~, qdd]  = diffHigherOrder(q, OCP.h, OCP.finiteDifferenceOrder);
 
 
     %% Define constraints
@@ -121,10 +121,10 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     tic;
 
     if OCP.discretization.type == "varint"
-        [c, lb_c, ub_c, g, c_DEL, c_WS] = OCPConstraintFunDEL(OCP, x_C, u_C, ...
+        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.ocp.constraintFunDEL(OCP, x_C, u_C, ...
             "useCasadiStepFunctions", opts.useCasadiStepFunctions);
     else
-        [c, lb_c, ub_c, g, c_DEL, c_WS] = OCPConstraintFunODE(OCP, x_C, u_C);
+        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.ocp.constraintFunODE(OCP, x_C, u_C);
     end
     g_F = g{end};
 
@@ -172,7 +172,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
 
     % TPC trajectory tracking cost
     J_TCP_tr = casadi.MX.zeros(1,1);
-    if OCP.iRC(5)
+    if OCP.runningCostActive(5)
         for iStep = 1:OCP.nSteps + 1
             g_TCP_k = g{iStep}(indexTCPFrame) * SE3(OCP.system.g_B_TCP(1:3,1:3), OCP.system.g_B_TCP(1:3,4));
 
@@ -207,12 +207,12 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
     %%% Add together
     J = casadi.MX.zeros(1,1);
     for iJR = 1:5
-        if OCP.iRC(iJR)
+        if OCP.runningCostActive(iJR)
             J = J + JR{iJR};
         end
     end
     for iJF = 1:3
-        if OCP.iFC(iJF)
+        if OCP.finalCostActive(iJF)
             J = J + JF{iJF};
         end
     end
@@ -273,7 +273,7 @@ function [NLPSolver, constrDef] = defineOCPSolver(OCP, opts)
 
     % Assemble solver options: Fields from OCP object overwrite standard
     % options
-    opts = OCP.nlpOpts;
+    opts = OCP.nlpOptions;
     fieldsGlobal = fieldnames(optsGlobal);
     for iField = 1:length(fieldsGlobal)
         if ~isfield(opts, fieldsGlobal{iField})

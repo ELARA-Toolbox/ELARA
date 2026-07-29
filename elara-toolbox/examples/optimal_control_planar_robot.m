@@ -55,7 +55,7 @@ MBSimFwd.animateSimResults("figureName", "AnimVI");
 
 %% Define OCP
 
-OCP = OCPDefinition;
+OCP = elara.ocp.Problem;
 OCP.system = elara.SystemSym(links);
 
 OCP.q0    = [pi/2, 0];
@@ -66,7 +66,7 @@ OCP.u0 = [];
 
 % End time, sample time
 OCP.h = 1e-2;
-OCP.tF = 1;
+OCP.tEnd = 1;
 
 
 % Desired end configuration
@@ -80,18 +80,18 @@ OCP.nInputSplinePoints = 25;
 OCP.simPars = MBSim.parameters;
 
 % Running cost
-OCP.wRC = [ % Weights
+OCP.runningCostWeights = [ % Weights
     1/2 % Norm u
     0   % Norm u_dot
     0   % Norm u_ddot
     0   % Norm q_ddot
     0   % TCP error
     ];
-OCP.iRC = logical(OCP.wRC); % Defines which cost terms are active
+OCP.runningCostActive = logical(OCP.runningCostWeights); % Defines which cost terms are active
 
 % Final Cost
-OCP.wFC = zeros(3,1); % Weights
-OCP.iFC = zeros(3,1); % Defines which cost terms are active
+OCP.finalCostWeights = zeros(3,1); % Weights
+OCP.finalCostActive = zeros(3,1); % Defines which cost terms are active
 
 OCP.uMin = ones(2,1)*-25;
 OCP.uMax = ones(2,1)*+25;
@@ -119,13 +119,13 @@ init3Dplot("createFigure", false);
 ANIMATE_IG = 1;
 
 if COMPUTE_IG
-    [q_init, u_init, MBSimIG, qOptStatic, uOptStatic] = OCPComputeInitialGuess_InvDyn(MBSim, OCP);
+    [q_init, u_init, MBSimIG, qOptStatic, uOptStatic] = elara.ocp.computeInitialGuessInvDyn(MBSim, OCP);
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
     if ~isempty(OCP.x_TCP_F)
         CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
     end
-    drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+    OCP.workspace.visualize("createFigure", false);
 
     fh_IG = plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess");
 
@@ -135,7 +135,7 @@ if COMPUTE_IG
         if ~isempty(OCP.x_TCP_F)
             CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
         end
-        drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+        OCP.workspace.visualize("createFigure", false);
         MBSimIG.animateSimResults("figure", fig);
     end
 else
@@ -173,7 +173,7 @@ end
 %% Define ODE OCP Solver
 
 OCP_ODE = OCP;
-OCP_ODE.discretization = OCPIntegratorRK("RK4");
+OCP_ODE.discretization = elara.ocp.IntegratorRK("RK4");
 OCP_ODE.Name = "RK4";
 
 qDotInit = diff2ndOrder(q_init, OCP_ODE.h);
@@ -203,7 +203,7 @@ plotOCPqu(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
 OCP_DEL = OCP;
 OCP_DEL.Name ="VI";
-OCP_DEL.discretization = OCPIntegratorVI;
+OCP_DEL.discretization = elara.ocp.IntegratorVI;
 
 OCP_DEL = OCP_DEL.initSolver("useCasadiStepFunctions", true);
 
@@ -212,7 +212,7 @@ OCP_DEL = OCP_DEL.initSolver("useCasadiStepFunctions", true);
 % Initial guess objective components
 if ~OCP_DEL.useSplineInputs
     disp("Objective function components initial guess:")
-    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call({quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.wRC}) ))
+    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call({quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.runningCostWeights}) ))
 end
 
 % Plot constraint residuals of the initial guess
@@ -233,7 +233,7 @@ plotOCPqu(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
 
 if ~OCP_DEL.useSplineInputs
     disp("Objective function components solution:")
-    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call({quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.wRC}) ))
+    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call({quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.runningCostWeights}) ))
 end
 
 %% Post-process etc.

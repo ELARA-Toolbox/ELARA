@@ -1,4 +1,4 @@
-classdef OCPIntegratorImplicitMidpoint < OCPIntegratorODE
+classdef IntegratorImplicitMidpoint < elara.abstract.OCPDiscretizationODE
     %% Class defining an Implicit Midpoint Rule Integrator for an OCP
     properties(SetAccess=private)
         timeStepStageValues = 0.5;
@@ -7,7 +7,7 @@ classdef OCPIntegratorImplicitMidpoint < OCPIntegratorODE
     methods(Static)
         function J = integrateCostFunctionValue(OCP, x)
             arguments
-                OCP (1,1) OCPDefinition
+                OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
                 % each column represents one time step
@@ -18,7 +18,7 @@ classdef OCPIntegratorImplicitMidpoint < OCPIntegratorODE
         end
         function J = integrateCostFunctionValueSpline(OCP, ~, x_C)
             arguments
-                OCP (1,1) OCPDefinition
+                OCP (1,1) elara.ocp.Problem
 
                 % Placeholder argument for consistency with class function
                 % interface

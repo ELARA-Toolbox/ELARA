@@ -25,7 +25,7 @@ MBSim = elara.Simulation(links, "displayInfo", false);
 
 %% Define OCP
 
-OCP = OCPDefinition;
+OCP = elara.ocp.Problem;
 OCP.system = elara.SystemSym(links);
 
 OCP.q0    = zeros(MBSim.system.nDoF,1); % Initial configuration
@@ -38,7 +38,7 @@ OCP.uMax = ones(MBSim.system.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 1e-2;
-OCP.tF = 2;
+OCP.tEnd = 2;
 
 % Desired TCP pose
 OCP.x_TCP_F = [0.7; 0.2; 0.3];
@@ -47,17 +47,17 @@ OCP.R_TCP_F = []; % Rotation arbitrary
 OCP.simPars = MBSim.parameters;
 
 % Running cost
-OCP.wRC = [ % weights
+OCP.runningCostWeights = [ % weights
     1e-2/2 % Norm u
     0      % Norm u_dot
     0      % Norm u_ddot
     0      % Norm q_ddot
     1e3    % TCP error
     ];
-OCP.iRC = logical(OCP.wRC); % Defines which cost terms are active
+OCP.runningCostActive = logical(OCP.runningCostWeights); % Defines which cost terms are active
 
 % No final time cost term
-OCP.iFC = zeros(3,1); % Defines which cost terms are active
+OCP.finalCostActive = zeros(3,1); % Defines which cost terms are active
 
 OCP.addTCPFinalTimeConstraint = false;
 OCP.tPreAct  = 5*2^-5;
@@ -72,31 +72,31 @@ OCP.nInputSplinePoints = 20;
 OCP.inputSplineOrder = 3;
 
 % NLP object / solver options
-OCP.nlpOpts.expand = false;
+OCP.nlpOptions.expand = false;
 
 
 %% Visualize reference configuration and target position
 
 [~, vis] = MBSim.visualizeSystemRefConf();
 CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
-drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+OCP.workspace.visualize("createFigure", false);
 
 
 %% Generate desired TCP trajectory
 
-OCP.x_TCP_traj = generateDesiredTCPTrajLinear(MBSim, OCP);
+OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(MBSim, OCP);
 
 
 %% Initial Guess based on ODE Inverse Dynamics
 
-[q_init_ode, qd_init_ode, u_init_ode] = OCPComputeInitialGuess_InvDyn( ...
+[q_init_ode, qd_init_ode, u_init_ode] = elara.ocp.computeInitialGuessInvDyn( ...
     MBSim, OCP, "invDynMethod", "ODE", "createDebugPlots", false);
 
 fh_IG_ode = plotOCPqu(OCP, q_init_ode, u_init_ode, "figureName", "Initial Guess ODE", "plotDerivatives", true);
 
 % Compute Initial Guess
 if COMPUTE_IG
-    [q_init, qd_init, u_init, MBSimIG] = OCPComputeInitialGuess_InvDyn( ...
+    [q_init, qd_init, u_init, MBSimIG] = elara.ocp.computeInitialGuessInvDyn( ...
         MBSim, OCP, "createDebugPlots", false, "invDynMethod", "ODE");
 
     fh_IG = plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
@@ -104,7 +104,7 @@ if COMPUTE_IG
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
     CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
-    drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+    OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
     q_init = repmat(OCP.q0, [1,OCP.nSteps+1]);
@@ -143,7 +143,7 @@ end
 
 if 1
     OCP_ODE = OCP;
-    OCP_ODE.discretization = OCPIntegratorRK("RK2");
+    OCP_ODE.discretization = elara.ocp.IntegratorRK("RK2");
     OCP_ODE.Name = "RK2";
     x_init = [q_init; qd_init];
 
@@ -166,7 +166,7 @@ if 1
     OCP_ODE.plotConstraintResiduals(x_sol, u_sol_z, "figureName", "Constr. Res. Solution");
     plotOCPqu(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
-    if OCP.iRC(5)
+    if OCP.runningCostActive(5)
         fh = plotOCPTCPTraj(MBSim, OCP, q_sol);
     end
 end
@@ -175,7 +175,7 @@ end
 %% Define DEL OCP Solver
 OCP_DEL = OCP;
 OCP_DEL.Name ="VI";
-OCP_DEL.discretization = OCPIntegratorVI;
+OCP_DEL.discretization = elara.ocp.IntegratorVI;
 
 OCP_DEL = OCP_DEL.initSolver;
 
@@ -186,7 +186,7 @@ OCP_DEL = OCP_DEL.initSolver;
 if ~OCP_DEL.useSplineInputs
     disp("Objective function components initial guess:")
     disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call( ...
-        {quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.wRC} ...
+        {quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.runningCostWeights} ...
         )));
 end
 
@@ -209,11 +209,11 @@ plotOCPqu(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
 if ~OCP.useSplineInputs
     disp("Objective function components solution:")
     disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call( ...
-        {quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.wRC} ...
+        {quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.runningCostWeights} ...
         )))
 end
 
-if OCP.iRC(5)
+if OCP.runningCostActive(5)
     fh = plotOCPTCPTraj(MBSim, OCP, q_sol);
 end
 

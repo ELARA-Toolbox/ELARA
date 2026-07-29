@@ -1,4 +1,4 @@
-classdef OCPIntegratorRK < OCPIntegratorODE
+classdef IntegratorRK < elara.abstract.OCPDiscretizationODE
     %% Class defining an RK Integrator for an OCP
     properties
         method (1,1) string {mustBeMember(method, ["RK2", "RK4"])} = "RK4";
@@ -7,7 +7,7 @@ classdef OCPIntegratorRK < OCPIntegratorODE
         timeStepStageValues
     end
     methods
-        function obj = OCPIntegratorRK(method)
+        function obj = IntegratorRK(method)
             arguments
                 method (1,1) string {mustBeMember(method, ["RK2", "RK4"])} = "RK4";
             end
@@ -20,7 +20,7 @@ classdef OCPIntegratorRK < OCPIntegratorODE
             arguments
                 obj
 
-                OCP (1,1) OCPDefinition
+                OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
                 % each column represents one time step
@@ -43,7 +43,7 @@ classdef OCPIntegratorRK < OCPIntegratorODE
             arguments
                 obj
 
-                OCP (1,1) OCPDefinition
+                OCP (1,1) elara.ocp.Problem
 
                 % Placeholder argument for consistency with class function
                 % interface

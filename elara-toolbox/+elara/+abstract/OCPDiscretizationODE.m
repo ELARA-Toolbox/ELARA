@@ -1,5 +1,5 @@
-classdef (Abstract) OCPIntegratorODE < OCPIntegrator
-    %% Abstract class defining an ODE Integrator for an OCP
+classdef (Abstract) OCPDiscretizationODE < elara.abstract.OCPDiscretization
+    %% Abstract class defining an ODE discretization scheme for an OCP
     properties(Constant)
         % Defines the integrator type
         type  = "ode";

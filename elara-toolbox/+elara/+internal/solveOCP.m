@@ -6,7 +6,7 @@ function [x_sol, u_sol, sol, stats] = solveOCP(OCP, xInit, uInit, opts)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        OCP         (1,1) OCPDefinition
+        OCP         (1,1) elara.ocp.Problem
 
         % Initial guess
         xInit       (:,:) double % can be configuration q or state x!
@@ -107,7 +107,7 @@ function [x_sol, u_sol, sol, stats] = solveOCP(OCP, xInit, uInit, opts)
     p.ubx = ub_X;
     p.lbg = OCP.constrDef.lb_c;
     p.ubg = OCP.constrDef.ub_c;
-    p.p = [OCP.wRC; OCP.wFC; OCP.x_TCP_F];
+    p.p = [OCP.runningCostWeights; OCP.finalCostWeights; OCP.x_TCP_F];
     if OCP.useSplineInputs
         p.x0 = qzMat2XVec(xInit, uInit);
     else

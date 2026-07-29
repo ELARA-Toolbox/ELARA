@@ -6,7 +6,7 @@ function fhs = plotOCPqu(OCP, q, u, opts)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
 
         % Coordinates with dimensions (nDoF, nSteps+1)
         q    (:,:) double

@@ -1,4 +1,4 @@
-classdef OCPIntegratorVI < OCPIntegrator
+classdef IntegratorVI < elara.abstract.OCPDiscretization
     %% Class defining a Variational Integrator for OCP discretization
     properties
         % Generalized trapezoidal rule factor of the interior integration
@@ -18,7 +18,7 @@ classdef OCPIntegratorVI < OCPIntegrator
     methods (Static)
         function J = integrateCostFunctionValue(OCP, x)
             arguments
-                OCP (1,1) OCPDefinition
+                OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
                 % each column represents one time step
@@ -33,7 +33,7 @@ classdef OCPIntegratorVI < OCPIntegrator
             arguments
                 obj
 
-                OCP (1,1) OCPDefinition
+                OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
                 % each column represents one time step

@@ -25,7 +25,7 @@ MBSim = elara.Simulation(links, "displayInfo", false);
 
 %% Define OCP
 
-OCP = OCPDefinition;
+OCP = elara.ocp.Problem;
 OCP.system = elara.SystemSym(links);
 
 OCP.q0    = zeros(MBSim.system.nDoF,1);
@@ -38,7 +38,7 @@ OCP.uMax = ones(MBSim.system.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 2^-6;
-OCP.tF = 2;
+OCP.tEnd = 2;
 
 % Desired TCP pose
 OCP.x_TCP_F = [0.55; 0.3; 0.05];
@@ -47,22 +47,22 @@ OCP.R_TCP_F = []; % Rotation arbitrary
 OCP.simPars = MBSim.parameters;
 
 % Running cost
-OCP.wRC = [ % Weights
+OCP.runningCostWeights = [ % Weights
     1e-3  % Norm u
     1e-2  % Norm u_dot
     5e-2  % Norm u_ddot
     1e-0  % Norm q_ddot
     0     % TCP error
     ];
-OCP.iRC = logical(OCP.wRC);  % Defines which cost terms are active
+OCP.runningCostActive = logical(OCP.runningCostWeights);  % Defines which cost terms are active
 
 % Final time cost term
-OCP.wFC = [ % Weights
+OCP.finalCostWeights = [ % Weights
     0     % Norm u
     0     % Norm q
     1e5   % TCP Error
     ];
-OCP.iFC = logical(OCP.iFC);  % Defines which cost terms are active
+OCP.finalCostActive = logical(OCP.finalCostActive);  % Defines which cost terms are active
 
 OCP.addTCPFinalTimeConstraint = false;
 
@@ -71,13 +71,13 @@ OCP.inputSplineOrder = 3;
 OCP.nInputSplinePoints = 30;
 
 % NLP object / solver options
-OCP.nlpOpts.expand = false;
+OCP.nlpOptions.expand = false;
 
 %% Visualize reference configuration and target position
 
 [~, vis] = MBSim.visualizeSystemRefConf();
 CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
-drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+OCP.workspace.visualize("createFigure", false);
 
 %% Compute Initial Guess
 
@@ -85,7 +85,7 @@ OCP.tPreAct  = 0;
 OCP.tPostAct = 0;
 
 if COMPUTE_IG
-    [q_init, qd_init, u_init, MBSimIG, qOptStatic, uOptStatic] = OCPComputeInitialGuess_InvDyn( ...
+    [q_init, qd_init, u_init, MBSimIG, qOptStatic, uOptStatic] = elara.ocp.computeInitialGuessInvDyn( ...
         MBSim, OCP, "invDynMethod", "ODE", "createDebugPlots", true);
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
@@ -93,7 +93,7 @@ if COMPUTE_IG
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
     CoordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
-    drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+    OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
     q_init = repmat(OCP.q0, [1, OCP.nSteps+1]);
@@ -135,7 +135,7 @@ end
 %% Define DEL OCP Solver
 
 OCP.Name = "VI";
-OCP.discretization = OCPIntegratorVI;
+OCP.discretization = elara.ocp.IntegratorVI;
 
 OCP = OCP.initSolver("useCasadiStepFunctions", true);
 

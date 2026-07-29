@@ -3,7 +3,7 @@ function fh = plotOCPTCPTraj(MBSim, OCP, q_sol)
     %   Detailed explanation goes here
     arguments (Input)
         MBSim   (1,1) elara.Simulation
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
         q_sol   (:,:) double
     end
 

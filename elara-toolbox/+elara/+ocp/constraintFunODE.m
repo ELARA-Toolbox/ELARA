@@ -1,8 +1,8 @@
-function [c, lb_c, ub_c, g, c_dyn, c_WS] = OCPConstraintFunODE(OCP, x, u)
+function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     %% Evaluate the constraint function c for a ODE discretization scheme
     % i.e., the function c(q,u) that defines the constraints c = 0
     arguments
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
 
         % Matrices of states and inputs at time steps
         x       (:,1) cell % (2*nDoF,  nSteps+1)
@@ -21,7 +21,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = OCPConstraintFunODE(OCP, x, u)
     % NOTE:
     % Workspace constraints are currently not considered for the reference
     % implementations!
-    %[dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(MBSys.nFrames, OCP.workSpaceDef);
+    %[dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSys.nFrames);
 
 
     %% Define step constraint function

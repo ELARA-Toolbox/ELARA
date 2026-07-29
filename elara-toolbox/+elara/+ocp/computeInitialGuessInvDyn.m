@@ -1,4 +1,4 @@
-function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDyn(MBSim, OCP, opts)
+function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MBSim, OCP, opts)
     %% Generate Initial Guess for Optimal Control Problem with Inv. Dynamics
     %
     % Method:
@@ -8,7 +8,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     % 3. Compute inputs with inverse dynamics
     arguments
         MBSim   (1,1) elara.Simulation
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
 
         opts.doIDForwardSim (1,1) logical = false;
         opts.h              (1,1) double  = OCP.h;
@@ -81,7 +81,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     % Add one step to the time vector of the inverse dynamics to be able to
     % compute the last step consistently
     h_ID = opts.h;
-    nSteps_ID = round(OCP.tF/h_ID);
+    nSteps_ID = round(OCP.tEnd/h_ID);
     tout_ID = (0 : h_ID : h_ID*nSteps_ID).';
 
     if isempty(OCP.qDot0)
@@ -173,7 +173,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = OCPComputeInitialGuess_InvDy
     MBSim.Name = "Initial Guess";
 
     % Specify Simulation Parameters
-    MBSim.parameters.tEnd  = OCP.tF;
+    MBSim.parameters.tEnd  = OCP.tEnd;
     MBSim.parameters.q0    = OCP.q0;
     MBSim.parameters.qDot0 = OCP.qDot0;
 

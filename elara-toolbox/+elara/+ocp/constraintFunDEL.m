@@ -1,8 +1,8 @@
-function [c, lb_c, ub_c, g, c_DEL, c_WS] = OCPConstraintFunDEL(OCP, q, u, opts)
+function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     %% Evaluate the constraint function c
     % i.e., the function c(q,u) that defines the constraints c = 0
     arguments
-        OCP     (1,1) OCPDefinition
+        OCP     (1,1) elara.ocp.Problem
 
         % Cell vectors of coordinates and inputs at time steps
         q       (:,1) cell % (nDof,    nSteps+1)
@@ -25,7 +25,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = OCPConstraintFunDEL(OCP, q, u, opts)
     h = OCP.h;
 
     % Get workspace constraint functions
-    [dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(MBSys.nFrames, OCP.workSpaceDef);
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSys.nFrames);
 
 
     %% Define Function for step constraints

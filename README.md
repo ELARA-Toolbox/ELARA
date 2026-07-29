@@ -63,9 +63,9 @@ The simulation examples demonstrate the standard workflow to simulate the dynami
 
 The optimal-control examples demonstrate:
 
-1. Creating an `OCPDefinition`.
+1. Creating an `elara.ocp.Problem`.
 2. Using `MBSystemSym(links)` for CasADi-compatible dynamics.
-3. Selecting an OCP discretization such as `OCPIntegratorVI` or `OCPIntegratorRK`.
+3. Selecting an OCP discretization such as `elara.ocp.IntegratorVI` or `elara.ocp.IntegratorRK`.
 4. Initializing the NLP solver with `initSolver`.
 5. Solving with `solve` and post-processing the resulting trajectory.
 
@@ -161,15 +161,15 @@ Otherwise, choose `h` according to the requirements on integration error and run
 
 ### Optimal Control
 
-`OCPDefinition` stores the time grid, boundary conditions, state and input bounds, cost weights, TCP targets or trajectories, optional B-spline input parameterization, and CasADi/Ipopt options.
+`elara.ocp.Problem` stores the time grid, boundary conditions, state and input bounds, cost weights, TCP targets or trajectories, optional B-spline input parameterization, and CasADi/Ipopt options.
 
 Available OCP discretizations include:
 
-- `OCPIntegratorVI`: First/second-order variational/discrete Euler-Lagrange transcription (DMOC)
-- `OCPIntegratorRK`: Second-/fourth-order ODE transcription with explicit Runge-Kutta integration (`RK2` and `RK4`)
-- `OCPIntegratorImplicitMidpoint`: Second-order ODE transcription with implicit midpoint rule
+- `elara.ocp.IntegratorVI`: First/second-order variational/discrete Euler-Lagrange transcription (DMOC)
+- `elara.ocp.IntegratorRK`: Second-/fourth-order ODE transcription with explicit Runge-Kutta integration (`RK2` and `RK4`)
+- `elara.ocp.IntegratorImplicitMidpoint`: Second-order ODE transcription with implicit midpoint rule
 
-The helper `OCPComputeInitialGuess_InvDyn` can generate inverse-dynamics-based initial guesses for trajectory-optimization problems.
+The helper `elara.ocp.computeInitialGuessInvDyn` can generate inverse-dynamics-based initial guesses for trajectory-optimization problems.
 
 
 ## Citation

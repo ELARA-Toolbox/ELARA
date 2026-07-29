@@ -1,5 +1,5 @@
-classdef (Abstract) OCPIntegrator
-    %% Abstract class defining an Integrator for an OCP
+classdef (Abstract) OCPDiscretization
+    %% Abstract class defining a discretization scheme for an OCP
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -9,7 +9,7 @@ classdef (Abstract) OCPIntegrator
         timeStepStageValues (:,1) double
     end
     properties(Abstract,Constant)
-        % Defines the integrator type
+        % Defines the discretization type
         type           (1,1) string {mustBeMember(type, ["varint", "ode"])}
     end
 
