@@ -1,4 +1,4 @@
-function p = drawSystemVisProjection(vis, plane, planePos, opts)
+function p = drawSystemProjectionOntoPlane(vis, plane, planePos, opts)
     %% Draw 2D Projection of a System Visualization onto a Plane
     %
     % Maximilian Herrmann

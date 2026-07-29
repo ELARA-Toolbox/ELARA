@@ -43,7 +43,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
 
             fprintf("Computing optimal steady state configuration...\n\n");
 
-            MBSysSym = systemNum2SystemSym(MBSim.system);
+            MBSysSym = elara.internal.systemNum2SystemSym(MBSim.system);
 
             [qF, uF] = computeOptimalSteadyStateInputsTCPPos(MBSysSym, OCP_stat, MBSim.parameters);
 

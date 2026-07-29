@@ -1,4 +1,4 @@
-function [T,U,V,H] = computeSimResEnergies(system, simPars, simRes, isVarInt, useFD) %#codegen
+function [T,U,V,H] = computeSimulationEnergies(system, simPars, simRes, isVarInt, useFiniteDifferences) %#codegen
     %% Compute energy evolution for simulation results
     arguments (Input)
         system      (1,1) elara.SystemNum
@@ -12,7 +12,7 @@ function [T,U,V,H] = computeSimResEnergies(system, simPars, simRes, isVarInt, us
         % For varInts: Whether to compute the kinetic energy using generalized
         % velocities computed from finite differences (true) or via
         % discrete momenta
-        useFD       (1,1) logical
+        useFiniteDifferences (1,1) logical
     end
 
     nSteps = numel(simRes.tout);
@@ -29,7 +29,7 @@ function [T,U,V,H] = computeSimResEnergies(system, simPars, simRes, isVarInt, us
         h = simRes.tout(2) - simRes.tout(1);
 
         % Get velocities via finite differences
-        if useFD
+        if useFiniteDifferences
             q_dot = diff2ndOrder(simRes.q, h);
         else
             q_dot = [];
@@ -48,7 +48,7 @@ function [T,U,V,H] = computeSimResEnergies(system, simPars, simRes, isVarInt, us
         g_k = simRes.g(:,:,:,iStep);
 
         % Kinetic energy
-        if isVarInt && ~useFD
+        if isVarInt && ~useFiniteDifferences
             % Variational integrators: Compute kinetic energy at
             % time nodes based on discrete momenta
             if iStep < nSteps

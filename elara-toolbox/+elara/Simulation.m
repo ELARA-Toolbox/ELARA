@@ -202,7 +202,7 @@ classdef Simulation
 
             %% Interpolate results at fixed sampling rate
             tQuery = linspace(obj.results.tout(1), obj.results.tout(end), opts.nSnapShots);
-            gQuery = interpolateSimResultsTime(obj.system, obj.results, tQuery);
+            gQuery = interpolateSimulationResultsTime(obj.system, obj.results, tQuery);
 
             %% Prepare axis limits
             % Extra margin
@@ -264,18 +264,18 @@ classdef Simulation
             %% Compute energy evolution for a finished simulation
             arguments
                 obj         (1,1) elara.Simulation
-                opts.useFD  (1,1) logical = true;
+                opts.useFiniteDifferences (1,1) logical = true;
             end
             disp('   Computing Energy Evolution...');
             isVarInt = obj.integrator.type ==  "varint";
 
             % Check if compiled mex files are available
-            if exist("firstOrderRHS_mex", "file")
-                [T,U,V,H] = computeSimResEnergies_mex( ...
-                    obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
+            if exist("computeSimulationEnergies_mex", "file") == 3
+                [T,U,V,H] = computeSimulationEnergies_mex( ...
+                    obj.system, obj.parameters, obj.results, isVarInt, opts.useFiniteDifferences);
             else
-                [T,U,V,H] = computeSimResEnergies( ...
-                    obj.system, obj.parameters, obj.results, isVarInt, opts.useFD);
+                [T,U,V,H] = computeSimulationEnergies( ...
+                    obj.system, obj.parameters, obj.results, isVarInt, opts.useFiniteDifferences);
             end
             obj.results.kineticEnergy   = T;
             obj.results.potentialEnergy = U;

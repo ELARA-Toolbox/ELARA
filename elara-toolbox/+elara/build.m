@@ -29,7 +29,7 @@ functionNames = [
     "elara.dynamics.num.firstOrderDerivative"
     "getSimResFromStateTrajectory"
     "elara.statics.num.residual"
-    "computeSimResEnergies"
+    "computeSimulationEnergies"
     ];
 
 outputNames = [
@@ -39,7 +39,7 @@ outputNames = [
     "firstOrderDerivative"
     "getSimResFromStateTrajectory"
     "staticResidual"
-    "computeSimResEnergies"
+    "computeSimulationEnergies"
     ];
 
 for iFun = 1:numel(functionNames)

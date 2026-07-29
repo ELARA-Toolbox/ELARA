@@ -20,7 +20,7 @@ mexFileNames = [
     "firstOrderDerivative_mex"
     "getSimResFromStateTrajectory_mex"
     "staticResidual_mex"
-    "computeSimResEnergies_mex"
+    "computeSimulationEnergies_mex"
     ];
 fileExists = zeros(size(mexFileNames));
 for iFile = 1:numel(mexFileNames)
