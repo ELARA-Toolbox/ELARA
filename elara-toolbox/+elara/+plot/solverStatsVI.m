@@ -2,12 +2,12 @@ function figHandle = solverStatsVI(simRes, opts)
     %% Plot statistics about the implicit solver
     arguments
         simRes          (1,1) elara.SimulationResults
-        opts.nameStr    (1,1) string = ""
+        opts.nameString (1,1) string = ""
     end
     if ~isempty(simRes.solverIterations)
 
         figHandle = figure( ...
-            'Name', strcat(opts.nameStr, "Solver Stats VI"), 'NumberTitle','off');
+            'Name', strcat(opts.nameString, "Solver Stats VI"), 'NumberTitle','off');
 
         t = tiledlayout(figHandle, 2,1);
 

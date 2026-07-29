@@ -1,23 +1,23 @@
-function figHandle = jointAngles(MBSys, simRes, opts)
+function figHandle = jointAngles(sim, opts)
     arguments
-        MBSys           (1,1) elara.abstract.System
-        simRes          (1,1) elara.SimulationResults
-        opts.nameStr    (1,1) string = ""
+        sim              (1,1) elara.Simulation
+        opts.nameString  (1,1) string = ""
     end
     figHandle = figure( ...
-        'Name', strcat(opts.nameStr, "JointAngles"), 'NumberTitle','off');
+        'Name', strcat(opts.nameString, "JointAngles"), 'NumberTitle','off');
 
     % Get indices of the joint angles in the coordinate vector
-    thetaIndices = MBSys.frames.qIndices(:,MBSys.frames.jointType == 1);
+    thetaIndices = sim.system.frames.qIndices(:,sim.system.frames.jointType == 1);
 
     if  ~isempty(thetaIndices)
-        theta     = simRes.q(thetaIndices(1,:),:);
-        theta_dot = simRes.q_dot(thetaIndices(1,:),:);
+        theta     = sim.results.q(thetaIndices(1,:),:);
+        theta_dot = sim.results.q_dot(thetaIndices(1,:),:);
 
-        tl = tiledlayout("vertical");
-        t = nexttile;
+        % Plot joint angles
+        tiledlayout("vertical");
+        nexttile;
 
-        plot(simRes.tout, rad2deg(theta));
+        plot(sim.results.tout, rad2deg(theta));
         legend( ...
             arrayfun(@(x) sprintf("$\\theta_%d$", x), 1:size(theta,1)), ...
             "Interpreter","latex");
@@ -28,14 +28,14 @@ function figHandle = jointAngles(MBSys, simRes, opts)
         box on
         title("Joint Angles over Time", "Interpreter","latex")
 
-        t = nexttile;
+        % Plot angular velocities
+        nexttile;
         if isempty(theta_dot)
-            %theta_dot = gradient(theta) / simPars.h;
             warning("theta_dot not defined. Using NaN values.")
             theta_dot = nan(size(theta));
         end
 
-        plot(simRes.tout, rad2deg(theta_dot));
+        plot(sim.results.tout, rad2deg(theta_dot));
         legend( ...
             arrayfun(@(x) sprintf("$\\dot{\\theta}_%d$", x), 1:size(theta,1)), ...
             "Interpreter","latex");

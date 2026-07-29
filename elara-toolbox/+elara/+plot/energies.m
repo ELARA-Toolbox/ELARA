@@ -1,7 +1,7 @@
 function energies(simRes, opts)
     arguments
         simRes          (1,1) elara.SimulationResults
-        opts.nameStr (1,1) string = ""
+        opts.nameString (1,1) string = ""
     end
     fh = figure( ...
         'Name', strcat(opts.nameStr, 'Energies'), 'NumberTitle','off');

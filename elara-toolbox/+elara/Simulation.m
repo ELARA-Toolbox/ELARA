@@ -287,27 +287,42 @@ classdef Simulation
         %% Plotting
         function fhs = plotAll(obj)
             %% Generate all available plots for the simulation
-            if obj.Name == ""
-                nameStr = "";
-            else
-                nameStr = strcat(obj.Name, ": ");
-            end
-            % Various plots
-            fhs(1) = elara.plot.jointAngles(obj.system, obj.results, "nameStr", nameStr);
-            fhs(2) = elara.plot.framePositions(obj, "nameStr", nameStr);
-            fhs_vel = elara.plot.frameVelocities(obj, "nameStr", nameStr);
-            fhs_beam = elara.plot.beamData(obj, "nameStr", nameStr);
+            fhs(1)   = obj.plotJointAngles;
+            fhs(2)   = obj.plotFramePositions;
+            fhs_vel  = obj.plotFrameVelocities;
+            fhs_beam = obj.plotBeamData;
+            fh_stats = obj.plotSolverStats;
 
-            % Solver stats: Depend on the chosen solver
+            % Output figure array
+            fhs = [fhs, fhs_vel, fhs_beam, fh_stats];
+        end
+
+        % Plot functions for individual quantities
+        function fhs = plotJointAngles(obj)
+            fhs = elara.plot.jointAngles(obj, "nameString", obj.getPlotNameString);
+        end
+        
+        function fhs = plotFramePositions(obj)
+            fhs = elara.plot.framePositions(obj, "nameString", obj.getPlotNameString);
+        end
+
+        function fhs = plotFrameVelocities(obj)
+            fhs = elara.plot.frameVelocities(obj, "nameString", obj.getPlotNameString);
+        end
+
+        function fhs = plotBeamData(obj)
+            fhs = elara.plot.beamData(obj, "nameString", obj.getPlotNameString);
+        end
+
+        function fhs = plotSolverStats(obj)
             switch obj.integrator.type
                 case "varint"
-                    fh_stats = elara.plot.solverStatsVI(obj.results, "nameStr", nameStr);
+                    fhs = elara.plot.solverStatsVI(obj.results, "nameString", obj.getPlotNameString);
                 case "ode"
-                    fh_stats = elara.plot.solverStatsODE(obj.results, "nameStr", nameStr);
+                    fhs = elara.plot.solverStatsODE(obj.results, "nameString", obj.getPlotNameString);
                 otherwise
                     error("Solver not implemented.");
             end
-            fhs = [fhs, fhs_vel, fhs_beam, fh_stats];
         end
     end
     methods(Hidden)
@@ -348,5 +363,15 @@ classdef Simulation
                 max(max(max(g(3,4,:,:),[], 'all'), 0.3), x0(3))
                 ] + margins(:,3); % Consider position of the time label
         end
+
+        function nameString = getPlotNameString(obj)
+            %% Get proper name string for plots
+            if obj.Name == ""
+                nameString = "";
+            else
+                nameString = strcat(obj.Name, ": ");
+            end
+        end
+
     end
 end

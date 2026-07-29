@@ -1,11 +1,8 @@
 function figHandles = beamData(sim, opts)
     %% Plot Beam node / segment data
-
-    %% TODO: Rewrite this entire function! (28.01.25)
-
     arguments
-        sim          (1,1) elara.Simulation
-        opts.nameStr (1,1) string = ""
+        sim             (1,1) elara.Simulation
+        opts.nameString (1,1) string = ""
     end
 
     figHandles = gobjects(0);
@@ -30,10 +27,10 @@ function figHandles = beamData(sim, opts)
                 simData.x = cat(2, nan(3,1,length(sim.results.tout)), simData.x);
                 simData.eta = cat(2, zeros(6,1,length(sim.results.tout)), simData.eta);
             end
-            if opts.nameStr == ""
+            if opts.nameString == ""
                 nameStr = sprintf("Link %d: ", iLink);
             else
-                nameStr = sprintf("%sLink %d: ", opts.nameStr, iLink);
+                nameStr = sprintf("%sLink %d: ", opts.nameString, iLink);
             end
             fhs = plotBeamNodeData(simData, sim.links(iLink).xiRef, "name", nameStr);
 
