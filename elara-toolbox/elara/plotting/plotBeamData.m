@@ -1,47 +1,46 @@
-function figHandles = plotBeamData(obj, opts)
+function figHandles = plotBeamData(sim, opts)
     %% Plot Beam node / segment data
 
     %% TODO: Rewrite this entire function! (28.01.25)
 
     arguments
-        obj          (1,1) elara.Simulation
+        sim          (1,1) elara.Simulation
         opts.nameStr (1,1) string = ""
     end
 
     figHandles = gobjects(0);
 
-    for iLink = 1:obj.system.nLinks
-        if ~obj.links(iLink).isRigid
+    for iLink = 1:sim.system.nLinks
+        if ~sim.links(iLink).isRigid
             % Prepare struct with beam data to use (legacy) beam
             % plotting function
-            frameIndices = obj.system.linkFrameIndices(1,iLink):obj.system.linkFrameIndices(2,iLink);
-            simData.tout = obj.results.tout;
-            simData.R = obj.results.g(1:3,1:3,frameIndices,:);
-            simData.x = squeeze(obj.results.g(1:3,4,frameIndices,:));
-            simData.eta = obj.results.eta(:,frameIndices,:);
+            frameIndices = sim.system.linkFrameIndices(1,iLink):sim.system.linkFrameIndices(2,iLink);
+            simData.tout = sim.results.tout;
+            simData.R = sim.results.g(1:3,1:3,frameIndices,:);
+            simData.x = squeeze(sim.results.g(1:3,4,frameIndices,:));
+            simData.eta = sim.results.eta(:,frameIndices,:);
 
-            simData.xi = zeros(6,obj.links(iLink).nSegments, length(obj.results.tout));
-            for iStep = 1:length(obj.results.tout)
-                simData.xi(:,:,iStep) = obj.system.getLinkDeformations(obj.results.q(:,iStep), iLink);
+            simData.xi = zeros(6,sim.links(iLink).nSegments, length(sim.results.tout));
+            for iStep = 1:length(sim.results.tout)
+                simData.xi(:,:,iStep) = sim.system.getLinkDeformations(sim.results.q(:,iStep), iLink);
             end
 
-            if iLink == 1 && obj.system.isCantilever
-                simData.R = cat(3, nan(3,3,1,length(obj.results.tout)), simData.R);
-                simData.x = cat(2, nan(3,1,length(obj.results.tout)), simData.x);
-                simData.eta = cat(2, zeros(6,1,length(obj.results.tout)), simData.eta);
+            if iLink == 1 && sim.system.isCantilever
+                simData.R = cat(3, nan(3,3,1,length(sim.results.tout)), simData.R);
+                simData.x = cat(2, nan(3,1,length(sim.results.tout)), simData.x);
+                simData.eta = cat(2, zeros(6,1,length(sim.results.tout)), simData.eta);
             end
             if opts.nameStr == ""
                 nameStr = sprintf("Link %d: ", iLink);
             else
                 nameStr = sprintf("%sLink %d: ", opts.nameStr, iLink);
             end
-            fhs = plotBeamNodeData(simData, obj.links(iLink).xiRef, "name", nameStr);
+            fhs = plotBeamNodeData(simData, sim.links(iLink).xiRef, "name", nameStr);
 
             figHandles = [figHandles, fhs];
         end
     end
 end
-
 
 function figHandles = plotBeamNodeData(simData, xiRef, opts)
     %% Plot various data from beam nodes

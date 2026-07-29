@@ -1,7 +1,7 @@
-function drawWorkspace(ws, options)
+function drawWorkspace(workspace, options)
     %% Draw/visualize workspace
     arguments
-        ws (1,1) workspaceDefinition
+        workspace (1,1) workspaceDefinition
 
         options.figureName    (1,1) string = "Workspace";
         options.createFigure  (1,1) logical = true;
@@ -12,15 +12,15 @@ function drawWorkspace(ws, options)
         fig = gcf;
     end
 
-    nPolytopes = ws.nObjects;
+    nPolytopes = workspace.nObjects;
     polyColors = lines(2);
 
-    [pVertices, pTriIndices] = ws.getPolytopeVertexData;
+    [pVertices, pTriIndices] = workspace.getPolytopeVertexData;
 
     % Individual polytopes
     for iPoly = 1:nPolytopes
         polyVertices = pVertices{iPoly};
-        polyColor = polyColors(double(ws.boxTypes(iPoly))+1,:);
+        polyColor = polyColors(double(workspace.boxTypes(iPoly))+1,:);
         trisurf(pTriIndices{iPoly}, ...
             polyVertices(:,1), polyVertices(:,2), polyVertices(:,3), ...
             'FaceAlpha', 0.1, 'FaceColor', polyColor, 'EdgeColor', polyColor, 'LineWidth', 1.0);

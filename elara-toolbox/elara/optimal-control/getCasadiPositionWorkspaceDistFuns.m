@@ -1,4 +1,4 @@
-function [dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(nPoints, ws)
+function [dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(nPoints, workspace)
     %% Casadi function for signed workspace distance functions
     % for multiple points
     %
@@ -13,11 +13,11 @@ function [dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(nPoints, ws)
         nPoints     (1,1) double
 
         % Workspace object
-        ws          (1,1) workspaceDefinition
+        workspace          (1,1) workspaceDefinition
     end
 
-    indicesExtObjects = find(ws.boxTypes == 0);
-    indicesIntObjects = find(ws.boxTypes == 1);
+    indicesExtObjects = find(workspace.boxTypes == 0);
+    indicesIntObjects = find(workspace.boxTypes == 1);
     nIntObjects = numel(indicesIntObjects);
     nExtObjects = numel(indicesExtObjects);
 
@@ -45,7 +45,7 @@ function [dIntFun, dExtFun] = getCasadiPositionWorkspaceDistFuns(nPoints, ws)
     dAnyPolyInt = cell(nPoints, 1);
     dAnyPolyExt = cell(nPoints, 1);
 
-    [A, b] = ws.getPTHalfSpaceRepresentation;
+    [A, b] = workspace.getPTHalfSpaceRepresentation;
 
     % Interior objects
     for iFrm = 1:nPoints

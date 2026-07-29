@@ -32,29 +32,29 @@ classdef workspaceDefinition
         %%% TODO: Add other methods to add boxes / polytopes
         % (e.g. from side lengths and center position/rotation)
 
-        function obj = addBoxFromAxisLimits(obj, box_min, box_max, box_type)
+        function obj = addBoxFromAxisLimits(obj, boxMin, boxMax, boxType)
             % Add a box to the workspace by specifying the box boundaries
             % in terms of minimal and maximal axis coordinates; i.e.,
             % the box extends from the minimal (x,y,z) values given in
             % box_min to the maximum values given box_max
             arguments
                 obj
-                box_min     (3,1) double
-                box_max     (3,1) double
-                box_type    (1,1) double
+                boxMin     (3,1) double
+                boxMax     (3,1) double
+                boxType    (1,1) double
             end
 
             [X, Y, Z] = ndgrid( ...
-                [box_min(1), box_max(1)], ...
-                [box_min(2), box_max(2)], ...
-                [box_min(3), box_max(3)]);
+                [boxMin(1), boxMax(1)], ...
+                [boxMin(2), boxMax(2)], ...
+                [boxMin(3), boxMax(3)]);
             verts = [X(:), Y(:), Z(:)];
 
             obj.boxVerts = cat(3, obj.boxVerts, verts);
-            obj.boxTypes(end+1) = box_type;
+            obj.boxTypes(end+1) = boxType;
             obj.nObjects = obj.nObjects + 1;
         end
-        function obj = addBoxSideLengths(obj, x, eul, l, box_type)
+        function obj = addBoxSideLengths(obj, x, eul, l, boxType)
             % Add a box based on the position of its center, its rotation
             % and its side lengths
             arguments
@@ -68,7 +68,7 @@ classdef workspaceDefinition
                 % Side lengths (x,y,z)
                 l     (1,3) double
 
-                box_type    (1,1) double
+                boxType    (1,1) double
             end
             % Dimensions of the bounding box, measured form g_bbox
             % x+ y+ z+
@@ -101,7 +101,7 @@ classdef workspaceDefinition
             end
 
             obj.boxVerts = cat(3, obj.boxVerts, verts);
-            obj.boxTypes(end+1) = box_type;
+            obj.boxTypes(end+1) = boxType;
             obj.nObjects = obj.nObjects + 1;
         end
 
