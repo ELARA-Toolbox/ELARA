@@ -25,7 +25,7 @@ classdef VIBroyden < elara.abstract.Integrator
 
         % Whether to use first- or second-order dissipation term.
         % (first order: more robust; second order: more accurate)
-        % 
+        %
         % This sets the generalized trapezoidal rule factor a of the interior
         % integration steps. It is only relevant if dissipation is present.
         % true  -> a = 0   -> Rectangle Rule (Second order only without dissipation)
@@ -38,7 +38,7 @@ classdef VIBroyden < elara.abstract.Integrator
 
     methods
         function simRes = simulateSystem(obj, MBSim)
-            %% Simulate elara.abstract.System: Variational integrator, Broyden solver
+            %% Simulate ELARA System: Variational integrator, Broyden solver
             arguments
                 obj     (1,1)
                 MBSim   (1,1) elara.Simulation
@@ -112,6 +112,15 @@ classdef VIBroyden < elara.abstract.Integrator
                     sum(simRes.solverExitFlag == 1), sum(simRes.solverExitFlag == 1) / length(simRes.tout) *100);
                 %fprintf('     Simulation exit code:           %d\n', exitCode);
             end
+        end
+
+        function fhs = plotSolverStats(~, simulation)
+            arguments
+                ~
+                simulation (1,1) elara.Simulation
+            end
+            fhs = elara.plot.solverStatsVI(simulation.results, ...
+                "nameString", simulation.Name);
         end
     end
 end

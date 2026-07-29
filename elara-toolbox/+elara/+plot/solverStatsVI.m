@@ -6,8 +6,15 @@ function figHandle = solverStatsVI(simRes, opts)
     end
     if ~isempty(simRes.solverIterations)
 
+        % Generate figure name string
+        if opts.nameString == ""
+            nameString = "";
+        else
+            nameString = strcat(opts.nameString, ": ");
+        end
+
         figHandle = figure( ...
-            'Name', strcat(opts.nameString, "Solver Stats VI"), 'NumberTitle','off');
+            'Name', strcat(nameString, "Solver Stats VI"), 'NumberTitle','off');
 
         t = tiledlayout(figHandle, 2,1);
 

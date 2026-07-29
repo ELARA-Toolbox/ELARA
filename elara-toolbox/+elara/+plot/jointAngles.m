@@ -3,8 +3,16 @@ function figHandle = jointAngles(sim, opts)
         sim              (1,1) elara.Simulation
         opts.nameString  (1,1) string = ""
     end
+
+    % Generate figure name string
+    if opts.nameString == ""
+        nameString = "";
+    else
+        nameString = strcat(opts.nameString, ": ");
+    end
+
     figHandle = figure( ...
-        'Name', strcat(opts.nameString, "JointAngles"), 'NumberTitle','off');
+        'Name', strcat(nameString, "JointAngles"), 'NumberTitle','off');
 
     % Get indices of the joint angles in the coordinate vector
     thetaIndices = sim.system.frames.qIndices(:,sim.system.frames.jointType == 1);

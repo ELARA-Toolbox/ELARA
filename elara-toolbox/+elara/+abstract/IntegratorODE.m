@@ -15,4 +15,15 @@ classdef (Abstract) IntegratorODE < elara.abstract.Integrator
         % additional options are passed to the solver.
         useMassMatrixForm (1,1) logical = false;
     end
+
+    methods
+        function fhs = plotSolverStats(~, simulation)
+            arguments
+                ~
+                simulation (1,1) elara.Simulation
+            end
+            fhs = elara.plot.solverStatsODE(simulation.results, ...
+                "nameString", simulation.Name);
+        end
+    end
 end

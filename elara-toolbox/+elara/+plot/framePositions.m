@@ -8,8 +8,15 @@ function fh = framePositions(sim, opts)
         opts.nameString (1,1) string = ""
     end
 
+    % Generate figure name string
+    if opts.nameString == ""
+        nameString = "";
+    else
+        nameString = strcat(opts.nameString, ": ");
+    end
+
     fh = figure( ...
-        'Name', strcat(opts.nameString, "Frame Positions"), ...
+        'Name', strcat(nameString, "Frame Positions"), ...
         'NumberTitle','off');
 
     tl = tiledlayout(fh, "flow");

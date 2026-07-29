@@ -5,11 +5,18 @@ function figHandle = solverStatsODE(simRes, opts)
         opts.nameString (1,1) string = ""
     end
     if ~isempty(simRes.tout)
+
+        if opts.nameString == ""
+            nameString = "";
+        else
+            nameString = strcat(opts.nameString, ": ");
+        end
+
         % Get time step
         h = diff(simRes.tout);
 
         figHandle = figure( ...
-            'Name', strcat(opts.nameStr, "Solver Stats ODE"), 'NumberTitle','off');
+            'Name', strcat(nameString, "Solver Stats ODE"), 'NumberTitle','off');
 
         % Plot
         plot(simRes.tout(1:end-1), h);
@@ -19,6 +26,6 @@ function figHandle = solverStatsODE(simRes, opts)
         xlabel('time $t$ / s', 'interpreter', 'latex')
         ylabel('time step $h$ / s', 'Interpreter','latex');
     else
-        figHandle = gobjects(0);        
+        figHandle = gobjects(0);
     end
 end

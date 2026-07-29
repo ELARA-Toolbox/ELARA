@@ -30,7 +30,7 @@ function figHandles = beamData(sim, opts)
             if opts.nameString == ""
                 nameStr = sprintf("Link %d: ", iLink);
             else
-                nameStr = sprintf("%sLink %d: ", opts.nameString, iLink);
+                nameStr = sprintf("%s: Link %d: ", opts.nameString, iLink);
             end
             fhs = plotBeamNodeData(simData, sim.links(iLink).xiRef, "name", nameStr);
 
@@ -52,7 +52,7 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
 
     % Get nr. of nodes and segments
     nNodes = size(simData.R, 3);
-    nSegments   = size(simData.xi,2);
+    nSegments = size(simData.xi,2);
 
     % Colors for plots with 3-dimensional data
     plotColors3 = lines(3);

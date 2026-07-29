@@ -29,5 +29,10 @@ classdef (Abstract) Integrator
         %   simRes: elara.SimulationResults
         %   MBSim: MB-Simulation
         simulateSystem
+
+        % Function to plot the solver metadata/statistics from a completed
+        % simulaton. Must have the signature:
+        %  figureHandles = plotSolverStats(obj, MBSim)
+        plotSolverStats
     end
 end

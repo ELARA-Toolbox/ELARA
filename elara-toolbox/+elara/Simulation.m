@@ -299,30 +299,23 @@ classdef Simulation
 
         % Plot functions for individual quantities
         function fhs = plotJointAngles(obj)
-            fhs = elara.plot.jointAngles(obj, "nameString", obj.getPlotNameString);
+            fhs = elara.plot.jointAngles(obj, "nameString", obj.Name);
         end
-        
+
         function fhs = plotFramePositions(obj)
-            fhs = elara.plot.framePositions(obj, "nameString", obj.getPlotNameString);
+            fhs = elara.plot.framePositions(obj, "nameString", obj.Name);
         end
 
         function fhs = plotFrameVelocities(obj)
-            fhs = elara.plot.frameVelocities(obj, "nameString", obj.getPlotNameString);
+            fhs = elara.plot.frameVelocities(obj, "nameString", obj.Name);
         end
 
         function fhs = plotBeamData(obj)
-            fhs = elara.plot.beamData(obj, "nameString", obj.getPlotNameString);
+            fhs = elara.plot.beamData(obj, "nameString", obj.Name);
         end
 
         function fhs = plotSolverStats(obj)
-            switch obj.integrator.type
-                case "varint"
-                    fhs = elara.plot.solverStatsVI(obj.results, "nameString", obj.getPlotNameString);
-                case "ode"
-                    fhs = elara.plot.solverStatsODE(obj.results, "nameString", obj.getPlotNameString);
-                otherwise
-                    error("Solver not implemented.");
-            end
+            fhs = obj.integrator.plotSolverStats(obj);
         end
     end
     methods(Hidden)
@@ -363,15 +356,5 @@ classdef Simulation
                 max(max(max(g(3,4,:,:),[], 'all'), 0.3), x0(3))
                 ] + margins(:,3); % Consider position of the time label
         end
-
-        function nameString = getPlotNameString(obj)
-            %% Get proper name string for plots
-            if obj.Name == ""
-                nameString = "";
-            else
-                nameString = strcat(obj.Name, ": ");
-            end
-        end
-
     end
 end

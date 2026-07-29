@@ -8,11 +8,18 @@ function figHandles = frameVelocities(sim, opts)
         opts.nameString (1,1) string = ""
     end
 
+    % Generate figure name string
+    if opts.nameString == ""
+        nameString = "";
+    else
+        nameString = strcat(opts.nameString, ": ");
+    end
+
     fh_angVel = figure( ...
-        'Name', strcat(opts.nameString, "Frame Angular Velocities"), ...
+        'Name', strcat(nameString, "Frame Angular Velocities"), ...
         'NumberTitle','off');
     fh_trVel = figure( ...
-        'Name', strcat(opts.nameString, "Frame Transl. Velocities"), ...
+        'Name', strcat(nameString, "Frame Transl. Velocities"), ...
         'NumberTitle','off');
 
     tl_angVel = tiledlayout(fh_angVel, "flow");

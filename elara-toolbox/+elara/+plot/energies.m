@@ -4,7 +4,7 @@ function energies(simRes, opts)
         opts.nameString (1,1) string = ""
     end
     fh = figure( ...
-        'Name', strcat(opts.nameStr, 'Energies'), 'NumberTitle','off');
+        'Name', strcat(opts.nameString, 'Energies'), 'NumberTitle','off');
 
     ax = axes(fh);
 
