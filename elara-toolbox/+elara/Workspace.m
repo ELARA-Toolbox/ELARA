@@ -163,7 +163,6 @@ classdef Workspace
                 nPoints     (1,1) double
             end
 
-
             indicesExtObjects = find(workspace.boxTypes == 0);
             indicesIntObjects = find(workspace.boxTypes == 1);
             nIntObjects = numel(indicesIntObjects);
@@ -201,13 +200,13 @@ classdef Workspace
                 dExtPolys = cell(length(indicesExtObjects), 1);
                 if ~isempty(indicesIntObjects)
                     for iPoly = indicesIntObjects'
-                        dIntPolys{iPoly} = polytopeDistance(x_SX(:,iFrm), A{iPoly}, b{iPoly});
+                        dIntPolys{iPoly} = workspace.polytopeDistance(x_SX(:,iFrm), A{iPoly}, b{iPoly});
                     end
                     dAnyPolyInt{iFrm} = maxLSE(vertcat(dIntPolys{:}));
                 end
                 if ~isempty(indicesExtObjects)
                     for iPoly = indicesExtObjects'
-                        dExtPolys{iPoly} = polytopeDistance(x_SX(:,iFrm), A{iPoly}, b{iPoly});
+                        dExtPolys{iPoly} = workspace.polytopeDistance(x_SX(:,iFrm), A{iPoly}, b{iPoly});
                     end
                     dAnyPolyExt{iFrm} = minLSE(vertcat(dExtPolys{:}));
                 end
@@ -231,9 +230,9 @@ classdef Workspace
 
             % Get CasADi min-LSE function
             a = 500;
-            tA = casadi.SX.sym("t", size(A, 1));
+            tA = casadi.SX.sym('t', size(A, 1));
             TlseN = -logsumexp(-tA*a)/a;
-            minLSE = casadi.Function("minLSE", {tA}, {TlseN});
+            minLSE = casadi.Function('minLSE', {tA}, {TlseN});
 
             % Evaluate distance
             d = minLSE((b - A*x) ./ vecnorm(A, 2, 2));
