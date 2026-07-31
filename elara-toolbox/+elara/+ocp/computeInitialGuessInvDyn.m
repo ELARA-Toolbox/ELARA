@@ -1,4 +1,4 @@
-function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MBSim, OCP, opts)
+function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OCP, opts)
     %% Generate Initial Guess for Optimal Control Problem with Inv. Dynamics
     %
     % Method:
@@ -7,7 +7,6 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
     %    configuration
     % 3. Compute inputs with inverse dynamics
     arguments
-        MBSim   (1,1) elara.Simulation
         OCP     (1,1) elara.ocp.Problem
 
         opts.doIDForwardSim (1,1) logical = false;
@@ -24,6 +23,17 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
     fprintf("\nGenerating initial guess.\n");
     tIGStart = tic;
 
+    MBSysNum = OCP.systemNum;
+    MBSysSym = OCP.systemSym;
+    simPars = OCP.simPars;
+
+    % A simulation object is only needed as a result/visualization
+    % container and for the optional forward simulation.
+    MBSim = elara.Simulation;
+    MBSim.links = OCP.links;
+    MBSim.system = MBSysNum;
+    MBSim.parameters = simPars;
+
     if isempty(OCP.qF)
         OCP_stat = OCP;
 
@@ -34,8 +44,8 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
             nWPts = 1;
             x_TCP_waypoints = OCP.x_TCP_F;
         end
-        qStat = zeros(MBSim.system.nDoF, nWPts);
-        uStat = zeros(MBSim.system.nInputs, nWPts);
+        qStat = zeros(MBSysNum.nDoF, nWPts);
+        uStat = zeros(MBSysNum.nInputs, nWPts);
 
         for iWpt = 1:nWPts
             %% Compute optimal steady-state inputs
@@ -43,9 +53,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
 
             fprintf("Computing optimal steady state configuration...\n\n");
 
-            MBSysSym = elara.internal.systemNum2SystemSym(MBSim.system);
-
-            [qF, uF] = computeOptimalSteadyStateInputsTCPPos(MBSysSym, OCP_stat, MBSim.parameters);
+            [qF, uF] = computeOptimalSteadyStateInputsTCPPos(OCP_stat);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
             disp("Computed static inputs (N/Nm):")
@@ -57,8 +65,8 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
             jointIndices = MBSysSym.frames.qIndices(1, MBSysSym.frames.jointType==1);
             qF(jointIndices) = wrapToPi(qF(jointIndices));
 
-            gOptStatic = MBSim.system.computeFwdKin(qF);
-            g_TCP = gOptStatic(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
+            gOptStatic = MBSysNum.computeFwdKin(qF);
+            g_TCP = gOptStatic(:,:,MBSysNum.indexTCPFrame)*MBSysNum.g_B_TCP;
             fprintf("Distance desired TCP position:     %.2e m\n", ...
                 norm(OCP_stat.x_TCP_F - g_TCP(1:3, 4)));
 
@@ -69,7 +77,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
     else
         % Final configuration given instead of desired TCP position
         qStat = OCP.qF;
-        uStat = zeros(MBSim.system.nInputs, 1);
+        uStat = zeros(MBSysNum.nInputs, 1);
     end
     qF = qStat(:,end);
     uF = uStat(:,end);
@@ -85,13 +93,13 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
     tout_ID = (0 : h_ID : h_ID*nSteps_ID).';
 
     if isempty(OCP.qDot0)
-        qDot0 = zeros(MBSim.system.nDoF,1);
+        qDot0 = zeros(MBSysNum.nDoF,1);
     else
         qDot0 = OCP.qDot0;
     end
 
     if isempty(OCP.qDotF)
-        qDotF = zeros(MBSim.system.nDoF,1);
+        qDotF = zeros(MBSysNum.nDoF,1);
     else
         qDotF = OCP.qDotF;
     end
@@ -117,9 +125,9 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
             repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
             ];
         qdd_init = [
-            zeros(MBSim.system.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
+            zeros(MBSysNum.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
             qdd_init_dyn, ...
-            zeros(MBSim.system.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
+            zeros(MBSysNum.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
             ];
     else
         [q_init, qd_init, qdd_init] = minjerkpolytraj(qStat, ...
@@ -144,7 +152,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$q$", "Interpreter", "latex");
-        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSim.system.nDoF), "Interpreter", "latex");
+        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSysNum.nDoF), "Interpreter", "latex");
         xlim([tout_ID(1),tout_ID(end)]);
 
         nexttile;
@@ -152,7 +160,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$\dot{q}$", "Interpreter", "latex");
-        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSim.system.nDoF), "Interpreter", "latex");
+        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSysNum.nDoF), "Interpreter", "latex");
         xlim([tout_ID(1),tout_ID(end)]);
     end
 
@@ -160,9 +168,11 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
 
     switch opts.invDynMethod
         case "DEL"
-            [uInit_ID, solInfo] = computeInverseDynamicsDEL(MBSim, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
+            [uInit_ID, solInfo] = computeInverseDynamicsDEL( ...
+                MBSysNum, simPars, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
         case "ODE"
-            [uInit_ID, solInfo] = computeInverseDynamicsODE(MBSim, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
+            [uInit_ID, solInfo] = computeInverseDynamicsODE( ...
+                MBSysNum, simPars, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
         otherwise
     end
     fprintf("Inverse dynamics residual norm: max = %e, mean = %e\n", max(abs(solInfo.resNorm)), mean(abs(solInfo.resNorm)));
@@ -175,7 +185,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
     % Specify Simulation Parameters
     MBSim.parameters.tEnd  = OCP.tEnd;
     MBSim.parameters.q0    = OCP.q0;
-    MBSim.parameters.qDot0 = OCP.qDot0;
+    MBSim.parameters.qDot0 = qDot0;
 
     % Initial guess inputs
     MBSim.parameters.uSampleTimes  = tout_ID;
@@ -193,7 +203,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(MB
         % Use full 2nd-order dissipation (a = 1/2) only for rigid systems and
         % simplified dissipation (rectangle rule, a = 0) for flexible systems for
         % higher stability
-        MBSim.integrator.useFirstOrderDissipation = ~all(MBSim.system.frames.jointType == 1);
+        MBSim.integrator.useFirstOrderDissipation = ~all(MBSysNum.frames.jointType == 1);
     end
 
     % Start integration

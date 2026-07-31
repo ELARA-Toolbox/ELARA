@@ -1,8 +1,9 @@
-function [u, solInfo] = computeInverseDynamicsODE(MBSim, q, qd, qdd, lbu, ubu)
+function [u, solInfo] = computeInverseDynamicsODE(MBSys, simPars, q, qd, qdd, lbu, ubu)
     %% Compute inverse dynamics for given coordinate trajectory
     % using continuous-time equations of motion (ODEs)
     arguments
-        MBSim   (1,1) elara.Simulation
+        MBSys   (1,1) elara.SystemNum
+        simPars (1,1) elara.SimulationParameters
 
         % Trajectory over time with dimensions (nDoF, nSteps+1)
         q       (:,:) double
@@ -14,16 +15,13 @@ function [u, solInfo] = computeInverseDynamicsODE(MBSim, q, qd, qdd, lbu, ubu)
         ubu      (:,1) double
     end
 
-    MBSys = MBSim.system;
-    simPars = MBSim.parameters;
-
     % Nr. of time steps
     nSteps = size(q, 2) - 1;
 
     % Zero input vector used in the dynamics functions
     uZero = zeros(MBSys.nInputs, 1);
 
-    u = nan(MBSim.system.nInputs, nSteps+1);
+    u = nan(MBSys.nInputs, nSteps+1);
 
     solInfo.resNorm  = zeros(nSteps + 1,1);
     solInfo.rank_B = zeros(nSteps + 1,1);

@@ -40,7 +40,20 @@ classdef Problem
         nlpOptions         (1,1) struct
 
         %% System Definition
-        system          (1,1) elara.SystemSym
+        % Important: There is currently no synchronization between the
+        % links and numeric and symbolic system objects!
+        % I.e., if a parameter in one of the system objects is changed,
+        % the corresponding parameter in the other object must be manually
+        % updated!
+
+        % Link definitions
+        links       (:,1) elara.abstract.Link
+
+        % Numeric system representation
+        systemNum   (1,1) elara.SystemNum
+
+        % Symbolic system representation used for CasADi functions
+        systemSym   (1,1) elara.SystemSym
 
         %% Cost function definition
         % Weight vectors define the contribution of each cost term.
@@ -133,6 +146,22 @@ classdef Problem
 
     %% Methods
     methods
+        %% Constructor
+        function obj = Problem(links)
+            % Create an optimal control problem and optionally assemble its
+            % numeric and symbolic systems from link definitions.
+            arguments
+                links (:,1) elara.abstract.Link = elara.RigidLink.empty;
+            end
+
+            if ~isempty(links)
+                obj.links = links;
+                obj.systemNum = elara.SystemNum(links);
+                obj.systemSym = elara.SystemSym(links);
+            end
+        end
+
+        %% Solver methods
         function obj = initSolver(obj, opts)
             %% Initialize NLP solver for the OCP
             arguments
@@ -170,6 +199,14 @@ classdef Problem
             [x_sol, u_sol_z, sol, stats] = elara.internal.ocp.solve(obj, xInit, uInit, ...
                 "solWarmStart", opts.solWarmStart);
         end
+        function obj = clearSolver(obj)
+            %% Clear the NLP Solver variables
+            % e.g., to free up memory
+            obj.NLPSolver = casadi.Function;
+            obj.constrDef = struct();
+        end
+        
+        %% Other Methods
         function fh = plotConstraintResiduals(obj, q, u, opts)
             %% Plot OCP Constraints residuals for a given trajectory
             arguments
@@ -183,12 +220,6 @@ classdef Problem
             end
             fh = elara.ocp.plot.constraintResiduals(obj, q, u, ...
                 "figureName", opts.figureName);
-        end
-        function obj = clearSolver(obj)
-            %% Clear the NLP Solver variables
-            % e.g., to free up memory
-            obj.NLPSolver = casadi.Function;
-            obj.constrDef = struct();
         end
         function [B, B_dt, B_ddt, tau] = getInputSplineBasisMatrix(obj, opts)
             % Compute the basis matrix of the input B-spline

@@ -13,7 +13,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     end
 
     %% Get variables
-    MBSys = OCP.system;
+    MBSys = OCP.systemSym;
     nSteps = OCP.nSteps;
     simPars = OCP.simPars;
 
@@ -31,7 +31,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         nFramesWS = MBSys.nFrames + 1;
 
         % TCP transf. as SE3 Element
-        g_B_TCP = SE3MatArray2SE3Array(OCP.system.g_B_TCP);
+        g_B_TCP = SE3MatArray2SE3Array(OCP.systemSym.g_B_TCP);
     else
         nFramesWS = MBSys.nFrames;
         g_B_TCP = elara.SE3.Element;

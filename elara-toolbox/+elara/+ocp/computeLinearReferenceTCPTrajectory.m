@@ -19,8 +19,13 @@ function x_TCP_traj = computeLinearReferenceTCPTrajectory(OCP, opts)
     end
 
     % Initial position: TCP position in initial configuration
-    g0 = OCP.system.computeFwdKin(OCP.q0);
-    g_TCP_0 = g0(OCP.system.indexTCPFrame).mat*OCP.system.g_B_TCP;
+    systemNum = OCP.systemNum;
+    indexTCPFrame = systemNum.indexTCPFrame;
+    if ~indexTCPFrame
+        indexTCPFrame = systemNum.nFrames;
+    end
+    g0 = systemNum.computeFwdKin(OCP.q0);
+    g_TCP_0 = g0(:,:,indexTCPFrame)*systemNum.g_B_TCP;
     x_TCP_0 = g_TCP_0(1:3, 4);
 
     % Generate trajectory

@@ -25,16 +25,15 @@ MBSim = elara.Simulation(links, "displayInfo", false);
 
 %% Define OCP
 
-OCP = elara.ocp.Problem;
-OCP.system = elara.SystemSym(links);
+OCP = elara.ocp.Problem(links);
 
-OCP.q0    = zeros(MBSim.system.nDoF,1); % Initial configuration
-OCP.qDot0 = zeros(MBSim.system.nDoF,1); % Initial velocity
-OCP.qDotF = zeros(MBSim.system.nDoF,1); % Final velocity
+OCP.q0    = zeros(OCP.systemNum.nDoF,1); % Initial configuration
+OCP.qDot0 = zeros(OCP.systemNum.nDoF,1); % Initial velocity
+OCP.qDotF = zeros(OCP.systemNum.nDoF,1); % Final velocity
 
 OCP.u0 = [];
-OCP.uMin = ones(MBSim.system.nInputs,1)*-100;
-OCP.uMax = ones(MBSim.system.nInputs,1)*100;
+OCP.uMin = ones(OCP.systemNum.nInputs,1)*-100;
+OCP.uMax = ones(OCP.systemNum.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 1e-2;
@@ -63,8 +62,8 @@ OCP.addTCPFinalTimeConstraint = false;
 OCP.tPreAct  = 5*2^-5;
 OCP.tPostAct = 2*2^-5;
 
-OCP.qMin = ones(MBSim.system.nDoF, 1)*-2*pi;
-OCP.qMax = ones(MBSim.system.nDoF, 1)*2*pi;
+OCP.qMin = ones(OCP.systemNum.nDoF, 1)*-2*pi;
+OCP.qMax = ones(OCP.systemNum.nDoF, 1)*2*pi;
 
 % Control trajectory parameterization with splines
 OCP.useSplineInputs = true;
@@ -119,7 +118,7 @@ zlim([0, 1.3]);
 % Compute Initial Guess
 if COMPUTE_IG
     [q_init, qd_init, u_init, MBSimIG] = elara.ocp.computeInitialGuessInvDyn( ...
-        MBSim, OCP, "createDebugPlots", false, "invDynMethod", "ODE");
+        OCP, "createDebugPlots", false, "invDynMethod", "ODE");
 
     fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, ...
         "figureName", "Initial Guess", "plotDerivatives", true);
@@ -146,7 +145,7 @@ if OCP.useSplineInputs
     plot(OCP.tout, B*u_init_z.', "--o", "DisplayName", "Fitted Spline");
 
     grid on;
-    colororder(lines(MBSim.system.nInputs));
+    colororder(lines(OCP.systemNum.nInputs));
     legend;
 else
     u_init_z = u_init;
@@ -165,10 +164,10 @@ if 1
     OCP_ODE.plotConstraintResiduals(x_init, u_init_z, "figureName", "Constr. Res. IG");
 
     % Solve ODE OCP
-    [x_sol, u_sol_z, sol, stats] = OCP_ODE.solve(x_init, u_init_z);
+    [x_sol, u_sol_z] = OCP_ODE.solve(x_init, u_init_z);
 
-    q_sol = x_sol(1:OCP.system.nDoF,:);
-    q_dot_sol = x_sol(OCP.system.nDoF+1:end,:);
+    q_sol = x_sol(1:OCP.systemNum.nDoF,:);
+    q_dot_sol = x_sol(OCP.systemNum.nDoF+1:end,:);
 
     if OCP.useSplineInputs
         u_sol = (B*u_sol_z.').';
@@ -181,7 +180,7 @@ if 1
     elara.ocp.plot.coordinatesInputs(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
     if OCP.runningCostActive(5)
-        fh = elara.ocp.plot.TCPTrajectory(MBSim.system, OCP, q_sol);
+        fh = elara.ocp.plot.TCPTrajectory(OCP, q_sol);
     end
 end
 
@@ -207,7 +206,7 @@ end
 % Plot constraint residuals of the initial guess
 OCP_DEL.plotConstraintResiduals(q_init, u_init_z, "figureName", "Constr. Res. IG");
 
-[q_sol, u_sol_z, sol, stats] = OCP_DEL.solve(q_init, u_init_z);
+[q_sol, u_sol_z] = OCP_DEL.solve(q_init, u_init_z);
 
 % Plot solution data
 OCP_DEL.plotConstraintResiduals(q_sol, u_sol_z, "figureName", "Constr. Res. Solution");
@@ -228,7 +227,7 @@ if ~OCP.useSplineInputs
 end
 
 if OCP.runningCostActive(5)
-    fh = elara.ocp.plot.TCPTrajectory(MBSim.system, OCP, q_sol);
+    fh = elara.ocp.plot.TCPTrajectory(OCP, q_sol);
 end
 
 %% Post-process etc.
@@ -240,7 +239,7 @@ gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 
 MBSimCasadi = MBSim;
 MBSimCasadi.Name = "Optimization";
-MBSimCasadi.results = getSimResFromStateTrajectory(MBSim.system, OCP_DEL.tout, q_sol, q_dot);
+MBSimCasadi.results = getSimResFromStateTrajectory(OCP_DEL.systemNum, OCP_DEL.tout, q_sol, q_dot);
 
 MBSimCasadi.plotAll;
 

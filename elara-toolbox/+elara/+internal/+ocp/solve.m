@@ -20,8 +20,8 @@ function [x_sol, u_sol, sol, stats] = solve(OCP, xInit, uInit, opts)
     %% Decision variable bounds
 
     nSteps = OCP.nSteps;
-    nInputs = OCP.system.nInputs;
-    nDoF = OCP.system.nDoF;
+    nInputs = OCP.systemSym.nInputs;
+    nDoF = OCP.systemSym.nDoF;
 
     lb_q_nlp = -inf(size(xInit));
     ub_q_nlp = +inf(size(xInit));

@@ -1,11 +1,12 @@
-function fh = TCPTrajectory(systemNum, OCP, q_sol)
+function fh = TCPTrajectory(OCP, q_sol)
     %% Plot TCP Trajectory of OCP Solution
     %   Detailed explanation goes here
     arguments (Input)
-        systemNum   (1,1) elara.SystemNum
         OCP         (1,1) elara.ocp.Problem
         q_sol       (:,:) double
     end
+
+    systemNum = OCP.systemNum;
 
     % Compute TCP trajectory
     g_TCP_sol = zeros(4,4, OCP.nSteps+1);

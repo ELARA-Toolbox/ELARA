@@ -1,28 +1,23 @@
-function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPars)
+function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(OCP)
     %% Compute optimal steady-state system inputs for given TCP position
     arguments
-        MBSys    (1,1) elara.abstract.System
-        OCP      (1,1) elara.ocp.Problem
-        simPars  (1,1) elara.SimulationParameters
+        OCP (1,1) elara.ocp.Problem
     end
 
     %% Get variables
-    if ~isa(MBSys, "elara.SystemSym")
-        MBSysSym = convertelara.SystemObject(MBSys, "elara.SystemSym");
-    else
-        MBSysSym = MBSys;
-    end
+    MBSysSym = OCP.systemSym;
+    simPars = OCP.simPars;
 
      % Verify that the TCP is defined for the system
-    if ~MBSys.indexTCPFrame
+    if ~MBSysSym.indexTCPFrame
         warning("No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
-        indexTCPFrame = MBSys.nFrames;
+        indexTCPFrame = MBSysSym.nFrames;
     else
-        indexTCPFrame = MBSys.indexTCPFrame;
+        indexTCPFrame = MBSysSym.indexTCPFrame;
     end
 
     % Casadi function for signed workspace distance function
-    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSys.nFrames);
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSysSym.nFrames);
 
 
     %% Define and solve optimization problem
@@ -57,7 +52,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(MBSys, OCP, simPar
         opti.subject_to(u < OCP.uMax);
     end
     % TCP constraint
-    g_TCP = g(indexTCPFrame) * elara.SE3.Element(MBSys.g_B_TCP(1:3,1:3), MBSys.g_B_TCP(1:3,4));
+    g_TCP = g(indexTCPFrame) * elara.SE3.Element(MBSysSym.g_B_TCP(1:3,1:3), MBSysSym.g_B_TCP(1:3,4));
     if OCP.addTCPFinalTimeConstraint
         opti.subject_to( (g_TCP.x ) ==  OCP.x_TCP_F);
     end

@@ -12,7 +12,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     end
 
     %%
-    MBSys = OCP.system;
+    MBSys = OCP.systemSym;
     nSteps = OCP.nSteps;
     simPars = OCP.simPars;
     h = OCP.h;
