@@ -25,7 +25,19 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     h = OCP.h;
 
     % Get workspace constraint functions
-    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSys.nFrames);
+    % Include TCP position in workspace constraints if TCP is defined
+    if MBSys.indexTCPFrame
+        % Nr. of frames included in the workspace constraints
+        nFramesWS = MBSys.nFrames + 1;
+
+        % TCP transf. as SE3 Element
+        g_B_TCP = SE3MatArray2SE3Array(OCP.system.g_B_TCP);
+    else
+        nFramesWS = MBSys.nFrames;
+        g_B_TCP = elara.SE3.Element;
+    end
+    
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(nFramesWS);
 
 
     %% Define Function for step constraints
@@ -61,8 +73,17 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     g{1} = g_k;
 
     % Initial workspace constraints
-    c_WSInt_1 = dIntFun([g_k.x]);
-    c_WSExt_1 = dExtFun([g_k.x]);
+    % Get frame positions for the workspace constraints
+    % (with/without TCP frame)
+    if MBSys.indexTCPFrame
+        g_k_TCP = g_k(MBSys.indexTCPFrame)*g_B_TCP;
+        x_k_WS = [[g_k.x], g_k_TCP.x];
+    else
+        x_k_WS = [g_k.x];
+    end
+
+    c_WSInt_1 = dIntFun(x_k_WS);
+    c_WSExt_1 = dExtFun(x_k_WS);
 
     c_WS{1,1} = c_WSInt_1;
     lb_c{1,2} = zeros(size(c_WSInt_1));
@@ -99,8 +120,14 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         g{k} = g_k;
 
         % Step workspace constraints
-        c_WSInt_k = dIntFun([g_k.x]);
-        c_WSExt_k = dExtFun([g_k.x]);
+        if MBSys.indexTCPFrame
+            g_k_TCP = g_k(MBSys.indexTCPFrame)*g_B_TCP;
+            x_k_WS = [[g_k.x], g_k_TCP.x];
+        else
+            x_k_WS = [g_k.x];
+        end
+        c_WSInt_k = dIntFun(x_k_WS);
+        c_WSExt_k = dExtFun(x_k_WS);
 
         c_WS{k,1} = c_WSInt_k;
         lb_c{k,2} = zeros(size(c_WSInt_k));
@@ -165,8 +192,14 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     end
 
     % Final workspace constraint
-    c_WSInt_k = dIntFun([g_k1.x]);
-    c_WSExt_k = dExtFun([g_k1.x]);
+    if MBSys.indexTCPFrame
+        g_k1_TCP = g_k1(MBSys.indexTCPFrame)*g_B_TCP;
+        x_k1_WS = [[g_k1.x], g_k1_TCP.x];
+    else
+        x_k1_WS = [g_k1.x];
+    end
+    c_WSInt_k = dIntFun(x_k1_WS);
+    c_WSExt_k = dExtFun(x_k1_WS);
     c = [c; {c_WSInt_k; c_WSExt_k}];
     lb_c = [lb_c; zeros(size(c_WSInt_k)); -inf(size(c_WSExt_k))];
     ub_c = [ub_c; inf(size(c_WSInt_k));  zeros(size(c_WSExt_k))];
