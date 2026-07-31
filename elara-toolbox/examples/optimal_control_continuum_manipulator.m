@@ -20,8 +20,6 @@ COMPUTE_IG = 1;
 
 links = systemDef_continuum_manipulator("nSegments", 4);
 
-MBSim = elara.Simulation(links, "displayInfo", false);
-
 
 %% Define OCP
 
@@ -42,8 +40,6 @@ OCP.tEnd = 2;
 % Desired TCP pose
 OCP.x_TCP_F = [0.55; 0.3; 0.05];
 OCP.R_TCP_F = []; % Rotation arbitrary
-
-OCP.simPars = MBSim.parameters;
 
 % Running cost
 OCP.runningCostWeights = [ % Weights
@@ -73,6 +69,9 @@ OCP.nInputSplinePoints = 30;
 OCP.nlpOptions.expand = false;
 
 %% Visualize reference configuration and target position
+
+% Get Simulation object from OCP
+MBSim = OCP.getSimulationObject;
 
 [~, vis] = MBSim.visualizeSystemRefConf();
 CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
@@ -176,7 +175,7 @@ gTCPDes = elara.SE3.matrix(eye(3), OCP.x_TCP_F);
 q_dot_Sol = diff(q_sol, 1, 2) / OCP.h;
 q_dot_Sol_full = [q_dot_Sol, nan(OCP.systemNum.nDoF,1)];
 
-MBSimCasadi = MBSim;
+MBSimCasadi = OCP.getSimulationObject;
 MBSimCasadi.Name = "Optimization";
 MBSimCasadi.results = getSimResFromStateTrajectory(OCP.systemNum, OCP.tout, q_sol, q_dot_Sol_full);
 MBSimCasadi.plotAll;

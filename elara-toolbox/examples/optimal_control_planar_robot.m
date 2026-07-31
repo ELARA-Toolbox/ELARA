@@ -19,9 +19,9 @@ COMPUTE_IG = 0;
 %% Define System
 
 links = systemDef_planarNLinkPendulum("nLinks", 2, "d", 0);
-MBSim = elara.Simulation(links, "displayInfo", false);
 
 % Visualize system in reference configuration
+MBSim = elara.Simulation(links);
 MBSim.visualizeSystemRefConf();
 
 
@@ -75,8 +75,6 @@ OCP.addTCPFinalTimeConstraint = false;
 OCP.useSplineInputs = false;
 OCP.inputSplineOrder = 3;
 OCP.nInputSplinePoints = 25;
-
-OCP.simPars = MBSim.parameters;
 
 % Running cost
 OCP.runningCostWeights = [ % Weights

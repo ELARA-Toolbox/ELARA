@@ -29,10 +29,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
 
     % A simulation object is only needed as a result/visualization
     % container and for the optional forward simulation.
-    MBSim = elara.Simulation;
-    MBSim.links = OCP.links;
-    MBSim.system = MBSysNum;
-    MBSim.parameters = simPars;
+    MBSim = OCP.getSimulationObject;
 
     if isempty(OCP.qF)
         OCP_stat = OCP;

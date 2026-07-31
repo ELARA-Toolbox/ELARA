@@ -1,5 +1,12 @@
-%% Optimal Control / Trajectory Generation for the Rigid Lab Robot
-% to follow a prescribed TCP trajectory
+%% Optimal Control / Trajectory Generation for a Rigid Two-Link Robot
+% In this exmaple, the robot must follow a prescribed TCP trajectory while
+% avoiding an obstacle in the workspace.
+% For comparison, the problem is solved with an RK2 and the VI
+% discretization.
+%
+% NOTE: The workspace constraints (to avoid the obstacle) are currently
+% only implemented for the VI discretization -- hence, the RK2 solution
+% ignores the obstacle.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
@@ -20,7 +27,6 @@ COMPUTE_IG = 1;
 %% Define System
 
 links = systemDef_rigid_robot("d", 0);
-MBSim = elara.Simulation(links, "displayInfo", false);
 
 
 %% Define OCP
@@ -43,10 +49,8 @@ OCP.tEnd = 2;
 OCP.x_TCP_F = [0.7; 0.2; 0.3];
 OCP.R_TCP_F = []; % Rotation arbitrary
 
-OCP.simPars = MBSim.parameters;
-
 % Running cost
-OCP.runningCostWeights = [ % weights
+OCP.runningCostWeights = [
     1e-2/2 % Norm u
     1e-5   % Norm u_dot
     1e-5   % Norm u_ddot
@@ -92,6 +96,9 @@ OCP.workspace = OCP.workspace.addBoxSideLengths( ...
 
 
 %% Visualize reference configuration and target position
+
+% Get Simulation object from OCP
+MBSim = OCP.getSimulationObject;
 
 init3Dplot("Name", "System Visualization", "NumberTitle", "off");
 
@@ -237,7 +244,7 @@ gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 
 [q_dot, ~] = diff2ndOrder(q_sol, OCP_DEL.h);
 
-MBSimCasadi = MBSim;
+MBSimCasadi = OCP.getSimulationObject();
 MBSimCasadi.Name = "Optimization";
 MBSimCasadi.results = getSimResFromStateTrajectory(OCP_DEL.systemNum, OCP_DEL.tout, q_sol, q_dot);
 

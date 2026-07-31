@@ -161,6 +161,18 @@ classdef Problem
             end
         end
 
+        function MBSim = getSimulationObject(obj)
+            %% Create a simulation object from the problem definition
+            arguments
+                obj (1,1) elara.ocp.Problem
+            end
+
+            MBSim = elara.Simulation;
+            MBSim.links = obj.links;
+            MBSim.system = obj.systemNum;
+            MBSim.parameters = obj.simPars;
+        end
+
         %% Solver methods
         function obj = initSolver(obj, opts)
             %% Initialize NLP solver for the OCP
