@@ -212,7 +212,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 Third-party components in `elara-toolbox/third-party/` are redistributed under their respective individual licenses.
 In particular, this concerns the following packages:
 
- - `ver2lcon.m` from the [N-dimensional Convex Polyhedra](https://www.mathworks.com/matlabcentral/fileexchange/30892-analyze-n-dimensional-convex-polyhedra) Package by Matt Jacobson. Avalable on MATLAB File Exchange.
+ - `vert2lcon.m` from the [N-dimensional Convex Polyhedra](https://www.mathworks.com/matlabcentral/fileexchange/30892-analyze-n-dimensional-convex-polyhedra) Package by Matt Jacobson. Avalable on MATLAB File Exchange. Included version: 1.9.0.2.
 
 ## Authors
 
