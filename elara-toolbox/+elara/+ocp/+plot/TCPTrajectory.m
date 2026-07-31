@@ -1,17 +1,17 @@
-function fh = TCPTrajectory(MBSim, OCP, q_sol)
+function fh = TCPTrajectory(systemNum, OCP, q_sol)
     %% Plot TCP Trajectory of OCP Solution
     %   Detailed explanation goes here
     arguments (Input)
-        MBSim   (1,1) elara.Simulation
-        OCP     (1,1) elara.ocp.Problem
-        q_sol   (:,:) double
+        systemNum   (1,1) elara.SystemNum
+        OCP         (1,1) elara.ocp.Problem
+        q_sol       (:,:) double
     end
 
     % Compute TCP trajectory
     g_TCP_sol = zeros(4,4, OCP.nSteps+1);
     for iStep = 1:OCP.nSteps+1
-        g_k = MBSim.system.computeFwdKin(q_sol(:,iStep));
-        g_TCP_sol(:,:,iStep) = g_k(:,:,MBSim.system.indexTCPFrame)*MBSim.system.g_B_TCP;
+        g_k = systemNum.computeFwdKin(q_sol(:,iStep));
+        g_TCP_sol(:,:,iStep) = g_k(:,:,systemNum.indexTCPFrame)*systemNum.g_B_TCP;
     end
     x_TCP_sol = squeeze(g_TCP_sol(1:3,4,:));
 
