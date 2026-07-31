@@ -49,10 +49,10 @@ OCP.simPars = MBSim.parameters;
 % Running cost
 OCP.runningCostWeights = [ % weights
     1e-2/2 % Norm u
-    0      % Norm u_dot
-    0      % Norm u_ddot
-    0      % Norm q_ddot
-    1e3    % TCP error
+    1e-5   % Norm u_dot
+    1e-5   % Norm u_ddot
+    1e-5   % Norm q_ddot
+    1e4    % TCP error
     ];
 OCP.runningCostActive = logical(OCP.runningCostWeights); % Defines which cost terms are active
 
@@ -68,38 +68,61 @@ OCP.qMax = ones(MBSim.system.nDoF, 1)*2*pi;
 
 % Control trajectory parameterization with splines
 OCP.useSplineInputs = true;
-OCP.nInputSplinePoints = 20;
+OCP.nInputSplinePoints = 30;
 OCP.inputSplineOrder = 3;
 
 % NLP object / solver options
 OCP.nlpOptions.expand = false;
 
 
+%% Generate desired TCP trajectory
+% As a linear point-to–point trajectory
+OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(OCP);
+
+
+%% Define Workspace
+
+% Add an obstacle in the workspace represented by a simple box
+OCP.workspace = elara.Workspace;
+OCP.workspace = OCP.workspace.addBoxSideLengths( ...
+    [0.35, 0.1, 1.0], ...  % Box center position
+    zeros(3,1), ...       % Rotation (Euler angles)
+    [0.25, 0.3, 0.3], ... % Side lengths
+    0 ...                 % Object type: obstacle (type 0)
+    );
+
+
 %% Visualize reference configuration and target position
 
-[~, vis] = MBSim.visualizeSystemRefConf();
+init3Dplot("Name", "System Visualization", "NumberTitle", "off");
+
+% Visualize system in reference configuration
+MBSim.visualizeSystemRefConf("createFigure", false);
+
+% Mark final TCP position
 CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+
+% Visualize workspace
 OCP.workspace.visualize("createFigure", false);
 
+% Draw desired trajectory
+plot3(OCP.x_TCP_traj(1,:), OCP.x_TCP_traj(2,:), OCP.x_TCP_traj(3,:), "-o");
 
-%% Generate desired TCP trajectory
-
-OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(MBSim, OCP);
+legend("Obstacle", "Desired TCP Trajectory");
+xlim([-0.2, 0.8]);
+ylim([-0.3, 0.5]);
+zlim([0, 1.3]);
 
 
 %% Initial Guess based on ODE Inverse Dynamics
-
-[q_init_ode, qd_init_ode, u_init_ode] = elara.ocp.computeInitialGuessInvDyn( ...
-    MBSim, OCP, "invDynMethod", "ODE", "createDebugPlots", false);
-
-fh_IG_ode = elara.ocp.plot.coordinatesInputs(OCP, q_init_ode, u_init_ode, "figureName", "Initial Guess ODE", "plotDerivatives", true);
 
 % Compute Initial Guess
 if COMPUTE_IG
     [q_init, qd_init, u_init, MBSimIG] = elara.ocp.computeInitialGuessInvDyn( ...
         MBSim, OCP, "createDebugPlots", false, "invDynMethod", "ODE");
 
-    fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
+    fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, ...
+        "figureName", "Initial Guess", "plotDerivatives", true);
 
     % Animate results
     fig = init3Dplot('Name', "Animation Initial Guess");
@@ -110,15 +133,6 @@ else
     q_init = repmat(OCP.q0, [1,OCP.nSteps+1]);
     u_init = repmat(OCP.u0, [1,OCP.nSteps+1]);
 end
-
-
-figure("Name", "Comp IG");
-plot(OCP.tout, u_init_ode, '-o', "DisplayName", "ODE");
-hold on;
-plot(OCP.tout, u_init, '--x', "DisplayName", "VI");
-legend;
-grid on;
-colororder(lines(3));
 
 if OCP.useSplineInputs
     % Compute control points for initial guess
@@ -167,7 +181,7 @@ if 1
     elara.ocp.plot.coordinatesInputs(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
     if OCP.runningCostActive(5)
-        fh = elara.ocp.plot.TCPTrajectory(MBSim, OCP, q_sol);
+        fh = elara.ocp.plot.TCPTrajectory(MBSim.system, OCP, q_sol);
     end
 end
 
@@ -214,7 +228,7 @@ if ~OCP.useSplineInputs
 end
 
 if OCP.runningCostActive(5)
-    fh = elara.ocp.plot.TCPTrajectory(MBSim, OCP, q_sol);
+    fh = elara.ocp.plot.TCPTrajectory(MBSim.system, OCP, q_sol);
 end
 
 %% Post-process etc.
