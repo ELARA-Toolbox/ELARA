@@ -17,7 +17,7 @@ clear
 close all
 
 % Make sure example system folder is on the path
-addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "exampleSystems"));
+addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-systems"));
 
 %% Script settings
 

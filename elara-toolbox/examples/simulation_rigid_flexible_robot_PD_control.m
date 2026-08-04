@@ -10,7 +10,7 @@ clear
 close all
 
 % Make sure example system folder is on the path
-addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "exampleSystems"));
+addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-systems"));
 
 %% Define System
 links = systemDef_rigid_flexible_robot("dBeam", ones(6,1)*1e-3);
