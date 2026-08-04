@@ -39,16 +39,14 @@ MBSim.parameters.q0 = q0;
 MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
 % Visualize initial config
-fig = MBSim.visualizeSystemConfig(q0, "figureName", "visInitConf");
-%title("Initial Configuration")
+fig = MBSim.visualizeSystemConfig(q0, "figureName", "Visualization Initial Config");
+title("Initial Configuration", "Interpreter", "latex");
 xlim([0, 1.5]);
 ylim([-0.2, 0.2]);
 zlim([-0.4, 0.4]);
 xlabel('$x$ in m','Interpreter','latex');
 ylabel('$y$ in m','Interpreter','latex');
 zlabel('$z$ in m','Interpreter','latex');
-fig.WindowStyle = "normal";
-fig.WindowState = "maximized";
 
 
 %% Integration with variational integrator
@@ -72,7 +70,7 @@ MBSimVI = MBSimVI.computeEnergies;
 elara.plot.energies(MBSimVI.results);
 
 % Animate results
-MBSimVI.animateSimResults("figureName", "AnimVI");
+MBSimVI.animateSimResults("figureName", "Animation VI");
 
 
 %% Integration with ODE solver
@@ -95,7 +93,7 @@ MBSimODE = MBSimODE.computeEnergies;
 elara.plot.energies(MBSimODE.results);
 
 % Animate results
-MBSimODE.animateSimResults("figureName", "AnimODE", ...
+MBSimODE.animateSimResults("figureName", "Animation ODE", ...
     "saveMovie", false, "fileName", "example_rigidFlexible");
 
 
