@@ -111,6 +111,9 @@ classdef ElasticBeam < handle
         function obj = drawBeam(obj, nNodes)
             %% Initialize the beam drawing
 
+            % Make sure hold is enabled to avoid problems with deleted graphics objects
+            hold on;
+
             % Matrix with corners in local frames
             % Vectors are in the rows; cross-sections are in the XY-plane
             % Order: Top left, top right, bottom right, bottom left
