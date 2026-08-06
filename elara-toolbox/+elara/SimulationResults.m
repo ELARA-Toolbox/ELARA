@@ -5,7 +5,6 @@ classdef SimulationResults
     % Chair of Automatic Control
     % TUM School of Engineering and Design
     % Technical University of Munich
-
     properties
         %% Simulation Results Data
         eta   (6,:,:)   double  % se(3)/ R6 node velocity vectors            (6,   nLinks, nSteps)
@@ -37,5 +36,49 @@ classdef SimulationResults
 
         % Total computational time of the simulation
         computationTime (1,1) double
+    end
+    methods (Static)
+        function simRes = fromStateTrajectory(system, tout, q, q_dot, opts)
+            %% Get simRes object from trajectory of states q, q_dot
+            % E.g., to post-process integration results from ODE
+            % integrator.
+            % The velocity matrix is optional; if no velocities are given,
+            % they are computed from the configurations via finite
+            % differences.
+            arguments
+                % Object defining the multibody system
+                system  (1,1) elara.SystemNum
+
+                % Time vector
+                tout    (:,1) double
+
+                % Matrix of configurations at time steps tout,
+                % dimensions (nDoF, nSteps)
+                q       (:,:) double
+
+                % Matrix of velocities at time steps tout
+                % dimensions (nDoF, nSteps)
+                % Optional: if not given, they are computed via finite
+                % differences.
+                q_dot   (:,:) double = nan;
+
+                % Order of the finite differences for the computation of
+                % the velocities
+                opts.finiteDifferenceOrder (1,1) double {mustBeMember(opts.finiteDifferenceOrder, [2,4])}= 2;
+            end
+            % Use finite differences if velocities are not given
+            if isnan(q_dot)
+                [q_dot, ~] = diffHigherOrder(q, tout(2)-tout(1), opts.finiteDifferenceOrder);
+            end
+
+            % Check if compiled mex files are available
+            useMex = exist("firstOrderRHS_mex", "file");
+
+            if useMex
+                simRes = getSimResFromStateTrajectory_mex(system, tout, q, q_dot);
+            else
+                simRes = getSimResFromStateTrajectory(system, tout, q, q_dot);
+            end
+        end
     end
 end

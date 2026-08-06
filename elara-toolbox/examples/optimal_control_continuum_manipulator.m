@@ -177,7 +177,8 @@ q_dot_Sol_full = [q_dot_Sol, nan(OCP.systemNum.nDoF,1)];
 
 MBSimCasadi = OCP.getSimulationObject;
 MBSimCasadi.Name = "Optimization";
-MBSimCasadi.results = getSimResFromStateTrajectory(OCP.systemNum, OCP.tout, q_sol, q_dot_Sol_full);
+MBSimCasadi.results = elara.SimulationResults.fromStateTrajectory( ...
+    OCP.systemNum, OCP.tout, q_sol, q_dot_Sol_full);
 MBSimCasadi.plotAll;
 
 % Draw snapshots

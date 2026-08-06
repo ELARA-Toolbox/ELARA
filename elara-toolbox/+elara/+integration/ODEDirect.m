@@ -85,13 +85,9 @@ classdef ODEDirect < elara.abstract.IntegratorODE
                 disp("Postprocessing integration results...")
             end
 
-            if useMex
-                simRes = getSimResFromStateTrajectory_mex(MBSim.system, tout, ...
-                    sol.Solution(1:MBSim.system.nDoF,:), sol.Solution((MBSim.system.nDoF+1):end,:));
-            else
-                simRes = getSimResFromStateTrajectory(MBSim.system, tout, ...
-                    sol.Solution(1:MBSim.system.nDoF,:), sol.Solution((MBSim.system.nDoF+1):end,:));
-            end
+            simRes = elara.SimulationResults.fromStateTrajectory( MBSim.system, tout, ...
+                sol.Solution(1:MBSim.system.nDoF,:), sol.Solution((MBSim.system.nDoF+1):end,:) ...
+                );
             tFullODE = toc;
 
             simRes.computationTime = tSim;

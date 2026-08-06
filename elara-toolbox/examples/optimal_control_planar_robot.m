@@ -239,12 +239,10 @@ end
 disp('Post processing...')
 gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 
-[q_dot, ~] = diff2ndOrder(q_sol, OCP_DEL.h);
-
 MBSimCasadi = MBSim;
 MBSimCasadi.Name = "Optimization";
-MBSimCasadi.results = getSimResFromStateTrajectory(OCP_DEL.systemNum, OCP_DEL.tout, q_sol, q_dot);
-
+MBSimCasadi.results = elara.SimulationResults.fromStateTrajectory( ...
+    OCP_DEL.systemNum, OCP_DEL.tout, q_sol, "finiteDifferenceOrder", 2);
 MBSimCasadi.plotAll;
 
 % Draw snapshots
