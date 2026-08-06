@@ -1,4 +1,4 @@
-function [u, solInfo] = solveEOMInputs(MBSys, res_k, q_k, lb, ub)
+function [u, solInfo] = solveEOMInputs(system, res_k, q_k, lb, ub)
     %% Solve (Underactuated) Equations of Motion for System Inputs u
     % with u inside lower and upper bounds lb, ub
     %
@@ -7,13 +7,13 @@ function [u, solInfo] = solveEOMInputs(MBSys, res_k, q_k, lb, ub)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        MBSys (1,1) elara.abstract.System
+        system  (1,1) elara.SystemNum
 
         % DEL residual at current time step k
-        res_k (:,1) double
+        res_k   (:,1) double
 
         % Coordinates at current time step k
-        q_k   (:,1) double
+        q_k     (:,1) double
 
         % Upper and lower bounds for u
         lb      (:,1) double
@@ -21,14 +21,14 @@ function [u, solInfo] = solveEOMInputs(MBSys, res_k, q_k, lb, ub)
     end
 
     % Coefficient matrix C
-    C = -MBSys.computeInputMatrix(q_k);
+    C = -system.computeInputMatrix(q_k);
 
     % Vector of right-hand-sides
     d = res_k;
 
     % Add additional column in equation system to minimize input magnitude
     % and remove constant offsets
-    CExt = [C; ones(1, MBSys.nInputs)*5e-4];
+    CExt = [C; ones(1, system.nInputs)*5e-4];
     dExt = [d;0];
 
     opts = optimoptions("lsqlin");

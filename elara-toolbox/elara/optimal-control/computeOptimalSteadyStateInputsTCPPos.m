@@ -5,31 +5,31 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(OCP)
     end
 
     %% Get variables
-    MBSysSym = OCP.systemSym;
+    systemSym = OCP.systemSym;
     simPars = OCP.simPars;
 
      % Verify that the TCP is defined for the system
-    if ~MBSysSym.indexTCPFrame
+    if ~systemSym.indexTCPFrame
         warning("No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
-        indexTCPFrame = MBSysSym.nFrames;
+        indexTCPFrame = systemSym.nFrames;
     else
-        indexTCPFrame = MBSysSym.indexTCPFrame;
+        indexTCPFrame = systemSym.indexTCPFrame;
     end
 
     % Casadi function for signed workspace distance function
-    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSysSym.nFrames);
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(systemSym.nFrames);
 
 
     %% Define and solve optimization problem
 
     opti = casadi.Opti();
-    q = opti.variable(MBSysSym.nDoF,1);
-    u = opti.variable(MBSysSym.nInputs,1);
+    q = opti.variable(systemSym.nDoF,1);
+    u = opti.variable(systemSym.nInputs,1);
 
 
     % Statics/force balance constraint
     %[res_statics, x] = elara.statics.sym.residual(sysFuns, q, u);
-    [res_statics, g] = elara.statics.sym.residual(MBSysSym, simPars, q, u);
+    [res_statics, g] = elara.statics.sym.residual(systemSym, simPars, q, u);
     opti.subject_to( res_statics == 0 );
 
     % Workspace constraint
@@ -52,7 +52,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(OCP)
         opti.subject_to(u < OCP.uMax);
     end
     % TCP constraint
-    g_TCP = g(indexTCPFrame) * elara.SE3.Element(MBSysSym.g_B_TCP(1:3,1:3), MBSysSym.g_B_TCP(1:3,4));
+    g_TCP = g(indexTCPFrame) * elara.SE3.Element(systemSym.g_B_TCP(1:3,1:3), systemSym.g_B_TCP(1:3,4));
     if OCP.addTCPFinalTimeConstraint
         opti.subject_to( (g_TCP.x ) ==  OCP.x_TCP_F);
     end
@@ -76,7 +76,7 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(OCP)
 
     opti.minimize(J);
 
-    opti.set_initial([q;u], zeros(MBSysSym.nDoF+MBSysSym.nInputs,1));
+    opti.set_initial([q;u], zeros(systemSym.nDoF+systemSym.nInputs,1));
 
     p_opts = struct();
     s_opts = struct();
@@ -86,8 +86,8 @@ function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(OCP)
 
     opti.solver('ipopt', p_opts, s_opts);
 
-    q0 = zeros(MBSysSym.nDoF,1);
-    u0 = zeros(MBSysSym.nInputs,1);
+    q0 = zeros(systemSym.nDoF,1);
+    u0 = zeros(systemSym.nInputs,1);
 
     FOpti = opti.to_function('FOpti', {q,u}, {q,u});
     [qOpt, uOpt] = FOpti(q0, u0);

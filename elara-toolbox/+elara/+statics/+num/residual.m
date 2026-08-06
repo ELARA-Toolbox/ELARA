@@ -1,8 +1,8 @@
-function res = residual(MBSys, simPars, q, u)
+function res = residual(system, simPars, q, u)
     %% Compute Residuum of Static Equilbrium Equation
     arguments
         % Multibody system
-        MBSys   (1,1) elara.SystemNum
+        system  (1,1) elara.SystemNum
 
         simPars (1,1) elara.SimulationParameters
 
@@ -14,29 +14,29 @@ function res = residual(MBSys, simPars, q, u)
     end
 
     % Check argument sizes
-    assert( size(q,1) == MBSys.nDoF, ...
+    assert( size(q,1) == system.nDoF, ...
         "Vector of generalized coordinates has wrong dimensions.");
-    assert( size(u,1) == MBSys.nInputs, ...
+    assert( size(u,1) == system.nInputs, ...
         "Vector of inputs has wrong dimensions.");
 
     % Forward Kinematics and Jacobians
-    [g, g_rel] = MBSys.computeFwdKin(q);
-    J = MBSys.computeGeomJacobianFast(q, g_rel);
+    [g, g_rel] = system.computeFwdKin(q);
+    J = system.computeGeomJacobianFast(q, g_rel);
 
     % Generalized forces (stress and inputs)
-    f_gen = MBSys.cSys .* (q - MBSys.qRef) - MBSys.computeInputMatrixFast(g_rel) * u;
+    f_gen = system.cSys .* (q - system.qRef) - system.computeInputMatrixFast(g_rel) * u;
 
     % Placeholder values for external forces
-    f_frame_b = zeros(6, MBSys.nFrames);
-    f_frame_s = zeros(6, MBSys.nFrames);
+    f_frame_b = zeros(6, system.nFrames);
+    f_frame_s = zeros(6, system.nFrames);
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, MBSys, simPars);
+    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, system, simPars);
 
     % Compute sum of generalized forces
     res = f_gen;
-    for iFrm = 1:MBSys.nFrames
+    for iFrm = 1:system.nFrames
         res = res + J(:,:,iFrm).' * f_frame_b(:,iFrm);
     end
 

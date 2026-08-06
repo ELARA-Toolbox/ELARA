@@ -1,5 +1,5 @@
 function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
-        MBSys, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
+        system, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
         f_frame_k_b, f_gen_k, solverConfig, a)
     %% Solve implicit part of the DEL function using Broyden's Good Method
     %
@@ -12,7 +12,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
     % Technical University of Munich
     arguments
         % Multibody system
-        MBSys   (1,1) elara.abstract.System
+        system  (1,1) elara.SystemNum
 
         % Vector of generalized coordinates at current time step (1,nDoF)
         q_k     (:,1) double
@@ -40,7 +40,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
         % Vector of relative/generalized forces (nDof,1)
         f_gen_k         (:,1) double
 
-        % Struct containing solver configs
+        % solver configuration
         solverConfig    (1,1) varIntSolverConfig
 
         % Weighting factor in the generalized trapezoidal rule
@@ -50,7 +50,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
     h = solverConfig.h;
 
     % Compute geometric Jacobian
-    JGeom_k = MBSys.computeGeomJacobianFast(q_k, g_rel_k);
+    JGeom_k = system.computeGeomJacobianFast(q_k, g_rel_k);
 
     % Initial value for the solution
     % Compute as explicit Euler step as done in [Lee+20, Sec.3.3], IG2
@@ -62,10 +62,10 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
 
 
     %% Initial function evaluation
-    g_rel_k1 = MBSys.computeJointTransformations(q_k1);
-    eta_k    = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+    g_rel_k1 = system.computeJointTransformations(q_k1);
+    eta_k    = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
     resDEL = MBSDynamics_DEL_implicitFun( ...
-        MBSys, JGeom_k, h, f_frame_k_b, f_gen_k, eta_k, q_k1-q_k, a ...
+        system, JGeom_k, h, f_frame_k_b, f_gen_k, eta_k, q_k1-q_k, a ...
         );
 
     %% Solver loop
@@ -75,11 +75,11 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
         % Update Implicit Jacobian Matrix if Necessary
         if updateInvJacobian
             % Compute mass matrix and absolute dissipation term
-            MBeam = zeros(MBSys.nDoF);
-            for iFrm = 1:MBSys.nFrames
+            MBeam = zeros(system.nDoF);
+            for iFrm = 1:system.nFrames
                 MBeam = MBeam ...
                     + JGeom_k(:,:,iFrm).' * (...
-                    + elara.SE3.dcayInv( eta_k(:, iFrm) * h ).' * MBSys.frames.MGen(:,:,iFrm) ...
+                    + elara.SE3.dcayInv( eta_k(:, iFrm) * h ).' * system.frames.MGen(:,:,iFrm) ...
                     ) * JGeom_k(:,:,iFrm);
             end
             % Add Jacobian term due to linear strain-rate dissipation and
@@ -87,7 +87,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
             % NOTE: For the exact (generalized) trapezoidal rule, the matrix 
             % D is multiplied with (1-a); however, using the "full" D seems
             % to greatly improve convergence
-            H_k = inv( MBeam/h + (1)*diag(MBSys.dSys) );
+            H_k = inv( MBeam/h + (1)*diag(system.dSys) );
         end
 
         for iIteration = 1:solverConfig.maxIterations
@@ -99,10 +99,10 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
             q_k1 = q_k1_l0 - H_k * resDEL;
 
             % Compute new residual
-            g_rel_k1 = MBSys.computeJointTransformations(q_k1);
-            eta_k    = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+            g_rel_k1 = system.computeJointTransformations(q_k1);
+            eta_k    = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
             resDEL = MBSDynamics_DEL_implicitFun( ...
-                MBSys, JGeom_k, h, f_frame_k_b, f_gen_k, eta_k, q_k1-q_k, a ...
+                system, JGeom_k, h, f_frame_k_b, f_gen_k, eta_k, q_k1-q_k, a ...
                 );
 
             % Check residual and update H_k
@@ -135,10 +135,10 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
 end
 
 function DEL_res_k = MBSDynamics_DEL_implicitFun( ...
-        MBSys, JGeom, h, f_frame_k, f_gen_k, eta_k, q_k_diff, a) %#codegen
+        system, JGeom, h, f_frame_k, f_gen_k, eta_k, q_k_diff, a) %#codegen
     %% Evaluate implicit part of the DEL Equations
     arguments (Input)
-        MBSys       (1,1) elara.abstract.System
+        system       (1,1) elara.abstract.System
 
         % Array of Beam Jacobians (6, nDoF, nNodes)
         JGeom       (6, :, :) double
@@ -168,17 +168,17 @@ function DEL_res_k = MBSDynamics_DEL_implicitFun( ...
     end
 
     % Add linear dissipation in strain rates
-    if any(MBSys.dSys)
-        DEL_res_k = f_gen_k + (1-a)*MBSys.dSys .* q_k_diff;
+    if any(system.dSys)
+        DEL_res_k = f_gen_k + (1-a)*system.dSys .* q_k_diff;
     else
         DEL_res_k = f_gen_k;
     end
 
     % Evaluate DEL / Compute Residual
-    for iFrm = 1:MBSys.nFrames
+    for iFrm = 1:system.nFrames
         DEL_res_k = DEL_res_k ...
             + JGeom(:, :, iFrm).' *( ...
-            + elara.SE3.dcayInv(eta_k(:,iFrm)*h).' * MBSys.frames.MGen(:,:,iFrm) * eta_k(:,iFrm) ...
+            + elara.SE3.dcayInv(eta_k(:,iFrm)*h).' * system.frames.MGen(:,:,iFrm) * eta_k(:,iFrm) ...
             + f_frame_k(:, iFrm) ...
             ... % Quadratic dissipation in absolute velocities
             ... %+ h* discPars.dQuad .* eta_k(:,iN-1).^2 .* sign(eta_k(:,iN-1)) ...

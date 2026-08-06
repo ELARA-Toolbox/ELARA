@@ -1,4 +1,4 @@
-function [gQuery, qQuery] = interpolateSimulationResultsTime(MBSys, simRes, tQuery)
+function [gQuery, qQuery] = interpolateSimulationResultsTime(system, simRes, tQuery)
     %% Interpolate simulation results in time at fixed time grid
     %
     % Maximilian Herrmann
@@ -7,7 +7,7 @@ function [gQuery, qQuery] = interpolateSimulationResultsTime(MBSys, simRes, tQue
     % Technical University of Munich
     arguments
         % System definition
-        MBSys   (1,1) elara.abstract.System
+        system  (1,1) elara.abstract.System
 
         % SimResults object containing the data to interpolate
         simRes  (1,1) elara.SimulationResults
@@ -23,8 +23,8 @@ function [gQuery, qQuery] = interpolateSimulationResultsTime(MBSys, simRes, tQue
         1:size(simRes.q,1), tQuery);
 
     % Forward kinematics at interpolated values
-    gQuery = zeros(4,4, MBSys.nFrames, numel(tQuery));
+    gQuery = zeros(4,4, system.nFrames, numel(tQuery));
     for iStep = 1:numel(tQuery)
-        gQuery(:,:,:,iStep) =  MBSys.computeFwdKin(qQuery(:,iStep));
+        gQuery(:,:,:,iStep) =  system.computeFwdKin(qQuery(:,iStep));
     end
 end

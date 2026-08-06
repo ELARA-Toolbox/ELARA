@@ -1,9 +1,9 @@
-function simRes = getSimResFromStateTrajectory(MBSys, tout, q, q_dot)
+function simRes = getSimResFromStateTrajectory(system, tout, q, q_dot)
     %% Get simRes object from trajectory of states q, q_dot
     % E.g., to post-process integration results from ODE integrator
     arguments
         % Object defining the multibody system
-        MBSys   (1,1) elara.SystemNum
+        system  (1,1) elara.SystemNum
 
         % Time vector
         tout    (:,1) double
@@ -18,18 +18,18 @@ function simRes = getSimResFromStateTrajectory(MBSys, tout, q, q_dot)
     end
 
     % Check dimensions of configurations and velocities
-    assert(size(q,1) == MBSys.nDoF, "Matrix of Configurations has wrong dimensions");
-    assert(size(q_dot,1) == MBSys.nDoF, "Matrix of Velocities has wrong dimensions");
+    assert(size(q,1) == system.nDoF, "Matrix of Configurations has wrong dimensions");
+    assert(size(q_dot,1) == system.nDoF, "Matrix of Velocities has wrong dimensions");
 
     nSteps = numel(tout);
-    eta    = zeros(6, MBSys.nFrames, nSteps);
-    g      = zeros(4,4, MBSys.nFrames, nSteps);
+    eta    = zeros(6, system.nFrames, nSteps);
+    g      = zeros(4,4, system.nFrames, nSteps);
 
     for iStep = 1:nSteps
         % Forward kinematics and absolute velocities
-        [g(:,:,:,iStep), g_rel] = MBSys.computeFwdKin(q(:,iStep));
-        J = MBSys.computeGeomJacobianFast( q(:,iStep), g_rel);
-        for iFrm = 1:MBSys.nFrames
+        [g(:,:,:,iStep), g_rel] = system.computeFwdKin(q(:,iStep));
+        J = system.computeGeomJacobianFast( q(:,iStep), g_rel);
+        for iFrm = 1:system.nFrames
             eta(:,iFrm,iStep) = J(:,:,iFrm) * q_dot(:,iStep);
         end
     end

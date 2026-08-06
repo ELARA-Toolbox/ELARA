@@ -26,28 +26,28 @@ classdef SystemNum < elara.abstract.System
     end
 
     methods
-        function q = setJointAngles(MBSys,theta)
+        function q = setJointAngles(system,theta)
             %% Return coordinate vector with specified joint angles
             % The rest of q is zero.
             arguments
-                MBSys  (1,1) elara.SystemNum
+                system    (1,1) elara.SystemNum
 
                 % Vector of joint angles with dimension (nJoints,theta)
-                theta      (:,1) double
+                theta     (:,1) double
             end
-            assert(size(theta,1) == MBSys.nJoints, "Joint angle vector has incorrect length.");
+            assert(size(theta,1) == system.nJoints, "Joint angle vector has incorrect length.");
 
             % Get indices of frames with screw joints
-            thetaIndices = MBSys.frames.qIndices(1,MBSys.frames.jointType == 1);
+            thetaIndices = system.frames.qIndices(1,system.frames.jointType == 1);
 
             % Set coordinates
-            q = zeros(MBSys.nDoF,1);
+            q = zeros(system.nDoF,1);
             q(thetaIndices) = theta;
         end
-        function q = setLinkDeformations(MBSys, xi, iLink)
+        function q = setLinkDeformations(system, xi, iLink)
             %% Return coordinate vector with specified beam deformations
             arguments
-                MBSys  (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % Array of discrete deformations with size (6,nSegments) for
                 % the current link
@@ -58,13 +58,13 @@ classdef SystemNum < elara.abstract.System
             end
 
             % Get frames belonging to the link
-            if iLink == 1 && MBSys.isCantilever
+            if iLink == 1 && system.isCantilever
                 % Cantilever link: All frames correspond to beam segments
-                linkFrames = MBSys.linkFrameIndices(1, iLink):MBSys.linkFrameIndices(2, iLink);
+                linkFrames = system.linkFrameIndices(1, iLink):system.linkFrameIndices(2, iLink);
             else
                 % Regular link: First frame has screw joint and does not
                 % correspond to a beam segment
-                linkFrames = (MBSys.linkFrameIndices(1, iLink)+1):MBSys.linkFrameIndices(2, iLink);
+                linkFrames = (system.linkFrameIndices(1, iLink)+1):system.linkFrameIndices(2, iLink);
             end
 
             nSegments = numel(linkFrames);
@@ -73,36 +73,36 @@ classdef SystemNum < elara.abstract.System
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
             %       consecutively in the coordinate vector q
-            qIndices = MBSys.frames.qIndices(1,linkFrames(1)):MBSys.frames.qIndices(2,linkFrames(end));
+            qIndices = system.frames.qIndices(1,linkFrames(1)):system.frames.qIndices(2,linkFrames(end));
 
             % Store coordinates in q
             % Note: We assume all segments have the same Ba matrix
-            Ba = MBSys.frames.Ba(linkFrames(1));
+            Ba = system.frames.Ba(linkFrames(1));
             psi = Ba.' * xi;
-            q = zeros(MBSys.nDoF,1);
+            q = zeros(system.nDoF,1);
             q(qIndices) = psi(:);
         end
 
-        function theta = getJointAngles(MBSys, q)
+        function theta = getJointAngles(system, q)
             %% Return vector of joint angles for given coordinate vector
             arguments
-                MBSys  (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % Vector of generalized coordinates from which the joint
                 % angles should be returned
                 q      (:,1) double
             end
             % Get indices of frames with screw joints
-            thetaIndices = MBSys.frames.qIndices(1,MBSys.frames.jointType == 1);
+            thetaIndices = system.frames.qIndices(1,system.frames.jointType == 1);
 
             % Get angles
             theta = q(thetaIndices);
         end
 
-        function xi = getLinkDeformations(MBSys, q, iLink)
+        function xi = getLinkDeformations(system, q, iLink)
             %% Return array of discrete deformations for given link and corrdinate vector
             arguments
-                MBSys  (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % Vector of generalized coordinates from which the
                 % discrete deformations shall be computed
@@ -113,13 +113,13 @@ classdef SystemNum < elara.abstract.System
             end
 
             % Get frames belonging to the link
-            if iLink == 1 && MBSys.isCantilever
+            if iLink == 1 && system.isCantilever
                 % Cantilever link: All frames correspond to beam segments
-                linkFrames = MBSys.linkFrameIndices(1, iLink):MBSys.linkFrameIndices(2, iLink);
+                linkFrames = system.linkFrameIndices(1, iLink):system.linkFrameIndices(2, iLink);
             else
                 % Regular link: First frame has screw joint and does not
                 % correspond to a beam segment
-                linkFrames = (MBSys.linkFrameIndices(1, iLink)+1):MBSys.linkFrameIndices(2, iLink);
+                linkFrames = (system.linkFrameIndices(1, iLink)+1):system.linkFrameIndices(2, iLink);
             end
 
             nSegments = numel(linkFrames);
@@ -127,26 +127,26 @@ classdef SystemNum < elara.abstract.System
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
             %       consecutively in the coordinate vector q
-            qIndices = MBSys.frames.qIndices(1,linkFrames(1)):MBSys.frames.qIndices(2,linkFrames(end));
+            qIndices = system.frames.qIndices(1,linkFrames(1)):system.frames.qIndices(2,linkFrames(end));
 
             % Get coordinates and store them in array of size
             % (nAllwd,nSegments)
             % Note: We assume all segments have same nr. of dof/allowed
             %       modes
-            nAllwd = MBSys.frames.nDof(linkFrames(1));
+            nAllwd = system.frames.nDof(linkFrames(1));
             psi = reshape(q(qIndices), nAllwd, nSegments);
 
             % Compute complete array of deformations
             % Note: We assume all segments have the same Ba matrix
-            Ba = MBSys.frames.Ba(linkFrames(1));
-            xi = Ba * psi + MBSys.frames.xiC(:,linkFrames);
+            Ba = system.frames.Ba(linkFrames(1));
+            xi = Ba * psi + system.frames.xiC(:,linkFrames);
         end
 
-        function g_rel = computeJointTransformations(MBSys,q)
+        function g_rel = computeJointTransformations(system,q)
             %% Compute the relative transformations of all joints (rigid and flexible)
             % for given relative coordinates
             arguments (Input)
-                MBSys     (1,1) elara.SystemNum
+                system     (1,1) elara.SystemNum
 
                 % System coordinates  (nDoF, 1)
                 q       (:,1) double
@@ -155,30 +155,30 @@ classdef SystemNum < elara.abstract.System
                 % SE3 Matrices with relative configurations between body frames
                 g_rel   (4,4,:) double
             end
-            g_rel = zeros(4,4,MBSys.nFrames);
-            for iFrm = 1:MBSys.nFrames
-                qi = q(MBSys.frames.qIndices(1,iFrm):MBSys.frames.qIndices(2,iFrm));
-                switch MBSys.frames.jointType(iFrm)
+            g_rel = zeros(4,4,system.nFrames);
+            for iFrm = 1:system.nFrames
+                qi = q(system.frames.qIndices(1,iFrm):system.frames.qIndices(2,iFrm));
+                switch system.frames.jointType(iFrm)
                     case 1
                         %%% Screw joint
-                        g_rel(:,:,iFrm) = MBSys.frames.g_ref(:,:,iFrm) * elara.SE3.expScrew(MBSys.frames.X(:,iFrm), qi);
+                        g_rel(:,:,iFrm) = system.frames.g_ref(:,:,iFrm) * elara.SE3.expScrew(system.frames.X(:,iFrm), qi);
                     case 2
                         %%% Flexible joint
-                        xi = MBSys.frames.Ba(iFrm) * qi + MBSys.frames.xiC(:,iFrm);
-                        g_rel(:,:,iFrm) = elara.SE3.cay(xi*MBSys.frames.l(iFrm));
+                        xi = system.frames.Ba(iFrm) * qi + system.frames.xiC(:,iFrm);
+                        g_rel(:,:,iFrm) = elara.SE3.cay(xi*system.frames.l(iFrm));
                     otherwise
                         error("Invalid joint type specified.");
                 end
             end
         end
 
-        function g = computeFwdKinFast(MBSys, g_rel)
+        function g = computeFwdKinFast(system, g_rel)
             %% Compute Kinematics for Full Multibody System
             % i.e., the configuration of all body frames (= CoM frames / node
             % frames)
             % with *given* relative joint transformations g_ij
             arguments (Input)
-                MBSys     (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
@@ -191,23 +191,23 @@ classdef SystemNum < elara.abstract.System
 
             %% Compute kinematics
             % Kinematics without Joint Frames, Section 2.3 (CoM Frames = Body Frames only)
-            g = zeros(4,4,MBSys.nFrames);
+            g = zeros(4,4,system.nFrames);
 
             % First frame
-            g(:,:,1) = MBSys.g0 * g_rel(:,:,1);
+            g(:,:,1) = system.g0 * g_rel(:,:,1);
 
             % Other frames
-            for iFrm = 2:MBSys.nFrames
-                g(:,:,iFrm) = g(:,:,MBSys.frames.parent(iFrm)) * g_rel(:,:,iFrm);
+            for iFrm = 2:system.nFrames
+                g(:,:,iFrm) = g(:,:,system.frames.parent(iFrm)) * g_rel(:,:,iFrm);
             end
         end
 
-        function [g, g_rel] = computeFwdKin(MBSys, q)
+        function [g, g_rel] = computeFwdKin(system, q)
             %% Compute Kinematics for Full Multibody System
             % i.e., the configuration of all body frames (= CoM frames / node
             % frames)
             arguments (Input)
-                MBSys     (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q       (:,1) double
@@ -221,17 +221,17 @@ classdef SystemNum < elara.abstract.System
                 g_rel   (4,4,:) double
             end
             % Compute relative joint transformations
-            g_rel = MBSys.computeJointTransformations(q);
+            g_rel = system.computeJointTransformations(q);
 
             % Compute kinematics
-            g = computeFwdKinFast(MBSys, g_rel);
+            g = computeFwdKinFast(system, g_rel);
         end
 
-        function J = computeGeomJacobianFast(MBSys, q, g_rel)
+        function J = computeGeomJacobianFast(system, q, g_rel)
             %% Compute Geometric Jacobian Matrix for Full Multibody System
             % with *given* relative joint transformations g_ij
             arguments (Input)
-                MBSys     (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q       (:,1) double
@@ -248,39 +248,39 @@ classdef SystemNum < elara.abstract.System
             end
 
             % Array holding all Jacobians
-            J = zeros(6, MBSys.nDoF, MBSys.nFrames);
-            for iFrm = 1:MBSys.nFrames
+            J = zeros(6, system.nDoF, system.nFrames);
+            for iFrm = 1:system.nFrames
                 for ii = 1:iFrm
                     % Column indices of the current block
-                    qIndices = MBSys.frames.getQIndices(ii);
+                    qIndices = system.frames.getQIndices(ii);
 
                     % Compute block columns for current frame
                     if ii == iFrm
-                        switch MBSys.frames.jointType(iFrm)
+                        switch system.frames.jointType(iFrm)
                             case 1
-                                J(:,qIndices,iFrm) = MBSys.frames.X(:,iFrm);
+                                J(:,qIndices,iFrm) = system.frames.X(:,iFrm);
                             case 2
-                                xi = MBSys.frames.Ba(iFrm) * q(qIndices) + MBSys.frames.xiC(:,iFrm);
+                                xi = system.frames.Ba(iFrm) * q(qIndices) + system.frames.xiC(:,iFrm);
                                 J(:,qIndices,iFrm) = ...
-                                    MBSys.frames.l(iFrm) * elara.SE3.dcay( -xi * MBSys.frames.l(iFrm) ) ...
-                                    * MBSys.frames.Ba(iFrm);
+                                    system.frames.l(iFrm) * elara.SE3.dcay( -xi * system.frames.l(iFrm) ) ...
+                                    * system.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
-                        if ii < iFrm && ismember(ii, MBSys.frames.ancestors(:,iFrm))
+                        if ii < iFrm && ismember(ii, system.frames.ancestors(:,iFrm))
                             J(:,qIndices,iFrm) = elara.SE3.AdInv( g_rel(:,:,iFrm) ) ...
-                                * J(:,qIndices,MBSys.frames.parent(iFrm));
+                                * J(:,qIndices,system.frames.parent(iFrm));
                         end
                     end
                 end
             end
         end
 
-        function [J, g_rel] = computeGeomJacobian(MBSys, q)
+        function [J, g_rel] = computeGeomJacobian(system, q)
             %% Compute Geometric Jacobian Matrix for Full Multibody System
             arguments (Input)
-                MBSys     (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q       (:,1) double
@@ -295,18 +295,18 @@ classdef SystemNum < elara.abstract.System
                 g_rel    (4,4,:) double
             end
             % Compute relative joint transformations
-            g_rel = MBSys.computeJointTransformations(q);
+            g_rel = system.computeJointTransformations(q);
 
             % Compute Jacobians
-            J = MBSys.computeGeomJacobianFast(q, g_rel);
+            J = system.computeGeomJacobianFast(q, g_rel);
         end
 
-        function J_dot = computeGeomJacobianTimeDerivativeFast(MBSys, q, q_dot, eta, g_rel)
+        function J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, eta, g_rel)
             %% Compute the Time Derivative of the Geometric Jacobian Matrix
             % for the full multibody system
             % "Fast" function - with given relative transformations g_ij
             arguments (Input)
-                MBSys         (1,1) elara.SystemNum
+                system      (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q           (:,1) double
@@ -327,44 +327,44 @@ classdef SystemNum < elara.abstract.System
             end
 
             % Array holding all Jacobians
-            J_dot = zeros(6, MBSys.nDoF, MBSys.nFrames);
-            for iFrm = 1:MBSys.nFrames
+            J_dot = zeros(6, system.nDoF, system.nFrames);
+            for iFrm = 1:system.nFrames
                 for ii = 1:iFrm
                     % Column indices of the current block
-                    qIndices = MBSys.frames.getQIndices(ii);
+                    qIndices = system.frames.getQIndices(ii);
 
                     % Compute block columns for current frame
                     if ii == iFrm
-                        switch MBSys.frames.jointType(iFrm)
+                        switch system.frames.jointType(iFrm)
                             case 1
                                 J_dot(:,qIndices,iFrm) = ...
-                                    elara.SE3.smallAd(eta(:,ii)) * MBSys.frames.X(:,iFrm);
+                                    elara.SE3.smallAd(eta(:,ii)) * system.frames.X(:,iFrm);
                             case 2
-                                xi     = MBSys.frames.Ba(iFrm) * q(qIndices) + MBSys.frames.xiC(:,iFrm);
-                                xi_dot = MBSys.frames.Ba(iFrm) * q_dot(qIndices);
-                                l = MBSys.frames.l(iFrm);
+                                xi     = system.frames.Ba(iFrm) * q(qIndices) + system.frames.xiC(:,iFrm);
+                                xi_dot = system.frames.Ba(iFrm) * q_dot(qIndices);
+                                l = system.frames.l(iFrm);
                                 J_dot(:,qIndices,iFrm) = l * ( ...
                                     + elara.SE3.smallAd(eta(:,ii)) * elara.SE3.dcay(-xi*l) ...
                                     + elara.SE3.dcayDerivative(-xi*l, -xi_dot*l ) ...
-                                    ) * MBSys.frames.Ba(iFrm);
+                                    ) * system.frames.Ba(iFrm);
                             otherwise
                                 % error
                         end
                     else
-                        if ismember(ii, MBSys.frames.ancestors(:,iFrm))
+                        if ismember(ii, system.frames.ancestors(:,iFrm))
                             J_dot(:,qIndices,iFrm) = elara.SE3.AdInv( g_rel(:,:,iFrm) ) ...
-                                * J_dot(:,qIndices,MBSys.frames.parent(iFrm));
+                                * J_dot(:,qIndices,system.frames.parent(iFrm));
                         end
                     end
                 end
             end
         end
 
-        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(MBSys, q, q_dot, eta)
+        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot, eta)
             %% Compute the Time Derivative of the Geometric Jacobian Matrix
             % for the full multibody system
             arguments
-                MBSys         (1,1) elara.SystemNum
+                system      (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q           (:,1) double
@@ -377,48 +377,48 @@ classdef SystemNum < elara.abstract.System
             end
 
             % Compute relative joint transformations
-            g_rel = MBSys.computeJointTransformations(q);
+            g_rel = system.computeJointTransformations(q);
 
             % Compute actual Jacobian derivative
-            J_dot = computeGeomJacobianTimeDerivativeFast(MBSys, q, q_dot, eta, g_rel);
+            J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, eta, g_rel);
         end
 
-        function B = computeInputMatrixFast(MBSys, g_rel)
+        function B = computeInputMatrixFast(system, g_rel)
             %% Compute the system input matrix
             % "Fast" function -- with given relative deformations
             arguments
-                MBSys         (1,1) elara.SystemNum
+                system       (1,1) elara.SystemNum
 
                 % Array of relative configurations between body frames
                 % dimensions (4,4,nFrames)
                 g_rel        (4,4,:) double
             end
 
-            B = zeros(MBSys.nDoF, MBSys.nInputs);
-            for iFrm = 1:MBSys.nFrames
-                if MBSys.frames.uIndices(1,iFrm)
-                    uIndices = MBSys.frames.getUIndices(iFrm);
-                    qIndices = MBSys.frames.getQIndices(iFrm);
+            B = zeros(system.nDoF, system.nInputs);
+            for iFrm = 1:system.nFrames
+                if system.frames.uIndices(1,iFrm)
+                    uIndices = system.frames.getUIndices(iFrm);
+                    qIndices = system.frames.getQIndices(iFrm);
 
-                    switch MBSys.frames.jointType(iFrm)
+                    switch system.frames.jointType(iFrm)
                         case 1
                             % Rigid joint (scalar input)
                             B(qIndices, uIndices) = 1;
                         case 2
                             % Flexible joint (multiple cable inputs)
-                            l = MBSys.frames.l(iFrm);
+                            l = system.frames.l(iFrm);
 
                             for iC = 1:length(uIndices)
                                 % Cable configurations at adjacent nodes
-                                g_cm_i1 = MBSys.frames.g_cm(:,:,1,iFrm,iC);
-                                g_cm_i2 = MBSys.frames.g_cm(:,:,2,iFrm,iC);
+                                g_cm_i1 = system.frames.g_cm(:,:,1,iFrm,iC);
+                                g_cm_i2 = system.frames.g_cm(:,:,2,iFrm,iC);
 
                                 % Discrete deformation gradient cable routing
                                 % Tangent vector is in elements 4:6
                                 xi_c = elara.SE3.cayInv( g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2 ) / l;
 
                                 % Compute matrix entry
-                                b_i = MBSys.frames.Ba(iFrm).' * [
+                                b_i = system.frames.Ba(iFrm).' * [
                                     1/2 * ( skew( g_cm_i1(1:3,4) + g_cm_i2(1:3,4) ) ) * xi_c(4:6);
                                     xi_c(4:6)
                                     ];
@@ -431,25 +431,25 @@ classdef SystemNum < elara.abstract.System
 
             end
         end
-        function B = computeInputMatrix(MBSys, q)
+        function B = computeInputMatrix(system, q)
             %% Compute the system input matrix
             arguments
-                MBSys         (1,1) elara.SystemNum
+                system      (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q           (:,1) double
             end
             % Compute relative joint transformations
-            g_rel = MBSys.computeJointTransformations(q);
+            g_rel = system.computeJointTransformations(q);
 
             % Compute input matrix
-            B = MBSys.computeInputMatrixFast(g_rel);
+            B = system.computeInputMatrixFast(g_rel);
         end
 
-        function M = computeMassMatrixFast(MBSys, J)
+        function M = computeMassMatrixFast(system, J)
             %% Compute the system mass matrix
             arguments (Input)
-                MBSys         (1,1) elara.SystemNum
+                system  (1,1) elara.SystemNum
 
                 % Array of geometric Jacobians
                 J       (6,:,:) double
@@ -458,16 +458,16 @@ classdef SystemNum < elara.abstract.System
                 % System mass matrix
                 M   (:,:) double
             end
-            M = zeros(MBSys.nDoF);
-            for iFrm = 1:MBSys.nFrames
-                M = M + J(:,:,iFrm).' * MBSys.frames.MGen(:,:,iFrm) * J(:,:,iFrm);
+            M = zeros(system.nDoF);
+            for iFrm = 1:system.nFrames
+                M = M + J(:,:,iFrm).' * system.frames.MGen(:,:,iFrm) * J(:,:,iFrm);
             end
         end
 
-        function [M, J] = computeMassMatrix(MBSys, q)
+        function [M, J] = computeMassMatrix(system, q)
             %% Compute the system mass matrix
             arguments (Input)
-                MBSys         (1,1) elara.SystemNum
+                system      (1,1) elara.SystemNum
 
                 % System coordinates (nDoF, 1)
                 q           (:,1) double
@@ -481,19 +481,19 @@ classdef SystemNum < elara.abstract.System
             end
 
             % Get Jacobians
-            J = MBSys.computeGeomJacobian(q);
+            J = system.computeGeomJacobian(q);
 
             % Compute mass matrix
-            M = computeMassMatrixFast(MBSys, J);
+            M = computeMassMatrixFast(system, J);
         end
 
-        function eta_k = computeDiscreteAbsoluteVelocities(MBSys, g_rel_k, g_rel_k1, h)
+        function eta_k = computeDiscreteAbsoluteVelocities(system, g_rel_k, g_rel_k1, h)
             %% Compute discrete absolute velocities in the interval (k,k+1)
             % i.e., compute absolute body-fixed velocities eta in se3
             % (vector form) from given relative transformations at time
             % instances k and k+1
             arguments
-                MBSys         (1,1)   elara.SystemNum
+                system      (1,1)   elara.SystemNum
 
                 % Array of relative configurations at time step k
                 g_rel_k     (4,4,:) double
@@ -507,10 +507,10 @@ classdef SystemNum < elara.abstract.System
             hInv = 1/h; % Precompute for performance (?)
 
             % Array of absolute frame velocities
-            eta_k = zeros(6, MBSys.nFrames);
+            eta_k = zeros(6, system.nFrames);
 
             % Recursive computation for all frames
-            for iFrm = 1:MBSys.nFrames
+            for iFrm = 1:system.nFrames
                 if iFrm > 1
                     eta_k(:,iFrm) = elara.SE3.cayInv( ...
                         elara.SE3.invertMatrix(g_rel_k(:,:,iFrm)) * elara.SE3.cay(h*eta_k(:,iFrm-1)) * g_rel_k1(:,:,iFrm) ...

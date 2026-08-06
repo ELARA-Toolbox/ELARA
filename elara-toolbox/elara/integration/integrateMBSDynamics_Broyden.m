@@ -1,4 +1,4 @@
-function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig) %#codegen
+function simResults = integrateMBSDynamics_Broyden(system, simPars, solverConfig) %#codegen
     %% Variational Integrator for a rigid-flexible multibody system
     %
     % Maximilian Herrmann
@@ -7,32 +7,31 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     % Technical University of Munich
 
     arguments
-        % Object defining the multibody system
-        MBSys           (1,1) elara.SystemNum
+        % multibody system
+        system          (1,1) elara.SystemNum
 
-        % simPars object (struct) with simulation parameters.
-        % See class definition for details.
+        % simulation parameters
         simPars         (1,1) elara.SimulationParameters
 
-        % Struct containing solver config
+        % solver configuration
         solverConfig    (1,1) varIntSolverConfig
     end
 
     %% Validate Simulation Input Data
 
-    assert( numel(simPars.q0) == MBSys.nDoF, ...
+    assert( numel(simPars.q0) == system.nDoF, ...
         "Vector of initial coordinates has wrong dimensions.");
     assert( solverConfig.h > 0, ...
         "Time step h must be non-zero and positive.");
     assert( simPars.tEnd > 0, ...
         "Simulation end time tEnd must be non-zero and positive.");
-    assert( isempty(simPars.uConst) || numel(simPars.uConst) == MBSys.nInputs, ...
+    assert( isempty(simPars.uConst) || numel(simPars.uConst) == system.nInputs, ...
         "Vector of constant system inputs has wrong dimensions.");
-    assert( isempty(simPars.uSampleValues) || size(simPars.uSampleValues,1) == MBSys.nInputs, ...
+    assert( isempty(simPars.uSampleValues) || size(simPars.uSampleValues,1) == system.nInputs, ...
         "Nr. of rows of the matrix of time-varying system inputs does not match the nr. of system inputs.");
-    assert( isempty(simPars.externalWrench_b.maximumWrench) || size(simPars.externalWrench_b.maximumWrench,2) == MBSys.nFrames, ...
+    assert( isempty(simPars.externalWrench_b.maximumWrench) || size(simPars.externalWrench_b.maximumWrench,2) == system.nFrames, ...
         "Nr. of columns of the matrix of body-fixed wrenches does not match the nr. of frames.");
-    assert( isempty(simPars.externalWrench_s.maximumWrench) || size(simPars.externalWrench_s.maximumWrench,2) == MBSys.nFrames, ...
+    assert( isempty(simPars.externalWrench_s.maximumWrench) || size(simPars.externalWrench_s.maximumWrench,2) == system.nFrames, ...
         "Nr. of columns of the matrix of spatial frame forces does not match the nr. of frames.");
 
 
@@ -51,10 +50,10 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     % Time vector (has length nSteps + 1)
     tout = (0:h:h*nSteps)';
 
-    g     = zeros(4,4, MBSys.nFrames, nSteps+1);   % Configuration
-    eta   = zeros(6,   MBSys.nFrames, nSteps+1);   % Discrete velocity
-    q     = zeros(MBSys.nDoF, nSteps+1);           % Relative coordinates
-    q_dot = zeros(MBSys.nDoF, nSteps+1);           % Relative coordinate velocities
+    g     = zeros(4,4, system.nFrames, nSteps+1);   % Configuration
+    eta   = zeros(6,   system.nFrames, nSteps+1);   % Discrete velocity
+    q     = zeros(system.nDoF, nSteps+1);           % Relative coordinates
+    q_dot = zeros(system.nDoF, nSteps+1);           % Relative coordinate velocities
 
     % Metadata vectors/matrices
     ImplicitError       = nan(1,nSteps+1);
@@ -62,7 +61,7 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     ExitFlag            = nan(1,nSteps+1);
 
     % Prepare System Inputs
-    u = getIntegratorInputs(MBSys, simPars, tout);
+    u = getIntegratorInputs(system, simPars, tout);
 
 
     %% Compute initial step k=1 -> k=2
@@ -78,20 +77,20 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     q_k = simPars.q0;
 
     % Initial (continuous-time) momentum
-    p_0 = MBSys.computeMassMatrix(q_k) * simPars.qDot0;
+    p_0 = system.computeMassMatrix(q_k) * simPars.qDot0;
 
     % Forward kinematics for the first step (k = 1)
-    [g_0, g_rel_0] = MBSys.computeFwdKin(simPars.q0);
+    [g_0, g_rel_0] = system.computeFwdKin(simPars.q0);
 
     % Frame forces at first step
-    f_frame_0_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, 0);
-    f_frame_0_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, 0);
+    f_frame_0_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, 0);
+    f_frame_0_s = simPars.externalWrench_s.getCurrentWrench(system.nFrames, 0);
     
-    f_frame_0_b = -h*(1-a)*f_frame_0_b + h*(1-a)*elara.dynamics.num.bodyFixedFrameForces(g_0, f_frame_0_s, MBSys, simPars);
+    f_frame_0_b = -h*(1-a)*f_frame_0_b + h*(1-a)*elara.dynamics.num.bodyFixedFrameForces(g_0, f_frame_0_s, system, simPars);
 
     % Generalized Forces (stresses, actuation and initial momentum)
-    f_gen_0 = h*(1-a)*MBSys.cSys .* (q_k - MBSys.qRef) ...
-        - h*(1-a)*MBSys.computeInputMatrixFast(g_rel_0) * u(:,1) ...
+    f_gen_0 = h*(1-a)*system.cSys .* (q_k - system.qRef) ...
+        - h*(1-a)*system.computeInputMatrixFast(g_rel_0) * u(:,1) ...
         - p_0;
 
     %%% Solve initial step
@@ -104,12 +103,12 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
 
     q_k0 = q_k; % Only for the initial value of the implicit solver
     [q_k1, eta_k, g_rel_k1, H_k, solData_k] = solveImplicitDELEquBroyden( ...
-        MBSys, q_k, q_k0, g_rel_0, zeros(MBSys.nDoF), updateInvJacobian, forceSolverIteration, f_frame_0_b, f_gen_0, ...
+        system, q_k, q_k0, g_rel_0, zeros(system.nDoF), updateInvJacobian, forceSolverIteration, f_frame_0_b, f_gen_0, ...
         solverConfig, a  ...
         );
 
     % Forward Kinematics for the second time step (k = 2)
-    g_k1 = MBSys.computeFwdKinFast(g_rel_k1);
+    g_k1 = system.computeFwdKinFast(g_rel_k1);
 
     % Assign to output arrays
     q(:,1)     = q_k;
@@ -145,8 +144,8 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
         g_rel_k = g_rel_k1;
 
         % External frame forces from the environment
-        f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, tout(k));
-        f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, tout(k));
+        f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, tout(k));
+        f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(system.nFrames, tout(k));
 
         % Compute Frame Forces
         % * External frame forces
@@ -154,21 +153,21 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
         % * Inertia term
         f_frame_k_b = ...
             - h*f_frame_k_b ...
-            + h*elara.dynamics.num.bodyFixedFrameForces(g_k, f_frame_k_s, MBSys, simPars) ...
-            - computeInertiaTerm(MBSys, eta_k0, h);
+            + h*elara.dynamics.num.bodyFixedFrameForces(g_k, f_frame_k_s, system, simPars) ...
+            - computeInertiaTerm(system, eta_k0, h);
 
         % Compute Generalized Forces (stresses and actuation)
-        f_gen_k = h*MBSys.cSys .* (q_k - MBSys.qRef) ...
-            - h*MBSys.computeInputMatrixFast(g_rel_k) * u(:,k)...
-            + aLoop*MBSys.dSys .* (q_k-q_k0);
+        f_gen_k = h*system.cSys .* (q_k - system.qRef) ...
+            - h*system.computeInputMatrixFast(g_rel_k) * u(:,k)...
+            + aLoop*system.dSys .* (q_k-q_k0);
 
         % Solve implicit DEL equation
         [q_k1, eta_k, g_rel_k1, H_k, solData_k] = solveImplicitDELEquBroyden( ...
-            MBSys, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
+            system, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
             f_frame_k_b, f_gen_k, solverConfig, aLoop );
 
         % Forward Kinematics for the next time step
-        g_k1 = MBSys.computeFwdKinFast(g_rel_k1);
+        g_k1 = system.computeFwdKinFast(g_rel_k1);
 
         % Assign to outputs
         q(:,k+1)     = q_k1;
@@ -191,8 +190,8 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     % Discrete velocities at the final step:
     % Not defined since there is no future time step anymore
     % (velocity at k is the velocity in interval k, k+1)
-    eta(:,:,end) = nan(6, MBSys.nFrames);
-    q_dot(:,end) = nan(MBSys.nDoF, 1);
+    eta(:,:,end) = nan(6, system.nFrames);
+    q_dot(:,end) = nan(system.nDoF, 1);
 
 
     %% Assign to output object
@@ -208,10 +207,10 @@ function simResults = integrateMBSDynamics_Broyden(MBSys, simPars, solverConfig)
     simResults.solverExitFlag   = ExitFlag(1:nStepsDone+1);
 end
 
-function f_inertia_k = computeInertiaTerm(MBSys, eta_k0, h)
+function f_inertia_k = computeInertiaTerm(system, eta_k0, h)
     % Compute the inertial term of the DEL equations
-    f_inertia_k = zeros(6, MBSys.nFrames);
-    for iFrm = 1:MBSys.nFrames
-        f_inertia_k(:, iFrm) = elara.SE3.dcayInv(-eta_k0(:,iFrm)*h).' * MBSys.frames.MGen(:,:,iFrm) * eta_k0(:,iFrm);
+    f_inertia_k = zeros(6, system.nFrames);
+    for iFrm = 1:system.nFrames
+        f_inertia_k(:, iFrm) = elara.SE3.dcayInv(-eta_k0(:,iFrm)*h).' * system.frames.MGen(:,:,iFrm) * eta_k0(:,iFrm);
     end
 end

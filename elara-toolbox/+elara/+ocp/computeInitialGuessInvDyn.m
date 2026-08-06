@@ -23,8 +23,8 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
     fprintf("\nGenerating initial guess.\n");
     tIGStart = tic;
 
-    MBSysNum = OCP.systemNum;
-    MBSysSym = OCP.systemSym;
+    systemNum = OCP.systemNum;
+    systemSym = OCP.systemSym;
     simPars = OCP.simPars;
 
     % A simulation object is only needed as a result/visualization
@@ -41,8 +41,8 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
             nWPts = 1;
             x_TCP_waypoints = OCP.x_TCP_F;
         end
-        qStat = zeros(MBSysNum.nDoF, nWPts);
-        uStat = zeros(MBSysNum.nInputs, nWPts);
+        qStat = zeros(systemNum.nDoF, nWPts);
+        uStat = zeros(systemNum.nInputs, nWPts);
 
         for iWpt = 1:nWPts
             %% Compute optimal steady-state inputs
@@ -59,11 +59,11 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
             % For revolute joints: Remove offsets by 2pi
             % TODO: This line is only valid for revolute joints! For any other
             % screw joint (prismatic or screw), it produces wrong values
-            jointIndices = MBSysSym.frames.qIndices(1, MBSysSym.frames.jointType==1);
+            jointIndices = systemSym.frames.qIndices(1, systemSym.frames.jointType==1);
             qF(jointIndices) = wrapToPi(qF(jointIndices));
 
-            gOptStatic = MBSysNum.computeFwdKin(qF);
-            g_TCP = gOptStatic(:,:,MBSysNum.indexTCPFrame)*MBSysNum.g_B_TCP;
+            gOptStatic = systemNum.computeFwdKin(qF);
+            g_TCP = gOptStatic(:,:,systemNum.indexTCPFrame)*systemNum.g_B_TCP;
             fprintf("Distance desired TCP position:     %.2e m\n", ...
                 norm(OCP_stat.x_TCP_F - g_TCP(1:3, 4)));
 
@@ -74,7 +74,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
     else
         % Final configuration given instead of desired TCP position
         qStat = OCP.qF;
-        uStat = zeros(MBSysNum.nInputs, 1);
+        uStat = zeros(systemNum.nInputs, 1);
     end
     qF = qStat(:,end);
     uF = uStat(:,end);
@@ -90,13 +90,13 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
     tout_ID = (0 : h_ID : h_ID*nSteps_ID).';
 
     if isempty(OCP.qDot0)
-        qDot0 = zeros(MBSysNum.nDoF,1);
+        qDot0 = zeros(systemNum.nDoF,1);
     else
         qDot0 = OCP.qDot0;
     end
 
     if isempty(OCP.qDotF)
-        qDotF = zeros(MBSysNum.nDoF,1);
+        qDotF = zeros(systemNum.nDoF,1);
     else
         qDotF = OCP.qDotF;
     end
@@ -122,9 +122,9 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
             repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
             ];
         qdd_init = [
-            zeros(MBSysNum.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
+            zeros(systemNum.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
             qdd_init_dyn, ...
-            zeros(MBSysNum.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
+            zeros(systemNum.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
             ];
     else
         [q_init, qd_init, qdd_init] = minjerkpolytraj(qStat, ...
@@ -149,7 +149,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$q$", "Interpreter", "latex");
-        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSysNum.nDoF), "Interpreter", "latex");
+        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:systemNum.nDoF), "Interpreter", "latex");
         xlim([tout_ID(1),tout_ID(end)]);
 
         nexttile;
@@ -157,7 +157,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$\dot{q}$", "Interpreter", "latex");
-        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:MBSysNum.nDoF), "Interpreter", "latex");
+        legend(arrayfun(@(x) sprintf("$q_{%d}$", x), 1:systemNum.nDoF), "Interpreter", "latex");
         xlim([tout_ID(1),tout_ID(end)]);
     end
 
@@ -166,10 +166,10 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
     switch opts.invDynMethod
         case "DEL"
             [uInit_ID, solInfo] = computeInverseDynamicsDEL( ...
-                MBSysNum, simPars, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
+                systemNum, simPars, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
         case "ODE"
             [uInit_ID, solInfo] = computeInverseDynamicsODE( ...
-                MBSysNum, simPars, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
+                systemNum, simPars, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
         otherwise
     end
     fprintf("Inverse dynamics residual norm: max = %e, mean = %e\n", max(abs(solInfo.resNorm)), mean(abs(solInfo.resNorm)));
@@ -200,7 +200,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
         % Use full 2nd-order dissipation (a = 1/2) only for rigid systems and
         % simplified dissipation (rectangle rule, a = 0) for flexible systems for
         % higher stability
-        MBSim.integrator.useFirstOrderDissipation = ~all(MBSysNum.frames.jointType == 1);
+        MBSim.integrator.useFirstOrderDissipation = ~all(systemNum.frames.jointType == 1);
     end
 
     % Start integration

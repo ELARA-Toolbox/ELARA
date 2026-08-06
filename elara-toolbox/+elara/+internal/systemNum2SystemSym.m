@@ -1,28 +1,28 @@
-function MBSysSym = systemNum2SystemSym(MBSysNum)
+function systemSym = systemNum2SystemSym(systemNum)
     %% Convert an elara.SystemNum instance to elara.SystemSym
     % between each other (small helper function)
     % See https://www.mathworks.com/matlabcentral/answers/350158-convert-a-struct-to-an-object-of-a-class
     arguments
-        MBSysNum       (1,1) elara.SystemNum
+        systemNum       (1,1) elara.SystemNum
     end
 
-    MBSysSym = elara.SystemSym;        %create object
-    for fn = fieldnames(MBSysNum)'      %enumerate fields
+    systemSym = elara.SystemSym;        %create object
+    for fn = fieldnames(systemNum)'      %enumerate fields
         try
-            MBSysSym.(fn{1}) = MBSysNum.(fn{1});   %and copy
+            systemSym.(fn{1}) = systemNum.(fn{1});   %and copy
         catch
             %warning('Could not copy field %s', fn{1});
         end
     end
-    for fn = fieldnames(MBSysNum.frames)'      %enumerate fields
+    for fn = fieldnames(systemNum.frames)'      %enumerate fields
         try
-            MBSysSym.frames.(fn{1}) = MBSysNum.frames.(fn{1});   %and copy
+            systemSym.frames.(fn{1}) = systemNum.frames.(fn{1});   %and copy
         catch
             %warning('Could not copy field %s', fn{1});
         end
     end
-    MBSysSym.frames.g_cm = SE3MatArray2SE3Array(MBSysNum.frames.g_cm);
-    MBSysSym.frames.MGen = squeeze(num2cell(MBSysNum.frames.MGen,[1,2]));
+    systemSym.frames.g_cm = SE3MatArray2SE3Array(systemNum.frames.g_cm);
+    systemSym.frames.MGen = squeeze(num2cell(systemNum.frames.MGen,[1,2]));
 
 
 end

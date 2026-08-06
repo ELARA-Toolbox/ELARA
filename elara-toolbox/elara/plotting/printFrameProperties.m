@@ -1,16 +1,16 @@
-function tFrames = printFrameProperties(MBSys)
+function tFrames = printFrameProperties(system)
     %% Display frame properties of a MB system as a table
 
     % Disable warning appearing when we convert an object to struct
     warning('off','MATLAB:structOnObject');
 
     % Get frames as a suitable struct
-    frameStr = struct(MBSys.frames);
+    frameStr = struct(system.frames);
     frameStr.ancestors = frameStr.ancestors.';
-    frameStr = prepareStruct(frameStr, MBSys.nFrames);
+    frameStr = prepareStruct(frameStr, system.nFrames);
 
     % Construct table
-    tIndex = table((1:MBSys.nFrames).');
+    tIndex = table((1:system.nFrames).');
     tIndex.Properties.VariableNames = "Nr.";
     tFrames = [tIndex, struct2table(frameStr)];
 

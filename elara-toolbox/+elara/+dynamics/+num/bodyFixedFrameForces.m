@@ -1,8 +1,8 @@
-function f_frame_b = bodyFixedFrameForces(g, f_frame_s, MBSys, simPars)
+function f_frame_b = bodyFixedFrameForces(g, f_frame_s, system, simPars)
     %% Compute the body-fixed forces for all frames: Gravity and Ext. Forces
     %
-    f_frame_b = zeros(6,MBSys.nFrames);
-    for iFrm = 1:MBSys.nFrames
+    f_frame_b = zeros(6,system.nFrames);
+    for iFrm = 1:system.nFrames
         f_frame_b(:, iFrm) = ...
             ... % External spatial forces
             + [
@@ -11,8 +11,8 @@ function f_frame_b = bodyFixedFrameForces(g, f_frame_s, MBSys, simPars)
             ] ...
             ...% Gravity
             + simPars.g * [
-            MBSys.frames.m_a(iFrm) * cross( MBSys.frames.x_a(:, iFrm), g(1:3,1:3,iFrm).' * [0;0;1] )
-            MBSys.frames.m(iFrm) * g(1:3,1:3,iFrm).' * [0;0;1] 
+            system.frames.m_a(iFrm) * cross( system.frames.x_a(:, iFrm), g(1:3,1:3,iFrm).' * [0;0;1] )
+            system.frames.m(iFrm) * g(1:3,1:3,iFrm).' * [0;0;1] 
             ];
     end
 end

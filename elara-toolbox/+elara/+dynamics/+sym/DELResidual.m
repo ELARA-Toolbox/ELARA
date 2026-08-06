@@ -37,8 +37,8 @@ function DEL_res_k = DELResidual(system, simPars, q_k0, q_k, q_k1, u_k, h, a)
 
     %% External frame forces from the environment
     % % NOTE: May be replaced with symbolic variables or similar.
-    %f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, t);
-    %f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, t);
+    %f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, t);
+    %f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(system.nFrames, t);
     f_frame_k_b_ext = zeros(6, system.nFrames);
     f_frame_k_s_ext = zeros(6, system.nFrames);
 

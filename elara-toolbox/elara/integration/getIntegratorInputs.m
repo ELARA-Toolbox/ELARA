@@ -1,4 +1,4 @@
-function u = getIntegratorInputs(MBSys, simPars, tout)
+function u = getIntegratorInputs(system, simPars, tout)
     %% Prepare system inputs at integration time steps for variational integrators
     %
     % Maximilian Herrmann
@@ -6,7 +6,7 @@ function u = getIntegratorInputs(MBSys, simPars, tout)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        MBSys       (1,1) elara.abstract.System
+        system      (1,1) elara.abstract.System
         simPars     (1,1) elara.SimulationParameters
         tout        (:,1) double
     end
@@ -23,7 +23,7 @@ function u = getIntegratorInputs(MBSys, simPars, tout)
         % Interpolate input values
         u = interp1(simPars.uSampleTimes, simPars.uSampleValues.', tout, 'linear', 0).';
     else
-        u = zeros(MBSys.nInputs, nSteps+1);
+        u = zeros(system.nInputs, nSteps+1);
     end
 
     % Constant system inputs

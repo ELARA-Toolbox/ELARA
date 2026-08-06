@@ -12,7 +12,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     end
 
     %%
-    MBSys = OCP.systemSym;
+    system = OCP.systemSym;
     nSteps = OCP.nSteps;
     simPars = OCP.simPars;
     h = OCP.h;
@@ -21,28 +21,28 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     % NOTE:
     % Workspace constraints are currently not considered for the reference
     % implementations!
-    %[dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(MBSys.nFrames);
+    %[dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(system.nFrames);
 
 
     %% Define step constraint function
 
     % Define Casadi RHS Function
-    xSym = casadi.MX.sym('x', 2*MBSys.nDoF, 1);
-    uSym = casadi.MX.sym('x', MBSys.nInputs, 1);
-    Fsym = elara.dynamics.sym.firstOrderDerivative(0, xSym, uSym, MBSys, simPars);
+    xSym = casadi.MX.sym('x', 2*system.nDoF, 1);
+    uSym = casadi.MX.sym('x', system.nInputs, 1);
+    Fsym = elara.dynamics.sym.firstOrderDerivative(0, xSym, uSym, system, simPars);
     FFun = casadi.Function('FFun', {xSym, uSym}, {Fsym});
 
-    x_kSym  = casadi.MX.sym('x_k', 2*MBSys.nDoF, 1);
-    x_k1Sym = casadi.MX.sym('x_k1', 2*MBSys.nDoF, 1);
+    x_kSym  = casadi.MX.sym('x_k', 2*system.nDoF, 1);
+    x_k1Sym = casadi.MX.sym('x_k1', 2*system.nDoF, 1);
 
     if OCP.useSplineInputs
         assert(size(u,2) == OCP.nSteps+1);
-        u_kStageSym = casadi.MX.sym('u_kStage', MBSys.nInputs, size(u,1));
+        u_kStageSym = casadi.MX.sym('u_kStage', system.nInputs, size(u,1));
         eq_int = OCP.discretization.getIntegrationStepConstraintSpline(FFun, x_kSym, x_k1Sym, u_kStageSym, h);
         FStep = casadi.Function('FStep', {x_kSym, x_k1Sym, u_kStageSym}, {eq_int});
     else
-        u_kSym  = casadi.MX.sym('u_k', MBSys.nInputs, 1);
-        u_k1Sym = casadi.MX.sym('u_k1', MBSys.nInputs, 1);
+        u_kSym  = casadi.MX.sym('u_k', system.nInputs, 1);
+        u_k1Sym = casadi.MX.sym('u_k1', system.nInputs, 1);
         eq_int = OCP.discretization.getIntegrationStepConstraint(FFun, x_kSym, x_k1Sym, u_kSym, u_k1Sym, h);
         FStep = casadi.Function('FStep', {x_kSym, x_k1Sym, u_kSym, u_k1Sym}, {eq_int});
     end
@@ -67,13 +67,13 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
         end
         c{k}     = c_dyn_k;
         c_dyn{k} = c_dyn_k;
-        lb_c{k} = zeros(2*MBSys.nDoF, 1);
-        ub_c{k} = zeros(2*MBSys.nDoF, 1);
-        g{k} = MBSys.computeFwdKin(x{k}(1:MBSys.nDoF));
+        lb_c{k} = zeros(2*system.nDoF, 1);
+        ub_c{k} = zeros(2*system.nDoF, 1);
+        g{k} = system.computeFwdKin(x{k}(1:system.nDoF));
     end
 
     % Kinematics final step
-    g{end} = MBSys.computeFwdKin(x{nSteps+1}(1:MBSys.nDoF));
+    g{end} = system.computeFwdKin(x{nSteps+1}(1:system.nDoF));
 
 
     % For spline input parameterization: Add input contraints
@@ -86,12 +86,12 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
         if ~isempty(OCP.uMin)
             lb_u = repmat({OCP.uMin}, [OCP.nSteps,1]);
         else
-            lb_u = repmat({-inf(MBSys.nInputs,1)}, [OCP.nSteps,1]);
+            lb_u = repmat({-inf(system.nInputs,1)}, [OCP.nSteps,1]);
         end
         if ~isempty(OCP.uMax)
             ub_u = repmat({OCP.uMax}, [OCP.nSteps,1]);
         else
-            ub_u = repmat({inf(MBSys.nInputs,1)}, [OCP.nSteps,1]);
+            ub_u = repmat({inf(system.nInputs,1)}, [OCP.nSteps,1]);
         end
         lb_c = [lb_c, lb_u];
         ub_c = [ub_c, ub_u];
@@ -110,12 +110,12 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
         if ~isempty(OCP.uMin)
             lb_u = OCP.uMin;
         else
-            lb_u = -inf(MBSys.nInputs,1);
+            lb_u = -inf(system.nInputs,1);
         end
         if ~isempty(OCP.uMax)
             ub_u = OCP.uMax;
         else
-            ub_u = inf(MBSys.nInputs,1);
+            ub_u = inf(system.nInputs,1);
         end
         lb_c = [lb_c; lb_u];
         ub_c = [ub_c; ub_u];
