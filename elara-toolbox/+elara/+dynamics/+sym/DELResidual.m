@@ -1,8 +1,8 @@
-function DEL_res_k = DELResidual(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
+function DEL_res_k = DELResidual(system, simPars, q_k0, q_k, q_k1, u_k, h, a)
     %% Compute Residuum of DEL Equation
     arguments
         % Multibody system
-        MBSys   (1,1) elara.SystemSym
+        system  (1,1) elara.SystemSym
 
         simPars (1,1) elara.SimulationParameters
 
@@ -22,29 +22,29 @@ function DEL_res_k = DELResidual(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
     end
 
     % Check argument sizes
-    assert( size(q_k,1) == MBSys.nDoF, ...
+    assert( size(q_k,1) == system.nDoF, ...
         "Vector of generalized coordinates has wrong dimensions.");
-    assert( size(u_k,1) == MBSys.nInputs, ...
+    assert( size(u_k,1) == system.nInputs, ...
         "Vector of inputs has wrong dimensions.");
 
     %% Forward Kinematics and Jacobians
-    [g_k, g_rel_k]  = MBSys.computeFwdKin(q_k);
-    [~,   g_rel_k0] = MBSys.computeFwdKin(q_k0);
-    [~,   g_rel_k1] = MBSys.computeFwdKin(q_k1);
+    [g_k, g_rel_k]  = system.computeFwdKin(q_k);
+    g_rel_k0 = system.computeJointTransformations(q_k0);
+    g_rel_k1 = system.computeJointTransformations(q_k1);
 
-    eta_k0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k0, g_rel_k, h);
-    eta_k  = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+    eta_k0 = system.computeDiscreteAbsoluteVelocities(g_rel_k0, g_rel_k, h);
+    eta_k  = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
 
     %% External frame forces from the environment
     % % NOTE: May be replaced with symbolic variables or similar.
     %f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, t);
     %f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, t);
-    f_frame_k_b_ext = zeros(6, MBSys.nFrames);
-    f_frame_k_s_ext = zeros(6, MBSys.nFrames);
+    f_frame_k_b_ext = zeros(6, system.nFrames);
+    f_frame_k_s_ext = zeros(6, system.nFrames);
 
 
     %% Get Residual
-    DEL_res_k = elara.dynamics.sym.DELResidual_noKinematics(MBSys, simPars, ...
+    DEL_res_k = elara.dynamics.sym.DELResidual_noKinematics(system, simPars, ...
         q_k0, q_k, q_k1, g_k, g_rel_k, eta_k, eta_k0, ...
         u_k, f_frame_k_b_ext, f_frame_k_s_ext, h, a);
 end

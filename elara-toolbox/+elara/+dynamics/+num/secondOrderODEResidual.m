@@ -1,4 +1,4 @@
-function f = secondOrderODEResidual(t, q, q_dot, q_ddot, u, MBSys, simPars) %#codegen
+function f = secondOrderODEResidual(t, q, q_dot, q_ddot, u, system, simPars) %#codegen
     %% Compute the full second-order ODE
     arguments (Input)
         % Integration time (from ode solver)
@@ -12,7 +12,7 @@ function f = secondOrderODEResidual(t, q, q_dot, q_ddot, u, MBSys, simPars) %#co
         % Input vector
         u           (:,1) double
 
-        MBSys       (1,1) elara.abstract.System
+        system      (1,1) elara.abstract.System
 
         simPars     (1,1) elara.SimulationParameters
     end
@@ -23,45 +23,45 @@ function f = secondOrderODEResidual(t, q, q_dot, q_ddot, u, MBSys, simPars) %#co
     %% Relative Kinematics
 
     % Forward Kinematics and Jacobians
-    [g, g_rel] = MBSys.computeFwdKin(q);
-    J = MBSys.computeGeomJacobianFast(q, g_rel);
+    [g, g_rel] = system.computeFwdKin(q);
+    J = system.computeGeomJacobianFast(q, g_rel);
 
     % Compute absolute velocities
-    eta = zeros(6,MBSys.nFrames);
-    for iFrm = 1:MBSys.nFrames
+    eta = zeros(6,system.nFrames);
+    for iFrm = 1:system.nFrames
         eta(:,iFrm) = J(:,:,iFrm) * q_dot;
     end
-    J_dot = MBSys.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
+    J_dot = system.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
 
 
     %% Evaluate EOM
 
     % Generalized forces (stress, dissipation and system inputs)
-    f_gen = MBSys.cSys .* (q - MBSys.qRef) ...
-        + MBSys.dSys .* q_dot ...
-        - MBSys.computeInputMatrix(q) * u;
+    f_gen = system.cSys .* (q - system.qRef) ...
+        + system.dSys .* q_dot ...
+        - system.computeInputMatrix(q) * u;
 
     % External frame forces from the environment
-    f_frame_b = simPars.externalWrench_b.getCurrentWrench(MBSys.nFrames, t);
-    f_frame_s = simPars.externalWrench_s.getCurrentWrench(MBSys.nFrames, t);
+    f_frame_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, t);
+    f_frame_s = simPars.externalWrench_s.getCurrentWrench(system.nFrames, t);
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, MBSys, simPars);
+    f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, system, simPars);
 
     % Compute sum of generalized forces
-    for iFrm = 1:MBSys.nFrames
+    for iFrm = 1:system.nFrames
         f_gen = f_gen + J(:,:,iFrm).' * (...
             ...% Frame forces
             + f_frame_b(:,iFrm)...
             ...% Coriolis Term
-            + (MBSys.frames.MGen(:,:,iFrm) * J_dot(:,:,iFrm) ...
-            - elara.SE3.smallAd(eta(:,iFrm)).' * MBSys.frames.MGen(:,:,iFrm) * J(:,:,iFrm)) * q_dot ...
+            + (system.frames.MGen(:,:,iFrm) * J_dot(:,:,iFrm) ...
+            - elara.SE3.smallAd(eta(:,iFrm)).' * system.frames.MGen(:,:,iFrm) * J(:,:,iFrm)) * q_dot ...
             );
     end
 
     %% Assemble full second-order ODE
-    M = MBSys.computeMassMatrix(q);
+    M = system.computeMassMatrix(q);
     f = -(M*q_ddot + f_gen );
 
 end

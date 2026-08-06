@@ -1,10 +1,10 @@
 function DEL_res_k = DELResidualInitialStep_noKinematics( ...
-        MBSys, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a)
+        system, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a)
     %% Compute the Residuum for the first step in DEL integration
     % Index convention: Same as in literature; i.e., starting at 0
     arguments
         % Multibody system
-        MBSys   (1,1) elara.SystemSym
+        system  (1,1) elara.SystemSym
 
         simPars (1,1) elara.SimulationParameters
 
@@ -33,35 +33,35 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
     f = getSE3Functions(q_1);
 
     %% Jacobians, Mass and Input Matrix
-    J_0 = MBSys.computeGeomJacobianFast(q_0, g_rel_0);
-    M_0 = MBSys.computeMassMatrixFast(J_0);
-    B_0 = MBSys.computeInputMatrixFast(g_rel_0);
+    J_0 = system.computeGeomJacobianFast(q_0, g_rel_0);
+    M_0 = system.computeMassMatrixFast(J_0);
+    B_0 = system.computeInputMatrixFast(g_rel_0);
 
     %% Forces / EOM Term
 
     % Generalized forces (stress and dissipation)
-    f_gen_0 = (1-a) * MBSys.cSys .* (q_0 - MBSys.qRef) ...
-        + (1-a) * MBSys.dSys .* (q_1 - q_0)/h;
+    f_gen_0 = (1-a) * system.cSys .* (q_0 - system.qRef) ...
+        + (1-a) * system.dSys .* (q_1 - q_0)/h;
 
     % Placeholder values for external forces
-    f_frame_0_b_ext = zeros(6, MBSys.nFrames);
-    f_frame_0_s_ext = zeros(6, MBSys.nFrames);
+    f_frame_0_b_ext = zeros(6, system.nFrames);
+    f_frame_0_s_ext = zeros(6, system.nFrames);
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_0_b = elara.dynamics.sym.bodyFixedFrameForces(MBSys, g_0, f_frame_0_s_ext, simPars.g);
+    f_frame_0_b = elara.dynamics.sym.bodyFixedFrameForces(system, g_0, f_frame_0_s_ext, simPars.g);
 
 
     %% Evaluate DEL / Compute Residual
-    DEL_res_0_C = cell(MBSys.nFrames, 1);
-    for iFrm = 1:MBSys.nFrames
+    DEL_res_0_C = cell(system.nFrames, 1);
+    for iFrm = 1:system.nFrames
         % Overall frame forces
         f_frame_b_i = ...
             - h*(1-a)*f_frame_0_b_ext(:, iFrm) ...
             + h*(1-a)*f_frame_0_b{iFrm} ...
-            + f.SE3.dcayInv(eta_0{iFrm,1}*h, eta_0{iFrm,2}*h).' * MBSys.frames.MGen{iFrm} * vertcat(eta_0{iFrm,:});
+            + f.SE3.dcayInv(eta_0{iFrm,1}*h, eta_0{iFrm,2}*h).' * system.frames.MGen{iFrm} * vertcat(eta_0{iFrm,:});
         % Distribute node terms to coordinates
-        for iB = 1:MBSys.nFrames
+        for iB = 1:system.nFrames
             if ~isempty(J_0{iFrm,iB})
                 if isempty(DEL_res_0_C{iB})
                     DEL_res_0_C{iB} = J_0{iFrm,iB}.' * f_frame_b_i;
@@ -73,8 +73,8 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
     end
 
     % Add input terms and initial momentum to coordinates
-    for iFrm = 1:MBSys.nFrames
-        for iInput = 1:MBSys.nInputs
+    for iFrm = 1:system.nFrames
+        for iInput = 1:system.nInputs
             if ~isempty(B_0{iFrm, iInput})
                 DEL_res_0_C{iFrm} = DEL_res_0_C{iFrm} - h*(1-a)*B_0{iFrm, iInput} * u_0(iInput);
             end

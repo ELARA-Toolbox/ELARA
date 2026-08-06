@@ -1,4 +1,4 @@
-function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
+function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
     %% Compute the Right-Hand Side of the EOMs in first-order form (with inverted Mass Matrix)
     arguments (Input)
         % Integration time (from ode solver)
@@ -8,9 +8,9 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
         x       (:,1)
 
         % Input vector
-        u     (:,1)
+        u       (:,1)
 
-        MBSys   (1,1) elara.SystemSym
+        system  (1,1) elara.SystemSym
 
         simPars (1,1) elara.SimulationParameters
     end
@@ -21,20 +21,20 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
     f = getSE3Functions(x);
 
     %% Get configuration and velocity
-    q     = x(1:MBSys.nDoF);
-    q_dot = x((MBSys.nDoF+1):end);
+    q     = x(1:system.nDoF);
+    q_dot = x((system.nDoF+1):end);
 
     %% Relative Kinematics
 
     % Forward Kinematics and Jacobians
-    [g, g_rel] = MBSys.computeFwdKin(q);
-    J = MBSys.computeGeomJacobianFast(q, g_rel);
+    [g, g_rel] = system.computeFwdKin(q);
+    J = system.computeGeomJacobianFast(q, g_rel);
 
     % Compute absolute velocities
-    eta = cell(MBSys.nFrames,1);
-    for iFrm = 1:MBSys.nFrames
-        for iBlock = 1:MBSys.nFrames
-            qIndices = double( MBSys.frames.qIndices(1,iBlock):MBSys.frames.qIndices(2,iBlock));
+    eta = cell(system.nFrames,1);
+    for iFrm = 1:system.nFrames
+        for iBlock = 1:system.nFrames
+            qIndices = double( system.frames.qIndices(1,iBlock):system.frames.qIndices(2,iBlock));
             if ~isempty(J{iFrm, iBlock})
                 if isempty(eta{iFrm})
                     eta{iFrm} = J{iFrm, iBlock} * q_dot(qIndices);
@@ -44,19 +44,19 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
             end
         end
     end
-    J_dot = MBSys.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
+    J_dot = system.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
 
     %% Evaluate EOM
 
     % Generalized forces (stress, dissipation and system inputs)
-    f_gen = MBSys.cSys .* (q - MBSys.qRef) ...
-        + MBSys.dSys .* q_dot;
+    f_gen = system.cSys .* (q - system.qRef) ...
+        + system.dSys .* q_dot;
 
     % Input term
-    f_gen_C = cell(MBSys.nFrames, 1);
-    B = MBSys.computeInputMatrix(q);
-    for iFrm = 1:MBSys.nFrames
-        for iInput = 1:MBSys.nInputs
+    f_gen_C = cell(system.nFrames, 1);
+    B = system.computeInputMatrix(q);
+    for iFrm = 1:system.nFrames
+        for iInput = 1:system.nInputs
             if ~isempty(B{iFrm, iInput})
                 if isempty(f_gen_C{iFrm})
                     f_gen_C{iFrm} = -B{iFrm, iInput} * u(iInput);
@@ -68,18 +68,18 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
     end
 
     % Placeholder values for external forces
-    f_frame_b = zeros(6, MBSys.nFrames);
-    f_frame_s = zeros(6, MBSys.nFrames);
+    f_frame_b = zeros(6, system.nFrames);
+    f_frame_s = zeros(6, system.nFrames);
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(MBSys, g, f_frame_s, simPars.g);
+    f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(system, g, f_frame_s, simPars.g);
 
     % Compute J_dot * eta
-    JdotTerm = cell(MBSys.nFrames,1);
-    for iFrm = 1:MBSys.nFrames
-        for iBlock = 1:MBSys.nFrames
-            qIndices = double( MBSys.frames.qIndices(1,iBlock):MBSys.frames.qIndices(2,iBlock));
+    JdotTerm = cell(system.nFrames,1);
+    for iFrm = 1:system.nFrames
+        for iBlock = 1:system.nFrames
+            qIndices = double( system.frames.qIndices(1,iBlock):system.frames.qIndices(2,iBlock));
             if ~isempty(J_dot{iFrm, iBlock})
                 if isempty(JdotTerm{iFrm})
                     JdotTerm{iFrm} = J_dot{iFrm, iBlock} * q_dot(qIndices);
@@ -90,16 +90,16 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
         end
     end
 
-    for iFrm = 1:MBSys.nFrames
+    for iFrm = 1:system.nFrames
         % Overall frame forces
         f_frame_b_i = ...
             - f_frame_b(:, iFrm) ...
             + f_frame_b_C{iFrm} ...
             ...% Coriolis Term
-            + MBSys.frames.MGen{iFrm} * JdotTerm{iFrm} ...
-            - f.SE3.smallAd(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * MBSys.frames.MGen{iFrm} * eta{iFrm};
+            + system.frames.MGen{iFrm} * JdotTerm{iFrm} ...
+            - f.SE3.smallAd(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * system.frames.MGen{iFrm} * eta{iFrm};
         % Distribute node terms to coordinates
-        for iB = 1:MBSys.nFrames
+        for iB = 1:system.nFrames
             if ~isempty(J{iFrm,iB})
                 if isempty(f_gen_C{iB})
                     f_gen_C{iB} = J{iFrm,iB}.' * f_frame_b_i;
@@ -113,9 +113,9 @@ function f_fo = firstOrderDerivative(t, x, u, MBSys, simPars) %#codegen
     f_gen = vertcat(f_gen_C{:}) + f_gen;
 
     %% Assemble first-order RHS
-    M_C = MBSys.computeMassMatrix(q);
-    M_rows = cell(MBSys.nFrames,1);
-    for iFrm = 1:MBSys.nFrames
+    M_C = system.computeMassMatrix(q);
+    M_rows = cell(system.nFrames,1);
+    for iFrm = 1:system.nFrames
         M_rows{iFrm} = horzcat(M_C{iFrm,:});
     end
     M = vertcat(M_rows{:});

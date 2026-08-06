@@ -1,7 +1,7 @@
-function f_frame_b = bodyFixedFrameForces(MBSys, g, f_frame_s, g_grav)
+function f_frame_b = bodyFixedFrameForces(system, g, f_frame_s, g_grav)
     %% Compute the body-fixed forces for all frames: Gravity and Ext. Forces
     arguments
-        MBSys       (1,1) elara.SystemSym
+        system      (1,1) elara.SystemSym
 
         % Absolute configurations of all frames
         g           (1,:) elara.SE3.Element
@@ -13,9 +13,9 @@ function f_frame_b = bodyFixedFrameForces(MBSys, g, f_frame_s, g_grav)
         g_grav      (1,1)
     end
 
-    f_frame_b = cell(1, MBSys.nFrames);
+    f_frame_b = cell(1, system.nFrames);
 
-    for iFrm = 1:MBSys.nFrames
+    for iFrm = 1:system.nFrames
         f_frame_b{iFrm} = ...
             ... % External spatial forces
             [
@@ -24,8 +24,8 @@ function f_frame_b = bodyFixedFrameForces(MBSys, g, f_frame_s, g_grav)
             ] ...
             ...% Gravity
             + g_grav * [
-            MBSys.frames.m_a(iFrm) * cross( MBSys.frames.x_a(:,iFrm), g(iFrm).R.' * [0;0;1] )
-            MBSys.frames.m(iFrm) * g(iFrm).R.' * [0;0;1]
+            system.frames.m_a(iFrm) * cross( system.frames.x_a(:,iFrm), g(iFrm).R.' * [0;0;1] )
+            system.frames.m(iFrm) * g(iFrm).R.' * [0;0;1]
             ];
     end
 end

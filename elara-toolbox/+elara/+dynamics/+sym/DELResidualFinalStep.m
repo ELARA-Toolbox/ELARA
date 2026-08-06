@@ -1,9 +1,9 @@
 function DEL_res_N = DELResidualFinalStep( ...
-        MBSys, simPars, q_N0, q_N, u_N, qDotEnd, h, a)
+        system, simPars, q_N0, q_N, u_N, qDotEnd, h, a)
     %% Compute Residuum of DEL Equation
     arguments
         % Multibody system
-        MBSys   (1,1) elara.SystemSym
+        system  (1,1) elara.SystemSym
 
         simPars (1,1) elara.SimulationParameters
 
@@ -25,14 +25,14 @@ function DEL_res_N = DELResidualFinalStep( ...
     end
 
     %% Forward Kinematics and Jacobians
-    [g_N, g_rel_N]  = MBSys.computeFwdKin(q_N);
-    [~,   g_rel_N0] = MBSys.computeFwdKin(q_N0);
+    [g_N, g_rel_N] = system.computeFwdKin(q_N);
+    g_rel_N0 = system.computeJointTransformations(q_N0);
 
     % Compute absolute velocities
-    eta_N0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_N0, g_rel_N, h);
+    eta_N0 = system.computeDiscreteAbsoluteVelocities(g_rel_N0, g_rel_N, h);
 
     %% Get residual
     DEL_res_N = elara.dynamics.sym.DELResidualFinalStep_noKinematics( ...
-        MBSys, simPars, q_N0, q_N, g_N, g_rel_N, eta_N0, u_N, ...
+        system, simPars, q_N0, q_N, g_N, g_rel_N, eta_N0, u_N, ...
         qDotEnd, h, a);
 end

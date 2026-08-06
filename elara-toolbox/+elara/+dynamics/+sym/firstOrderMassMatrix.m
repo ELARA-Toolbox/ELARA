@@ -1,4 +1,4 @@
-function M_fo = firstOrderMassMatrix(t, x, MBSys)
+function M_fo = firstOrderMassMatrix(t, x, system)
     %% Compute the overall mass matrix for a multibody system in first-order form
     % I.e., the mass matrix diag(I, M) with dimension 2*nDof x 2*nDof
     arguments (Input)
@@ -9,25 +9,25 @@ function M_fo = firstOrderMassMatrix(t, x, MBSys)
         % State vector [q; q_dot] (2*nDof,1)
         x       (:,1)
 
-        MBSys   (1,1) elara.abstract.System
+        system  (1,1) elara.abstract.System
     end
 
     M_fo = blkdiag( ...
-        eye(MBSys.nDoF), ...
-        computeSystemMassMatrix([], x, MBSys) ...
+        eye(system.nDoF), ...
+        computeSystemMassMatrix([], x, system) ...
         );
 
 end
-function [M, J] = computeSystemMassMatrix(~, x, MBSys)
+function [M, J] = computeSystemMassMatrix(~, x, system)
     %% Compute the system mass matrix of a multibody system
     arguments (Input)
         % Integration time (from ode solver)
         ~%t
 
         % State vector [q; q_dot] (2*nDof,1)
-        x     (:,1)
+        x      (:,1)
 
-        MBSys (1,1) elara.abstract.System
+        system (1,1) elara.abstract.System
     end
     arguments (Output)
         % System mass matrix
@@ -38,17 +38,17 @@ function [M, J] = computeSystemMassMatrix(~, x, MBSys)
     end
 
     % Get Jacobians
-    J = MBSys.computeGeomJacobian( x(1:numel(x)/2) );
+    J = system.computeGeomJacobian( x(1:numel(x)/2) );
 
     % Mass matrix
     if isa(x, "casadi.MX")
-        M = casadi.MX.zeros(MBSys.nDoF);
+        M = casadi.MX.zeros(system.nDoF);
     elseif isa(x, "casadi.SX")
-        M = casadi.SX.zeros(MBSys.nDoF);
+        M = casadi.SX.zeros(system.nDoF);
     else
-        M = zeros(MBSys.nDoF, class(x));
+        M = zeros(system.nDoF, class(x));
     end
-    for iFrm = 1:MBSys.nFrames
-        M = M + J{iFrm}.' * MBSys.frames.MGen(:,:,iFrm) * J{iFrm};
+    for iFrm = 1:system.nFrames
+        M = M + J{iFrm}.' * system.frames.MGen(:,:,iFrm) * J{iFrm};
     end
 end

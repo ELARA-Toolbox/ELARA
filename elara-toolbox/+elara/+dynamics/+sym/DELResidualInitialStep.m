@@ -1,8 +1,8 @@
-function DEL_res_k = DELResidualInitialStep(MBSys, simPars, q_0, q_1, u_0, qDot0, h, a)
+function DEL_res_k = DELResidualInitialStep(system, simPars, q_0, q_1, u_0, qDot0, h, a)
     %% Compute the Residuum for the first step in DEL integration
     arguments
         % Multibody system
-        MBSys   (1,1) elara.SystemSym
+        system  (1,1) elara.SystemSym
 
         simPars (1,1) elara.SimulationParameters
 
@@ -24,12 +24,13 @@ function DEL_res_k = DELResidualInitialStep(MBSys, simPars, q_0, q_1, u_0, qDot0
     end
 
     %% Forward Kinematics and Velocities
-    [g_0, g_rel_0]  = MBSys.computeFwdKin(q_0);
-    [~,   g_rel_1] = MBSys.computeFwdKin(q_1);
+    [g_0, g_rel_0] = system.computeFwdKin(q_0);
+    g_rel_1 = system.computeJointTransformations(q_1);
 
     % Compute absolute velocities
-    eta_0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_0, g_rel_1, h);
+    eta_0 = system.computeDiscreteAbsoluteVelocities(g_rel_0, g_rel_1, h);
 
     %% Get residual
-    DEL_res_k = elara.dynamics.sym.DELResidualInitialStep_noKinematics(MBSys, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a);
+    DEL_res_k = elara.dynamics.sym.DELResidualInitialStep_noKinematics( ...
+        system, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a);
 end

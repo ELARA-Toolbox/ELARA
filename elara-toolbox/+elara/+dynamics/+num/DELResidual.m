@@ -1,9 +1,9 @@
-function DEL_res_k = DELResidual(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
+function DEL_res_k = DELResidual(system, simPars, q_k0, q_k, q_k1, u_k, h, a)
     %% Compute Residuum of DEL Equation
     % only in terms of coordinates q (at time steps k-1, k, k+1)
     arguments
         % Multibody system
-        MBSys   (1,1) elara.SystemNum
+        system  (1,1) elara.SystemNum
 
         simPars (1,1) elara.SimulationParameters
 
@@ -23,21 +23,21 @@ function DEL_res_k = DELResidual(MBSys, simPars, q_k0, q_k, q_k1, u_k, h, a)
     end
 
     %% Forward Kinematics
-    [g_k, g_rel_k]  = MBSys.computeFwdKin(q_k);
-    [~,   g_rel_k0] = MBSys.computeFwdKin(q_k0);
-    [~,   g_rel_k1] = MBSys.computeFwdKin(q_k1);
+    [g_k, g_rel_k] = system.computeFwdKin(q_k);
+    g_rel_k0 = system.computeJointTransformations(q_k0);
+    g_rel_k1 = system.computeJointTransformations(q_k1);
 
     %% Compute absolute velocities
-    eta_k0 = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k0, g_rel_k, h);
-    eta_k  = MBSys.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+    eta_k0 = system.computeDiscreteAbsoluteVelocities(g_rel_k0, g_rel_k, h);
+    eta_k  = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
 
     %% Evaluate DEL / Compute Residual
 
     % Placeholder values for external forces
-    f_frame_k_b_ext = zeros(6, MBSys.nFrames);
-    f_frame_k_s_ext = zeros(6, MBSys.nFrames);
+    f_frame_k_b_ext = zeros(6, system.nFrames);
+    f_frame_k_s_ext = zeros(6, system.nFrames);
 
-    DEL_res_k = elara.dynamics.num.DELResidual_noKinematics(MBSys, simPars, ...
+    DEL_res_k = elara.dynamics.num.DELResidual_noKinematics(system, simPars, ...
         q_k0, q_k, q_k1, g_k, g_rel_k, eta_k, eta_k0, u_k, ...
         f_frame_k_b_ext, f_frame_k_s_ext, h, a);
 end
