@@ -1,5 +1,5 @@
 function DEL_res_k = DELResidualInitialStep(system, simPars, q_0, q_1, u_0, qDot0, h, a)
-    %% Compute the Residuum for the first step in DEL integration
+    %% Compute the Residual for the first step in DEL integration
     arguments
         % Multibody system
         system  (1,1) elara.SystemSym

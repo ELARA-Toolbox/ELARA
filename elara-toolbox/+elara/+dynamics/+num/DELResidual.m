@@ -1,5 +1,5 @@
 function DEL_res_k = DELResidual(system, simPars, q_k0, q_k, q_k1, u_k, h, a)
-    %% Compute Residuum of DEL Equation
+    %% Compute Residual of DEL Equation
     % only in terms of coordinates q (at time steps k-1, k, k+1)
     arguments
         % Multibody system

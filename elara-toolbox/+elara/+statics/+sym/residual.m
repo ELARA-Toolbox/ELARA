@@ -1,5 +1,5 @@
 function [res, g, g_rel] = residual(system, simPars, q, u)
-    %% Compute Residuum of Static Equilbrium Equation
+    %% Compute Residual of Static Equilbrium Equation
     arguments
         % Multibody system
         system   (1,1) elara.SystemSym

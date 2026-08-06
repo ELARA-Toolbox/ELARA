@@ -1,5 +1,5 @@
 function [res_0, eta_0] = DELResidualInitialStep(system, h, simPars, q_0, q_1, u_0, a)
-    %% Compute the Residuum for the first step in DEL integration
+    %% Compute the Residual for the first step in DEL integration
     % i.e., step 0 -> 1,
     % according to the formula in [Obe08, p.50]
     % based on the Legendre transform to properly include initial velocities

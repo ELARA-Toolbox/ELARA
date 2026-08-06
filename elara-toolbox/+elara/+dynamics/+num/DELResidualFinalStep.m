@@ -1,5 +1,5 @@
 function [res_N, eta_N0] = DELResidualFinalStep(system, h, simPars, q_N0, q_N, u_N, qDotEnd, a)
-    %% Compute Residuum for the final step N-1 -> N
+    %% Compute Residual for the final step N-1 -> N
     arguments
         system  (1,1) elara.abstract.System
         h       (1,1) 

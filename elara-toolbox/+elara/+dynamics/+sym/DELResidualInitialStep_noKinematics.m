@@ -1,6 +1,6 @@
 function DEL_res_k = DELResidualInitialStep_noKinematics( ...
         system, simPars, q_0, q_1, g_0, g_rel_0, eta_0, u_0, qDot0, h, a)
-    %% Compute the Residuum for the first step in DEL integration
+    %% Compute the Residual for the first step in DEL integration
     % Index convention: Same as in literature; i.e., starting at 0
     arguments
         % Multibody system

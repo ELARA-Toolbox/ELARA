@@ -1,7 +1,7 @@
 function DEL_res_k = DELResidual_noKinematics( system, simPars, ...
         q_k0, q_k, q_k1, g_k, g_rel_k, eta_k, eta_k0, u_k, ...
         f_frame_k_b_ext, f_frame_k_s_ext, h, a)
-    %% Compute Residuum of DEL Equation
+    %% Compute Residual of DEL Equation
     arguments
         % Multibody system
         system  (1,1) elara.SystemNum

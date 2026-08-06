@@ -75,7 +75,7 @@ function [u, solInfo] = computeInverseDynamicsDEL(system, simPars, q, qd, h, lbu
         f_frame_k_b_ext = simPars.externalWrench_b.getCurrentWrench(system.nFrames, tout(k));
         f_frame_k_s_ext = simPars.externalWrench_s.getCurrentWrench(system.nFrames, tout(k));
 
-        % Get residuum
+        % Get residual
         res_k = elara.dynamics.num.DELResidual_noKinematics(system, simPars, ...
             q(:,k-1), q(:,k), q(:,k+1), g_k, g_rel_k, eta_k, eta_k0, ...
             uZero, f_frame_k_b_ext, f_frame_k_s_ext, h, a);

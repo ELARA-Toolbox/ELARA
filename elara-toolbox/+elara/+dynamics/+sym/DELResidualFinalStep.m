@@ -1,6 +1,6 @@
 function DEL_res_N = DELResidualFinalStep( ...
         system, simPars, q_N0, q_N, u_N, qDotEnd, h, a)
-    %% Compute Residuum of DEL Equation
+    %% Compute Residual of DEL Equation
     arguments
         % Multibody system
         system  (1,1) elara.SystemSym
