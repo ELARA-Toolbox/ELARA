@@ -29,7 +29,7 @@ classdef Element
         end
         function A = Ad(g)
             % Ad operator in matrix form
-            zrs = getZeros(g.R);
+            zrs = elara.internal.math.getZeros(g.R);
             A = [
                 g.R,              zrs(3,3);
                 elara.SO3.skew(g.x)*g.R, g.R;
@@ -37,7 +37,7 @@ classdef Element
         end
         function A = AdInv(g)
             % Inverse Ad operator in matrix form
-            zrs = getZeros(g.R);
+            zrs = elara.internal.math.getZeros(g.R);
             A = [
                 g.R.',               zrs(3,3);
                 -g.R.'*elara.SO3.skew(g.x), g.R.'
@@ -45,7 +45,7 @@ classdef Element
         end
         function xi = cayInv(g)
             % Inverse cayley transform
-            eyeF = getEye(g.R);
+            eyeF = elara.internal.math.getEye(g.R);
             omegaH = 2 / (1 + trace(g.R) ) * (g.R - g.R.');
             omega = [ omegaH(3,2); omegaH(1,3); omegaH(2,1) ];
             v  = 2 * ( (g.R + eyeF(3)) \ g.x );

@@ -211,7 +211,7 @@ classdef ElasticBeam < handle
                 sInput = 0:1/(nNodes-1):1;
                 sQuery = 0:obj.lInterp:1;
 
-                gInterp = interpSE3(g,sInput,sQuery);
+                gInterp = elara.SE3.interpolateConfigurations(g, sInput, sQuery);
             else
                 gInterp = g;
             end

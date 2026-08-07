@@ -1,5 +1,5 @@
 function f = getCayRTDSE3dtFunction(q)
-    %% Get function handles for the SE(3) dcay derivative
+    %% Get function handle for the SE(3) dcay derivative
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

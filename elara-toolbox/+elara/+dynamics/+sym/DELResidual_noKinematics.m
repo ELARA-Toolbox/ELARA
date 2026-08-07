@@ -34,7 +34,7 @@ function DEL_res_k = DELResidual_noKinematics(system, simPars, ...
         a       (1,1)
     end
 
-    f = getSE3Functions(q_k);
+    f = elara.internal.math.getSE3Functions(q_k);
 
     %% Forces / EOM Term
 

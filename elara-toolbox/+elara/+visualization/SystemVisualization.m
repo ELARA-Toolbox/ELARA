@@ -33,7 +33,7 @@ classdef SystemVisualization < handle
                 links   (1,:) elara.abstract.Link = elara.RigidLink.empty();
 
                 % Array of SE3 matrices defining the system's configuration
-                g       (4,4,:) double {mustBeSE3Matrix} = zeros(4,4,0)
+                g       (4,4,:) double {elara.internal.validation.mustBeSE3Matrix} = zeros(4,4,0)
 
                 % Additional options
                 options.showInertialFrame  (1,1) logical = true;
@@ -117,7 +117,7 @@ classdef SystemVisualization < handle
         function systemVisualization = updateConfiguration(systemVisualization, g)
             arguments
                 systemVisualization (1,1)
-                g   (4,4,:) double {mustBeSE3Matrix}
+                g   (4,4,:) double {elara.internal.validation.mustBeSE3Matrix}
             end
             for iLink = 1:systemVisualization.system.nLinks
                 % Add fixed node to configuration array if the beam is a

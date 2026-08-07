@@ -17,7 +17,7 @@ classdef FramePropertiesSym < elara.abstract.FrameProperties
         % frame origin = Body COM)
 
         % Transformation to the external body's CoM
-        g_a     (4,4,:) double {mustBeSE3Matrix}
+        g_a     (4,4,:) double {elara.internal.validation.mustBeSE3Matrix}
 
         % Position vector to the external body's CoM (corresponding to g_a)
         x_a     (3,:)

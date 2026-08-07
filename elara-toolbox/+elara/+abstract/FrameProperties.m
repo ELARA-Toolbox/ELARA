@@ -43,7 +43,7 @@ classdef (Abstract) FrameProperties
 
         % Transformation from parent reference frame to current frame
         % in reference configuration
-        g_ref   (4,4,:) double {mustBeSE3Matrix};
+        g_ref   (4,4,:) double {elara.internal.validation.mustBeSE3Matrix};
 
         %% Joint properties for flexible beam joints
 

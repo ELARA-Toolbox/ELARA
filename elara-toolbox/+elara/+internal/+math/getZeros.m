@@ -6,5 +6,7 @@ function fun = getZeros(q)
         fun = @casadi.MX.zeros;
     elseif isa(q, "casadi.SX")
         fun = @casadi.SX.zeros;
+    elseif isa(q, "casadi.DM")
+        fun = @casadi.DM.zeros;
     end
 end

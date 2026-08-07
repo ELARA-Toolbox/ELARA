@@ -1,5 +1,5 @@
 function f = getSE3FunctionsCasadi
-    %% Get Casadi functions for the SE3 functions
+    %% Get CasADi functions for the SE3 functions
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

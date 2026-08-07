@@ -21,7 +21,7 @@ function AdInv = AdInv(g)
     % Inverse Ad representation, taken from [MLS94, p. 56]
     AdInv = [
         R.',          zeros(3);
-        -R.'*skew(p), R.';
+        -R.'*elara.SO3.skew(p), R.';
         ];
     %}
 

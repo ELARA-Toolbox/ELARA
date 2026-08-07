@@ -3,13 +3,16 @@ function mustBeSO3Matrix(R)
     % where the array has dimensions (3,3,:,:...,:).
     % The first two dimensions are the rows and columns of the matrices;
     % the number of remaining dimensions is arbitrary.
-    g = reshape(R, 3, 3, []);
-    for iMat = 1:size(R,3)
-        mustBeSO3MatrixSingle(R(:,:,iMat));
+    assert(size(R,1) == 3 && size(R,2) == 3, ...
+        "Input is not an SO3 matrix: Matrices must be 3x3.");
+
+    RArray = reshape(R, 3, 3, []);
+    for iMat = 1:size(RArray,3)
+        mustBeSO3MatrixSingle(RArray(:,:,iMat));
     end
 end
 function mustBeSO3MatrixSingle(R)
-    %% Validate that the input is a SE3 matrix
+    %% Validate that the input is an SO3 matrix
 
     % Check if matrix is real
     assert( isreal(R), ...
@@ -27,7 +30,7 @@ function mustBeSO3MatrixSingle(R)
         );
 
     % Check orthogonality
-    assert( all( abs((R*R.') - eye(3)) < 100*eps, "all"), ...
+    assert( all( abs((R.'*R) - eye(3)) < 100*eps, "all"), ...
         "Input is not a SO3 matrix: Matrix must be orthogonal." ...
         );
 end

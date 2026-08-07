@@ -1,4 +1,4 @@
-function gNum = SE3Array2Mat(gSE3)
+function gNum = element2Matrix(gSE3)
     %% Convert array of SE3 objects to double array of 4x4 matrices
     %
     % Maximilian Herrmann
@@ -9,7 +9,7 @@ function gNum = SE3Array2Mat(gSE3)
         gSE3  elara.SE3.Element
     end
     arguments (Output)
-        gNum  double {mustBeSE3Matrix}
+        gNum  double {elara.internal.validation.mustBeSE3Matrix}
     end
     gNum = zeros(4,4,numel(gSE3));
     for iG = 1:numel(gSE3)

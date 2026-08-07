@@ -15,7 +15,7 @@ classdef (Abstract) System
         isCantilever        (1,1) logical = false;
 
         % Absolute configuration of the first joint
-        g0                  (4,4) double {mustBeSE3Matrix} = eye(4);
+        g0                  (4,4) double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
 
 
         %% Graph Adjacency Matrices
@@ -55,7 +55,7 @@ classdef (Abstract) System
         indexTCPFrame (1,1) uint16 = 0;
 
         % Transformation from the frame to the TCP
-        g_B_TCP     (4,4)  double {mustBeSE3Matrix} = eye(4);
+        g_B_TCP     (4,4)  double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
     end
 
     properties (Abstract)

@@ -1,4 +1,4 @@
-function gQuery = interpSE3(gInput, sInput, sQuery)
+function gQuery = interpolateConfigurations(gInput, sInput, sQuery)
     %% Geometrically correct interpolation of SE3 configurations
     %
     % The input g is an array of SE3 matrices with dimensions

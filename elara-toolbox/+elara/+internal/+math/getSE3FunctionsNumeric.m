@@ -39,7 +39,7 @@ function R = expSO3Screw( om, theta )
         theta   (1,1)
     end
     omh = elara.SO3.skew(om);
-    eyeF = getEye(theta);
+    eyeF = elara.internal.math.getEye(theta);
     % Formula (2.14), p. 28 in [MLS94]
     R = eyeF(3) + omh*sin(theta) + omh^2*(1-cos(theta));
 end
@@ -55,7 +55,7 @@ function [R,x] = expScrewSE3Parts( om, v, theta )
     end
     omh = elara.SO3.skew(om);
 
-    eyeF = getEye(theta);
+    eyeF = elara.internal.math.getEye(theta);
 
     % Formula (2.14), p. 28 in [MLS94]
     R = eyeF(3) + omh*sin(theta) + omh^2*(1-cos(theta));

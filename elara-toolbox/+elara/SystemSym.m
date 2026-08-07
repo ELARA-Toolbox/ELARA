@@ -157,7 +157,7 @@ classdef SystemSym < elara.abstract.System
                 % SE3 Matrices with relative configurations between body frames
                 g_rel   (:,1) elara.SE3.Element
             end
-            f = getSE3Functions(q);
+            f = elara.internal.math.getSE3Functions(q);
             g_rel = createArray(system.nFrames,1, "elara.SE3.Element");
             for iFrm = 1:system.nFrames
                 indices = double(system.frames.qIndices(1,iFrm):system.frames.qIndices(2,iFrm)); % Casadi fix: Explicitly convert to double; unit16 integers do not work as indices
@@ -256,7 +256,7 @@ classdef SystemSym < elara.abstract.System
                 % Jacobian matrix corresponding to the frame
                 J       (:,:) cell
             end
-            f = getSE3Functions(q);
+            f = elara.internal.math.getSE3Functions(q);
 
             % Array holding all Jacobians
             J = cell(system.nFrames, system.nFrames);
@@ -343,8 +343,8 @@ classdef SystemSym < elara.abstract.System
             %%%% Decide if we keep eta as six-dimensional or use separate
             %%%% omega, v
 
-            f = getSE3Functions(q);
-            fSE3DcayDerivative = getCayRTDSE3dtFunction(q);
+            f = elara.internal.math.getSE3Functions(q);
+            fSE3DcayDerivative = elara.internal.math.getCayRTDSE3dtFunction(q);
 
             % Array holding all Jacobians
             J_dot = cell(system.nFrames, system.nFrames);
@@ -417,7 +417,7 @@ classdef SystemSym < elara.abstract.System
                 % dimensions (4,4,nFrames)
                 g_rel       (:,1) elara.SE3.Element
             end
-            f = getSE3Functions(g_rel(1).R);
+            f = elara.internal.math.getSE3Functions(g_rel(1).R);
 
             B = cell(system.nFrames, system.nInputs);
 
@@ -549,7 +549,7 @@ classdef SystemSym < elara.abstract.System
                 % (separate rotational and translational components)
                 eta_k       (:,2) cell
             end
-            f = getSE3Functions(g_rel_k(1).R);
+            f = elara.internal.math.getSE3Functions(g_rel_k(1).R);
 
             eta_k = cell(system.nFrames, 2);
 

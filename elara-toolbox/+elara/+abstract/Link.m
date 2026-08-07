@@ -20,12 +20,12 @@ classdef (Abstract) Link < matlab.mixin.Heterogeneous
 
         % Transformation from parent link reference frame to current body's
         % reference frame in reference configuration
-        g_ref           (4,4) double {mustBeSE3Matrix} = eye(4);
+        g_ref           (4,4) double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
 
         % Transformation Joint --> Body reference frame
         % * For rigid links:    Joint 1 -> CoM
         % * For flexible links: Joint 1 -> First node
-        g_J_B           (4,4) double {mustBeSE3Matrix} = eye(4);
+        g_J_B           (4,4) double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
 
         % Joint dissipation coefficient
         d           (1,1) double {mustBeNonnegative}
@@ -48,7 +48,7 @@ classdef (Abstract) Link < matlab.mixin.Heterogeneous
 
         % Array of transformations from the cross-section frame to the COM
         % frame of attached rigid bodies
-        g_a         (4,4,:) double {mustBeSE3Matrix}
+        g_a         (4,4,:) double {elara.internal.validation.mustBeSE3Matrix}
 
         %% TCP definition
         % To add a TCP to the system (useful for robots)
@@ -59,7 +59,7 @@ classdef (Abstract) Link < matlab.mixin.Heterogeneous
         hasTCP      (1,1) logical
 
         % Transformation from the link's body/COM frame to the TCP
-        g_B_TCP     (4,4)  double {mustBeSE3Matrix} = eye(4);
+        g_B_TCP     (4,4)  double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
     end
     properties (Abstract, Constant)
         % Whether the link is rigid or flexible

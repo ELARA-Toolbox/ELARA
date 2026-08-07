@@ -21,7 +21,7 @@ function systemSym = systemNum2SystemSym(systemNum)
             %warning('Could not copy field %s', fn{1});
         end
     end
-    systemSym.frames.g_cm = SE3MatArray2SE3Array(systemNum.frames.g_cm);
+    systemSym.frames.g_cm = elara.SE3.matrix2Element(systemNum.frames.g_cm);
     systemSym.frames.MGen = squeeze(num2cell(systemNum.frames.MGen,[1,2]));
 
 

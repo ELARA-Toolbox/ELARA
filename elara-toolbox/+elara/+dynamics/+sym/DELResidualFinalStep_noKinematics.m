@@ -32,7 +32,7 @@ function DEL_res_N = DELResidualFinalStep_noKinematics( ...
         a        (1,1)
     end
 
-    f = getSE3Functions(q_N);
+    f = elara.internal.math.getSE3Functions(q_N);
 
 
     %% Jacobians, Mass and Input Matrix

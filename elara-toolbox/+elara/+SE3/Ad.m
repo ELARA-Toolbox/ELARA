@@ -21,7 +21,7 @@ function Ad = Ad(g)
     % Ad representation, taken from [Par+18], eq. (40)
     Ad = [
         R,         zeros(3);
-        skew(p)*R, R;
+        elara.SO3.skew(p)*R, R;
         ];
 
     %}

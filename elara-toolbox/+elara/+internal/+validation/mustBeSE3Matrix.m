@@ -3,9 +3,12 @@ function mustBeSE3Matrix(g)
     % where the array has dimensions (4,4,:,:...,:).
     % The first two dimensions are the rows and columns of the matrices;
     % the number of remaining dimensions is arbitrary.
-    g = reshape(g, 4, 4, []);
-    for iMat = 1:size(g,3)
-        mustBeSE3MatrixSingle(g(:,:,iMat));
+    assert(size(g,1) == 4 && size(g,2) == 4, ...
+        "Input is not an SE3 matrix: Matrices must be 4x4.");
+
+    gArray = reshape(g, 4, 4, []);
+    for iMat = 1:size(gArray,3)
+        mustBeSE3MatrixSingle(gArray(:,:,iMat));
     end
 end
 function mustBeSE3MatrixSingle(g)
@@ -28,7 +31,7 @@ function mustBeSE3MatrixSingle(g)
 
     % Check rotation matrix
     R = elara.SE3.matrix2Rx(g);
-    mustBeSO3Matrix(R);
+    elara.internal.validation.mustBeSO3Matrix(R);
 
     % Check last row
     assert( all(g(4,:) == [0,0,0,1]), ...

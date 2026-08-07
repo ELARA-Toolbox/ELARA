@@ -1,4 +1,4 @@
-function gSE3 = SE3MatArray2SE3Array(gNum)
+function gSE3 = matrix2Element(gNum)
     %% Convert array of 4x4 SE3 Matrices to array of SE3 objects
     %
     % Maximilian Herrmann
@@ -6,13 +6,17 @@ function gSE3 = SE3MatArray2SE3Array(gNum)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments (Input)
-        gNum  double {mustBeSE3Matrix}
+        gNum  double {elara.internal.validation.mustBeSE3Matrix}
     end
     arguments (Output)
         gSE3  elara.SE3.Element
     end
     dims = size(gNum);
     dims = dims(3:end);
+    if isempty(dims)
+        gSE3 = elara.SE3.Element(gNum(1:3,1:3), gNum(1:3,4));
+        return;
+    end
     if isscalar(dims)
         % Add singleton dimension if the input array is just a SE3 vector
         % so that createArray outputs correct dimensions

@@ -1,5 +1,5 @@
 function fun = getEye(q)
-    %% Get function handle for zeros function of appropriate class
+    %% Get function handle for identity matrix of appropriate class
     if isa(q, "double")
         fun = @eye;
     elseif isa(q, "casadi.MX")

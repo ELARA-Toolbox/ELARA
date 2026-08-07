@@ -13,12 +13,12 @@ classdef RigidLink < elara.abstract.Link
         m           (1,1) double {mustBeNonnegative} = 1;
 
         % Inertia tensor (kgm^2)
-        J           (3,3) double {mustBeSymmetricPosDefinite} = eye(3);
+        J           (3,3) double {elara.internal.validation.mustBeSymmetricPosDefinite} = eye(3);
 
         %% Link Visualization Properties (bounding box)
 
         % Transformation from reference frame to bounding box center
-        g_bbox      (4,4) double {mustBeSE3Matrix} = eye(4);
+        g_bbox      (4,4) double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
 
         % Dimensions of the bounding box, measured form g_bbox
         % x+ y+ z+

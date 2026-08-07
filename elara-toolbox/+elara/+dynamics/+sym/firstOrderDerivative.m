@@ -18,7 +18,7 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
         f_fo        (:,1)
     end
 
-    f = getSE3Functions(x);
+    f = elara.internal.math.getSE3Functions(x);
 
     %% Get configuration and velocity
     q     = x(1:system.nDoF);

@@ -26,8 +26,8 @@ function T = dcay( xi )
     om = xi(1:3);
     v  = xi(4:end);
 
-    omH = skew(om);
-    vH  = skew(v);
+    omH = elara.SO3.skew(om);
+    vH  = elara.SO3.skew(v);
     
     T = zeros(6, 6, class(xi));
     T(1:3, 1:3) = 2 / (4 + om.'*om) * ( 2*eye(3) + omH );

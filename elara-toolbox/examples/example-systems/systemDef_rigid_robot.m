@@ -44,9 +44,9 @@ function links = systemDef_rigid_robot(opts)
     end
 
     % Check SE3 arrays
-    mustBeSE3Matrix(g_J_const);
-    mustBeSE3Matrix(g_J1_COM);
-    mustBeSE3Matrix(g_COM_J2);
+    elara.internal.validation.mustBeSE3Matrix(g_J_const);
+    elara.internal.validation.mustBeSE3Matrix(g_J1_COM);
+    elara.internal.validation.mustBeSE3Matrix(g_COM_J2);
 
 
     %% Define joints
@@ -67,7 +67,7 @@ function links = systemDef_rigid_robot(opts)
             g_J_ref(:,:,iLink) = g_COM_J2(:,:,iLink-1) * g_J_const(:,:,iLink) * g_J1_COM(:,:,iLink);
         end
     end
-    mustBeSE3Matrix(g_J_ref);
+    elara.internal.validation.mustBeSE3Matrix(g_J_ref);
 
 
     %% Create link objects

@@ -59,8 +59,8 @@ for iSystem = 1:numel(systemDefinitions)
     [gSym, gRelSym] = systemSym.computeFwdKin(q);
     JSymBlocks = systemSym.computeGeomJacobianFast(q, gRelSym);
 
-    gRelSymMat = SE3Array2Mat(gRelSym);
-    gSymMat = SE3Array2Mat(gSym);
+    gRelSymMat = elara.SE3.element2Matrix(gRelSym);
+    gSymMat = elara.SE3.element2Matrix(gSym);
 
     % Assemble the block-cell symbolic Jacobian in the same array format
     % as the numerical Jacobian.

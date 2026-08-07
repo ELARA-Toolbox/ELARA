@@ -22,7 +22,7 @@ function g = cay( xi )
     om = xi(1:3);
     v  = xi(4:6);
 
-    omH = skew(om);
+    omH = elara.SO3.skew(om);
     
     R = elara.SO3.cay(om);
     x = ( 4 / (4 + om.'*om) ) * ( eye(3) + 1/2 * omH + 1/4 * (om*om.') ) * v;

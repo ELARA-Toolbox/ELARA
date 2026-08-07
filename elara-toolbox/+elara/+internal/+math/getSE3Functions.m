@@ -17,10 +17,10 @@ function f = getSE3Functions(q)
     persistent fun
 
     if isa(q, "double")
-        f = getSE3FunctionsNumeric;
+        f = elara.internal.math.getSE3FunctionsNumeric;
     else
         if isempty(fun)
-            fun = getSE3FunctionsCasadi;
+            fun = elara.internal.math.getSE3FunctionsCasadi;
         end
         f = fun;
     end

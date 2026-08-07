@@ -31,7 +31,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         nFramesWS = system.nFrames + 1;
 
         % TCP transf. as SE3 Element
-        g_B_TCP = SE3MatArray2SE3Array(OCP.systemSym.g_B_TCP);
+        g_B_TCP = elara.SE3.matrix2Element(OCP.systemSym.g_B_TCP);
     else
         nFramesWS = system.nFrames;
         g_B_TCP = elara.SE3.Element;

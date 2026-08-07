@@ -30,7 +30,7 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
         a       (1,1)
     end
 
-    f = getSE3Functions(q_1);
+    f = elara.internal.math.getSE3Functions(q_1);
 
     %% Jacobians, Mass and Input Matrix
     J_0 = system.computeGeomJacobianFast(q_0, g_rel_0);

@@ -410,7 +410,7 @@ function sys = assembleSystem(links, sys)
     if isa(sys, "elara.SystemNum")
         sys.frames.g_cm = g_cm;
     else
-        sys.frames.g_cm = SE3MatArray2SE3Array(g_cm);
+        sys.frames.g_cm = elara.SE3.matrix2Element(g_cm);
     end
 
     %% Store TCP data if TCP is defined
