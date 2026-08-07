@@ -1,4 +1,14 @@
 function mustBeSE3Matrix(g)
+    %% Validate that the input is a array of SE3 matrices
+    % where the array has dimensions (4,4,:,:...,:).
+    % The first two dimensions are the rows and columns of the matrices;
+    % the number of remaining dimensions is arbitrary.
+    g = reshape(g, 4, 4, []);
+    for iMat = 1:size(g,3)
+        mustBeSE3MatrixSingle(g(:,:,iMat));
+    end
+end
+function mustBeSE3MatrixSingle(g)
     %% Validate that the input is a SE3 matrix
 
     % Check if matrix is real
@@ -16,10 +26,9 @@ function mustBeSE3Matrix(g)
         "Input is not a SE3 matrix: Matrix must have determinant 1." ...
         );
 
-    % Check orthogonality
-    assert( all( abs((g/g) - eye(4)) < 10^-10, "all"), ...
-        "Input is not a SE3 matrix: Matrix must be orthogonal." ...
-        );
+    % Check rotation matrix
+    R = elara.SE3.matrix2Rx(g);
+    mustBeSO3Matrix(R);
 
     % Check last row
     assert( all(g(4,:) == [0,0,0,1]), ...

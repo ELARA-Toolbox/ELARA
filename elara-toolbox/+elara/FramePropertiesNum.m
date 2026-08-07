@@ -5,7 +5,7 @@ classdef FramePropertiesNum < elara.abstract.FrameProperties
     properties
         %% Inertia properties
         % Generalized inertia tensor
-        MGen    (6,6,:) double {mustBeSymmetricPosDefiniteArray};
+        MGen    (6,6,:) double {mustBeSymmetricPosDefinite};
 
         % Frame mass (kg)
         m       (:,1) double {mustBeNonnegative}
@@ -17,7 +17,7 @@ classdef FramePropertiesNum < elara.abstract.FrameProperties
         % frame origin = Body COM)
 
         % Transformation to the external body's CoM
-        g_a     (4,4,:) double {mustBeSE3MatrixArray}
+        g_a     (4,4,:) double {mustBeSE3Matrix}
 
         % Position vector to the external body's CoM (corresponding to g_a)
         x_a     (3,:) double

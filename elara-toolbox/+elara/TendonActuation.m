@@ -50,7 +50,7 @@ classdef TendonActuation
                 % path with the cross-section plane; relative to the
                 % backbone
                 % dimensions (4,4,nNodes,nCables)
-                g_cm        (4,4,:,:) double {mustBeSE3MatrixArray}
+                g_cm        (4,4,:,:) double {mustBeSE3Matrix}
 
                 % Vector with nodes, at which the cables terminate
                 % dimensions (nCables, 1)

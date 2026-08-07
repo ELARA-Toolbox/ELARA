@@ -48,7 +48,7 @@ classdef (Abstract) Link < matlab.mixin.Heterogeneous
 
         % Array of transformations from the cross-section frame to the COM
         % frame of attached rigid bodies
-        g_a         (4,4,:) double {mustBeSE3MatrixArray}
+        g_a         (4,4,:) double {mustBeSE3Matrix}
 
         %% TCP definition
         % To add a TCP to the system (useful for robots)

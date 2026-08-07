@@ -9,7 +9,7 @@ function gNum = SE3Array2Mat(gSE3)
         gSE3  elara.SE3.Element
     end
     arguments (Output)
-        gNum  double {mustBeSE3MatrixArray}
+        gNum  double {mustBeSE3Matrix}
     end
     gNum = zeros(4,4,numel(gSE3));
     for iG = 1:numel(gSE3)

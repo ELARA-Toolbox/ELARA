@@ -6,7 +6,7 @@ function gSE3 = SE3MatArray2SE3Array(gNum)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments (Input)
-        gNum  double {mustBeSE3MatrixArray}
+        gNum  double {mustBeSE3Matrix}
     end
     arguments (Output)
         gSE3  elara.SE3.Element

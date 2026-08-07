@@ -30,7 +30,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
             % Construct an instance of this class
             arguments
                 link (1,1)   elara.FlexibleLink;
-                g       (4,4,:) double {mustBeSE3MatrixArray} = zeros(4,4,0);
+                g       (4,4,:) double {mustBeSE3Matrix} = zeros(4,4,0);
 
                 % Additional drawing options
                 opts.showJoint      (1,1) matlab.lang.OnOffSwitchState = true;
@@ -67,7 +67,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
         function obj = updateConfiguration(obj, g)
             arguments
                 obj
-                g   (4,4,:) double %{mustBeSE3MatrixArray}
+                g   (4,4,:) double %{mustBeSE3Matrix}
             end
 
             if isempty(obj.beamVisualization.crossSectionTransforms)
@@ -100,7 +100,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
             %% Initialize drawing for a flexible link
             arguments
                 obj
-                g (4,4,:) double {mustBeSE3MatrixArray}
+                g (4,4,:) double {mustBeSE3Matrix}
             end
 
             % Draw beam
