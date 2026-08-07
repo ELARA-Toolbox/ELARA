@@ -26,7 +26,7 @@ function omega = expInv( R )
         % Todo: Check if |theta| < pi?
 
         omegaH = theta/2/sin(theta) * (R - R.');
-        omega  = skewInv(omegaH);
+        omega  = elara.SO3.skewInv(omegaH);
 
     end
 end

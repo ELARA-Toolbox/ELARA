@@ -419,7 +419,7 @@ classdef SystemNum < elara.abstract.System
 
                                 % Compute matrix entry
                                 b_i = system.frames.Ba(iFrm).' * [
-                                    1/2 * ( skew( g_cm_i1(1:3,4) + g_cm_i2(1:3,4) ) ) * xi_c(4:6);
+                                    1/2 * ( elara.SO3.skew( g_cm_i1(1:3,4) + g_cm_i2(1:3,4) ) ) * xi_c(4:6);
                                     xi_c(4:6)
                                     ];
                                 B(qIndices, uIndices(iC)) = -l / norm(xi_c(4:6)) * b_i;

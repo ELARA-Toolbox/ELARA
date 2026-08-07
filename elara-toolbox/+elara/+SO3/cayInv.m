@@ -18,6 +18,6 @@ function omega = cayInv( Lambda )
 
     omegaH = 2 / (1 + trace(Lambda) ) * (Lambda - Lambda.');
 
-    omega = skewInv(omegaH);
+    omega = elara.SO3.skewInv(omegaH);
 end
 
