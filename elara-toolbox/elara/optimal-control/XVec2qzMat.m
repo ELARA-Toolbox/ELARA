@@ -1,5 +1,5 @@
 function [q, z, qd] = XVec2qzMat(XVec, nSteps, nDoF, nInputs, nInputSplinePoints, opts)
-    %% Convert vector of decision variables to q and u matrices
+    %% Convert vector of decision variables to q and z matrices
     arguments
         % Vector of decision variables, has length
         % (nDoF + nInputs)*(nSteps+1)
