@@ -1,4 +1,4 @@
-function XVec = quMat2XVec(q, u)
+function XVec = packNodeDecisionVariables(q, u)
     %% Convert matrices of inputs and configurations q, u to vector of decision variables
     arguments
         % Matrix of configurations at all time nodes

@@ -50,7 +50,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
 
             fprintf("Computing optimal steady state configuration...\n\n");
 
-            [qF, uF] = computeOptimalSteadyStateInputsTCPPos(OCP_stat);
+            [qF, uF] = elara.ocp.computeStaticEquilibrium(OCP_stat);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
             disp("Computed static inputs (N/Nm):")

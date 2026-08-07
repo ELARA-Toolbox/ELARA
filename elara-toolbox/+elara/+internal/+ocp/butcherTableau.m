@@ -1,4 +1,4 @@
-function [A, b, c] = getButcherTableau(method)
+function [A, b, c] = butcherTableau(method)
     arguments
         method (1,1) string {mustBeMember(method,["RK2","RK4"])}
     end

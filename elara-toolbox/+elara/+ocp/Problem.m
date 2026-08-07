@@ -282,7 +282,7 @@ classdef Problem
             % Make sure highest time value is the end time
             tMat(tMat>obj.tout(end)) = obj.tout(end);
             tEval = tMat(:);
-            [B, B_dt, B_ddt, tau] = computeBSplineBasisMatrix( ...
+            [B, B_dt, B_ddt, tau] = elara.internal.ocp.computeBSplineBasis( ...
                 obj.nInputSplinePoints, obj.inputSplineOrder, tEval, ...
                 obj.tout(1), obj.tout(end));
         end
@@ -306,9 +306,9 @@ classdef Problem
             if isfield(obj.constrDef, "Fun_fRComp")
                 % Assemble decision variable vector
                 if obj.useSplineInputs
-                    X = qzMat2XVec(x, u_z);
+                    X = elara.internal.ocp.packSplineDecisionVariables(x, u_z);
                 else
-                    X = quMat2XVec(x, u_z);
+                    X = elara.internal.ocp.packNodeDecisionVariables(x, u_z);
                 end
 
                 % Total cost

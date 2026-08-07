@@ -1,4 +1,4 @@
-function [qOpt, uOpt] = computeOptimalSteadyStateInputsTCPPos(OCP)
+function [qOpt, uOpt] = computeTCPSteadyState(OCP)
     %% Compute optimal steady-state system inputs for given TCP position
     arguments
         OCP (1,1) elara.ocp.Problem

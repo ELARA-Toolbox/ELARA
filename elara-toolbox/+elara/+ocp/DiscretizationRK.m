@@ -14,7 +14,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
             obj.method = method;
         end
         function stageVals = get.timeStepStageValues(obj)
-            [~, ~, stageVals] = getButcherTableau(obj.method);
+            [~, ~, stageVals] = elara.internal.ocp.butcherTableau(obj.method);
         end
         function J = integrateCostFunctionValue(obj, OCP, x)
             arguments
@@ -27,7 +27,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 x   (:,:)
             end
             J = casadi.MX.zeros(1,1);
-            [~, bRK, cRK] = getButcherTableau(obj.method);
+            [~, bRK, cRK] = elara.internal.ocp.butcherTableau(obj.method);
             for k = 1:OCP.nSteps
                 for i = 1:length(bRK) % loop over nr. of stages s
                     % Interpolated RK stage values
@@ -54,7 +54,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 x_C   (:,:) cell
             end
             J = casadi.MX.zeros(1,1);
-            [~, bRK, ~] = getButcherTableau(obj.method);
+            [~, bRK, ~] = elara.internal.ocp.butcherTableau(obj.method);
             for k = 1:OCP.nSteps
                 for i = 1:length(bRK) % loop over nr. of stages s
                     % Accumulate weighted stage cost
@@ -78,13 +78,15 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 h           (1,1)
             end
             % RK discretization with multiple steps per NLP interval
-            [A, b, c] = getButcherTableau(obj.method);
+            [A, b, c] = elara.internal.ocp.butcherTableau(obj.method);
             % Todo: Add MultiStep RK function
             % x_curr = x_kSym;
             % for iStep = 1%:OCP.nRKSteps
-            %     x_curr = RKStepOCPLinearInputInterp(FFun, x_curr, u_kSym, u_k1Sym, h/OCP.nRKSteps, A, b, c);
+            %     x_curr = elara.internal.ocp.explicitRungeKuttaStepLinearInput( ...
+            %         FFun, x_curr, u_kSym, u_k1Sym, h/OCP.nRKSteps, A, b, c);
             % end
-            x_k1 = RKStepOCPLinearInputInterp(FFun, x_kSym, u_kSym, u_k1Sym, h, A, b, c);
+            x_k1 = elara.internal.ocp.explicitRungeKuttaStepLinearInput( ...
+                FFun, x_kSym, u_kSym, u_k1Sym, h, A, b, c);
             eq_int = x_k1 - x_k1Sym;
         end
         function eq_int = getIntegrationStepConstraintSpline(obj, FFun, x_kSym, x_k1Sym, u_kStageSym, h)
@@ -106,8 +108,9 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 h           (1,1)
             end
             % RK discretization with multiple steps per NLP interval
-            [A, b, c] = getButcherTableau(obj.method);
-            x_k1 = RKStepOCP(FFun, x_kSym, u_kStageSym, h, A, b, c);
+            [A, b, c] = elara.internal.ocp.butcherTableau(obj.method);
+            x_k1 = elara.internal.ocp.explicitRungeKuttaStep( ...
+                FFun, x_kSym, u_kStageSym, h, A, b, c);
             eq_int = x_k1 - x_k1Sym;
         end
     end

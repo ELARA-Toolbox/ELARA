@@ -1,4 +1,4 @@
-function XVec = qzMat2XVec(q, z)
+function XVec = packSplineDecisionVariables(q, z)
     %% Convert matrices of inputs and configurations q, u to vector of decision variables
     arguments
         % Matrix of configurations at all time nodes
@@ -13,7 +13,8 @@ function XVec = qzMat2XVec(q, z)
     nInputs = size(z,1);
     nInputSplinePoints = size(z,2);
 
-    [indexMat_q, indexMat_z] = getXVecIndicesSpline(nSteps, nDoF, nInputs, nInputSplinePoints);
+    [indexMat_q, indexMat_z] = elara.internal.ocp.splineDecisionVariableIndices( ...
+        nSteps, nDoF, nInputs, nInputSplinePoints);
 
     nVarsTotal =  nDoF*(nSteps+1) + nInputSplinePoints*nInputs;
     XVec = zeros(nVarsTotal, 1);

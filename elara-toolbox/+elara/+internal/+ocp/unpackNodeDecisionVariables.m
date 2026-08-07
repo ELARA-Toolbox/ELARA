@@ -1,4 +1,4 @@
-function [q, u, qd] = XVec2quMat(XVec, nSteps, nDoF, nInputs, opts)
+function [q, u, qd] = unpackNodeDecisionVariables(XVec, nSteps, nDoF, nInputs, opts)
     %% Convert vector of decision variables to q and u matrices
     arguments
         % Vector of decision variables, has length

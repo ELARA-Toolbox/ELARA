@@ -1,4 +1,4 @@
-function [q, z, qd] = XVec2qzMat(XVec, nSteps, nDoF, nInputs, nInputSplinePoints, opts)
+function [q, z, qd] = unpackSplineDecisionVariables(XVec, nSteps, nDoF, nInputs, nInputSplinePoints, opts)
     %% Convert vector of decision variables to q and z matrices
     arguments
         % Vector of decision variables, has length
@@ -19,11 +19,13 @@ function [q, z, qd] = XVec2qzMat(XVec, nSteps, nDoF, nInputs, nInputSplinePoints
     end
 
     if opts.isODEDiscr
-        [indexMat_x, indexMat_z] = getXVecIndicesSpline(nSteps, 2*nDoF, nInputs, nInputSplinePoints);
+        [indexMat_x, indexMat_z] = elara.internal.ocp.splineDecisionVariableIndices( ...
+            nSteps, 2*nDoF, nInputs, nInputSplinePoints);
         indexMat_q  = indexMat_x(1:nDoF,:);
         indexMat_qd = indexMat_x(nDoF+1:end,:);
     else
-        [indexMat_q, indexMat_z] = getXVecIndicesSpline(nSteps, nDoF, nInputs, nInputSplinePoints);
+        [indexMat_q, indexMat_z] = elara.internal.ocp.splineDecisionVariableIndices( ...
+            nSteps, nDoF, nInputs, nInputSplinePoints);
         indexMat_qd = [];
     end
 

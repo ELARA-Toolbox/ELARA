@@ -20,9 +20,9 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
     %% Compute residuals
 
     if OCP.useSplineInputs
-        xVec = qzMat2XVec(x, u_z);
+        xVec = elara.internal.ocp.packSplineDecisionVariables(x, u_z);
     else
-        xVec = quMat2XVec(x, u_z);
+        xVec = elara.internal.ocp.packNodeDecisionVariables(x, u_z);
     end
     res_c = full(constrDef.Fun_c(xVec, OCP.x_TCP_F));
     res_cDyn = full(constrDef.Fun_cDyn(xVec));

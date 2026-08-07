@@ -1,4 +1,4 @@
-function [B, B_d1t, B_d2t, tau] = computeBSplineBasisMatrix(nCP, p, tVec, t0, tEnd)
+function [B, B_d1t, B_d2t, tau] = computeBSplineBasis(nCP, p, tVec, t0, tEnd)
     %% Compute the basis matrix for a B-Spline path evaluated at a given time vector
     % and the basis matrices for the first and second time derivatives.
     % With the basis matrix, the B-Spline path can be computed with

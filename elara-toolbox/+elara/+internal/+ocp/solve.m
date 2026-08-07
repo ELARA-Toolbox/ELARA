@@ -67,11 +67,11 @@ function [x_sol, u_sol, u_sol_z, sol, stats] = solve(OCP, xInit, uInit, opts)
             ub_q_nlp(:,end) = OCP.qF;
         end
         if OCP.useSplineInputs
-            lb_X = qzMat2XVec(lb_q_nlp, lb_z_nlp);
-            ub_X = qzMat2XVec(ub_q_nlp, ub_z_nlp);
+            lb_X = elara.internal.ocp.packSplineDecisionVariables(lb_q_nlp, lb_z_nlp);
+            ub_X = elara.internal.ocp.packSplineDecisionVariables(ub_q_nlp, ub_z_nlp);
         else
-            lb_X = quMat2XVec(lb_q_nlp, lb_u_nlp);
-            ub_X = quMat2XVec(ub_q_nlp, ub_u_nlp);
+            lb_X = elara.internal.ocp.packNodeDecisionVariables(lb_q_nlp, lb_u_nlp);
+            ub_X = elara.internal.ocp.packNodeDecisionVariables(ub_q_nlp, ub_u_nlp);
         end
     else
         if ~isempty(OCP.q0)
@@ -91,8 +91,8 @@ function [x_sol, u_sol, u_sol_z, sol, stats] = solve(OCP, xInit, uInit, opts)
             ub_q_nlp(nDoF+1:end,end) = OCP.qDotF;
         end
         if OCP.useSplineInputs
-            lb_X = qzMat2XVec(lb_q_nlp, lb_z_nlp);
-            ub_X = qzMat2XVec(ub_q_nlp, ub_z_nlp);
+            lb_X = elara.internal.ocp.packSplineDecisionVariables(lb_q_nlp, lb_z_nlp);
+            ub_X = elara.internal.ocp.packSplineDecisionVariables(ub_q_nlp, ub_z_nlp);
         else
             lb_X = reshape([lb_q_nlp; lb_u_nlp], [], 1);
             ub_X = reshape([ub_q_nlp; ub_u_nlp], [], 1);
@@ -109,9 +109,9 @@ function [x_sol, u_sol, u_sol_z, sol, stats] = solve(OCP, xInit, uInit, opts)
     p.ubg = OCP.constrDef.ub_c;
     p.p = [OCP.runningCostWeights; OCP.finalCostWeights; OCP.x_TCP_F];
     if OCP.useSplineInputs
-        p.x0 = qzMat2XVec(xInit, uInit);
+        p.x0 = elara.internal.ocp.packSplineDecisionVariables(xInit, uInit);
     else
-        p.x0 = quMat2XVec(xInit, uInit);
+        p.x0 = elara.internal.ocp.packNodeDecisionVariables(xInit, uInit);
     end
 
     % Warm-start solver with previous solution, if given
@@ -136,13 +136,15 @@ function [x_sol, u_sol, u_sol_z, sol, stats] = solve(OCP, xInit, uInit, opts)
         nStates = 2*nDoF;
     end
     if OCP.useSplineInputs
-        [x_sol, u_sol_z] = XVec2qzMat(full(sol.x), nSteps, nStates, nInputs, OCP.nInputSplinePoints);
+        [x_sol, u_sol_z] = elara.internal.ocp.unpackSplineDecisionVariables( ...
+            full(sol.x), nSteps, nStates, nInputs, OCP.nInputSplinePoints);
     
         % Compute controls trajectory from spline parameterization
         B = OCP.getInputSplineBasisMatrix;
         u_sol = (B*u_sol_z.').';
     else
-        [x_sol, u_sol_z] = XVec2quMat(full(sol.x), nSteps, nStates, nInputs);
+        [x_sol, u_sol_z] = elara.internal.ocp.unpackNodeDecisionVariables( ...
+            full(sol.x), nSteps, nStates, nInputs);
         u_sol = u_sol_z;
     end
 end
