@@ -161,35 +161,37 @@ end
 
 %% Define ODE OCP Solver
 
-if 1
-    OCP_ODE = OCP;
-    OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK2");
-    OCP_ODE.Name = "RK2";
-    x_init = [q_init; qd_init];
+OCP_ODE = OCP;
+OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK2");
+OCP_ODE.Name = "RK2";
+x_init = [q_init; qd_init];
 
-    OCP_ODE = OCP_ODE.initSolver;
-    OCP_ODE.plotConstraintResiduals(x_init, u_init_z, "figureName", "Constr. Res. IG");
+OCP_ODE = OCP_ODE.initSolver;
+OCP_ODE.plotConstraintResiduals(x_init, u_init_z, "figureName", "Constr. Res. IG");
 
-    % Solve ODE OCP
-    [x_sol, u_sol_z] = OCP_ODE.solve(x_init, u_init_z);
+% Display cost values for the initial guess trajectory
+[J_init, cR_init, cF_init] = OCP_ODE.evaluateObjectiveComponents(x_init, u_init_z);
+disp("Objective ODE initial guess:")
+disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
-    q_sol = x_sol(1:OCP.systemNum.nDoF,:);
-    q_dot_sol = x_sol(OCP.systemNum.nDoF+1:end,:);
+% Solve ODE OCP
+[x_sol, u_sol, u_sol_z] = OCP_ODE.solve(x_init, u_init_z);
 
-    if OCP.useSplineInputs
-        u_sol = (B*u_sol_z.').';
-    else
-        u_sol = u_sol_z;
-    end
+q_sol = x_sol(1:OCP.systemNum.nDoF,:);
+q_dot_sol = x_sol(OCP.systemNum.nDoF+1:end,:);
 
-    % Plot solution data
-    OCP_ODE.plotConstraintResiduals(x_sol, u_sol_z, "figureName", "Constr. Res. Solution");
-    elara.ocp.plot.coordinatesInputs(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
+% Plot solution data
+OCP_ODE.plotConstraintResiduals(x_sol, u_sol_z, "figureName", "Constr. Res. Solution");
+elara.ocp.plot.coordinatesInputs(OCP_ODE, q_sol, u_sol, "q_dot", q_dot_sol, "plotDerivatives", true);
 
-    if OCP.runningCostActive(5)
-        fh = elara.ocp.plot.TCPTrajectory(OCP, q_sol);
-    end
+if OCP.runningCostActive(5)
+    fh = elara.ocp.plot.TCPTrajectory(OCP, q_sol);
 end
+
+% Display cost values for the solution trajectory
+[J_sol, cR_sol, cF_sol] = OCP_ODE.evaluateObjectiveComponents(x_sol, u_sol_z);
+disp("Objective ODE solution:")
+disp(table(J_sol, cR_sol, cF_sol, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 
 %% Define DEL OCP Solver
@@ -202,40 +204,29 @@ OCP_DEL = OCP_DEL.initSolver;
 % Solve DEL OCP
 % with weights and x_TCP specified in OCP object
 
-% Initial guess objective components
-if ~OCP_DEL.useSplineInputs
-    disp("Objective function components initial guess:")
-    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call( ...
-        {quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.runningCostWeights} ...
-        )));
-end
+% Display cost values for the initial guess trajectory
+[J_init, cR_init, cF_init] = OCP_DEL.evaluateObjectiveComponents(q_init, u_init_z);
+disp("Objective DEL initial guess:")
+disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 % Plot constraint residuals of the initial guess
 OCP_DEL.plotConstraintResiduals(q_init, u_init_z, "figureName", "Constr. Res. IG");
 
-[q_sol, u_sol_z] = OCP_DEL.solve(q_init, u_init_z);
+[q_sol, u_sol, u_sol_z] = OCP_DEL.solve(q_init, u_init_z);
 
 % Plot solution data
 OCP_DEL.plotConstraintResiduals(q_sol, u_sol_z, "figureName", "Constr. Res. Solution");
-
-if OCP.useSplineInputs
-    u_sol = (B*u_sol_z.').';
-else
-    u_sol = u_sol_z;
-end
-
 elara.ocp.plot.coordinatesInputs(OCP_DEL, q_sol, u_sol, "plotDerivatives", true);
-
-if ~OCP.useSplineInputs
-    disp("Objective function components solution:")
-    disp(cellfun( @(x) full(x), OCP_DEL.constrDef.Fun_fRComp.call( ...
-        {quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.runningCostWeights} ...
-        )))
-end
 
 if OCP.runningCostActive(5)
     fh = elara.ocp.plot.TCPTrajectory(OCP, q_sol);
 end
+
+% Display cost values for the solution trajectory
+[J_sol, cR_sol, cF_sol] = OCP_DEL.evaluateObjectiveComponents(q_sol, u_sol_z);
+disp("Objective DEL solution:")
+disp(table(J_sol, cR_sol, cF_sol, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
+
 
 %% Post-process etc.
 

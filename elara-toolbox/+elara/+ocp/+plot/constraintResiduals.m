@@ -1,29 +1,35 @@
-function fh = constraintResiduals(OCP, q, u, opts)
+function fh = constraintResiduals(OCP, x, u_z, opts)
     %% Plot OCP Constraints residuals for a given trajectory
     arguments
         OCP         (1,1) elara.ocp.Problem
 
-        % Trajectory, for which the residuals should be evaluated
-        q       (:,:) double % (nDoF, nSteps+1) or (2*nDoF, nSteps+1)
-        u       (:,:) double % (nInputs, nSteps+1)
+        % State trajectory
+        % For varInt discretization: (nDoF, nSteps+1)
+        % For ODE discretization:    (2*nDoF, nSteps+1)
+        x       (:,:) double
 
-        opts.figureName (1,1) string = "Constraint Residuals";    
+        % Control parameters trajectory
+        % Direct parameterization: (nInputs, nSteps+1) (u_sol_z = u_sol)
+        % Spline parameterization: (nInputs, nSplinePoints)
+        u_z     (:,:) double
+
+        opts.figureName (1,1) string = "Constraint Residuals";
     end
     constrDef = OCP.constrDef;
 
     %% Compute residuals
 
     if OCP.useSplineInputs
-        xVec = qzMat2XVec(q, u);
+        xVec = qzMat2XVec(x, u_z);
     else
-        xVec = quMat2XVec(q, u);
+        xVec = quMat2XVec(x, u_z);
     end
     res_c = full(constrDef.Fun_c(xVec, OCP.x_TCP_F));
     res_cDyn = full(constrDef.Fun_cDyn(xVec));
     res_cWS_int = full(constrDef.Fun_cWS_int(xVec, OCP.x_TCP_F));
     res_cWS_ext = full(constrDef.Fun_cWS_ext(xVec, OCP.x_TCP_F));
 
-    % Compute violoations of lower and upper bounds
+    % Compute violations of lower and upper bounds
     cV_ub = nan(size(res_c));
     cV_ub(res_c>constrDef.ub_c) = abs(res_c(res_c>constrDef.ub_c) - constrDef.ub_c(res_c>constrDef.ub_c));
     cV_lb = nan(size(res_c));
@@ -45,8 +51,8 @@ function fh = constraintResiduals(OCP, q, u, opts)
     nexttile;
     semilogy(abs(res_c), "DisplayName", "$c(x)$");
     hold on;
-    semilogy(cV_ub, '.-', "DisplayName", "violation ub");    
-    semilogy(cV_lb, '.-', "DisplayName", "violation lb");    
+    semilogy(cV_ub, '.-', "DisplayName", "violation ub");
+    semilogy(cV_lb, '.-', "DisplayName", "violation lb");
     title("constraint function values")
     xlabel("time step $k$", "Interpreter", "latex");
     ylabel('$|c(x)|$', "Interpreter", "latex");

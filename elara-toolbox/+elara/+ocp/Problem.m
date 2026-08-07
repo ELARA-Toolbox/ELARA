@@ -190,25 +190,51 @@ classdef Problem
                 "useCasadiStepFunctions", opts.useCasadiStepFunctions);
 
         end
-        function [x_sol, u_sol_z, sol, stats] = solve(obj, xInit, uInit, opts)
+        function [x_sol, u_sol, u_sol_z, sol, stats] = solve(obj, xInit, uInit, opts)
             %% Solve OCP
-            arguments
+            arguments (Input)
                 obj         (1,1) elara.ocp.Problem
 
-                % Initial guess
-                xInit       (:,:) double % can be configuration q or state x!
-                uInit       (:,:) double
+                % Initial guess state trajectory
+                % For varInt discretization: configurations q, (nDoF, nSteps+1)
+                % For ODE discretization: states [q, d_dot],   (2*nDoF, nSteps+1)
+                xInit   (:,:) double
+
+                % Initial guess input trajectory, can be direct or spline parameterization
+                % Direct: (nInputs, nSteps+1)
+                % Spline: (nInputs, nSplinePoints)
+                uInit   (:,:) double
 
                 % Struct with the results of a previous solver run;
                 % if given, used to initialize/warm-start the solver
                 opts.solWarmStart    (1,1) struct = struct();
+            end
+            arguments (Output)
+                % Solution state trajectory 
+                % Can be configurations or states, analogous to the initial
+                % guess
+                x_sol
+
+                % Controls trajectory (nInputs, nSteps+1)
+                u_sol
+
+                % Control parameters trajectory
+                % Direct parameterization: (nInputs, nSteps+1) (u_sol_z = u_sol)
+                % Spline parameterization: (nInputs, nSplinePoints)
+                u_sol_z
+
+                % CasADi NLP solver solution object
+                sol
+
+                % CasADi NLP solver metadata/stats object
+                stats
             end
             % Check if solver has been defined
             assert(~strcmp(obj.NLPSolver.name, 'null') && isfield(obj.constrDef, "lb_c"), ...
                 "Cannot start solver: NLP solver not initizalized. Call initSolver() first.");
 
             % Solve problem
-            [x_sol, u_sol_z, sol, stats] = elara.internal.ocp.solve(obj, xInit, uInit, ...
+            [x_sol, u_sol, u_sol_z, sol, stats] = elara.internal.ocp.solve(obj, xInit, uInit, ...
                 "solWarmStart", opts.solWarmStart);
         end
         function obj = clearSolver(obj)
@@ -217,20 +243,26 @@ classdef Problem
             obj.NLPSolver = casadi.Function;
             obj.constrDef = struct();
         end
-        
+
         %% Other Methods
-        function fh = plotConstraintResiduals(obj, q, u, opts)
+        function fh = plotConstraintResiduals(obj, x, u_z, opts)
             %% Plot OCP Constraints residuals for a given trajectory
             arguments
                 obj         (1,1) elara.ocp.Problem
 
-                % Trajectory, for which the residuals should be evaluated
-                q       (:,:) double % (nDoF, nSteps+1) or (2*nDoF, nSteps+1)
-                u       (:,:) double % (nInputs, nSteps+1)
+                % State trajectory
+                % For varInt discretization: configurations q, (nDoF, nSteps+1)
+                % For ODE discretization: states [q, d_dot],   (2*nDoF, nSteps+1)
+                x       (:,:) double
+
+                % Input trajectory, can be direct or spline parameterization
+                % Direct: (nInputs, nSteps+1)
+                % Spline: (nInputs, nSplinePoints)
+                u_z     (:,:) double
 
                 opts.figureName (1,1) string = "Constraint Residuals";
             end
-            fh = elara.ocp.plot.constraintResiduals(obj, q, u, ...
+            fh = elara.ocp.plot.constraintResiduals(obj, x, u_z, ...
                 "figureName", opts.figureName);
         end
         function [B, B_dt, B_ddt, tau] = getInputSplineBasisMatrix(obj, opts)
@@ -253,6 +285,54 @@ classdef Problem
             [B, B_dt, B_ddt, tau] = computeBSplineBasisMatrix( ...
                 obj.nInputSplinePoints, obj.inputSplineOrder, tEval, ...
                 obj.tout(1), obj.tout(end));
+        end
+        function [J, cR, cF] = evaluateObjectiveComponents(obj, x, u_z)
+            %% Evaluate the objective function for a given trajectory
+            % computes both the overall cost and the individual components
+            arguments
+                obj (1,1) elara.ocp.Problem
+
+                % State trajectory
+                % For varInt discretization: (nDoF, nSteps+1)
+                % For ODE discretization:    (2*nDoF, nSteps+1)
+                x       (:,:) double
+
+                % Control parameters trajectory
+                % Direct parameterization: (nInputs, nSteps+1) (u_sol_z = u_sol)
+                % Spline parameterization: (nInputs, nSplinePoints)
+                u_z     (:,:) double
+            end
+            % Check if solver is initialized
+            if isfield(obj.constrDef, "Fun_fRComp")
+                % Assemble decision variable vector
+                if obj.useSplineInputs
+                    X = qzMat2XVec(x, u_z);
+                else
+                    X = quMat2XVec(x, u_z);
+                end
+
+                % Total cost
+                J = cellfun( @(x) full(x), ...
+                    obj.constrDef.Fun_f.call( ...
+                    {X, obj.x_TCP_F, obj.runningCostWeights, obj.finalCostWeights}) ...
+                    );
+
+                % Running cost components
+                cR = cellfun( @(x) full(x), ...
+                    obj.constrDef.Fun_fRComp.call( ...
+                    {X, obj.x_TCP_F, obj.runningCostWeights}) ...
+                    );
+
+                % Final cost components
+                cF = cellfun( @(x) full(x), ...
+                    obj.constrDef.Fun_fFComp.call( ...
+                    {X, obj.x_TCP_F, obj.finalCostWeights}) ...
+                    );
+            else
+                warning("Objective components cannot be evaluated " + ...
+                    "if the solver is not initialized. " + ...
+                    "Initialize the solver first.");
+            end
         end
     end
 

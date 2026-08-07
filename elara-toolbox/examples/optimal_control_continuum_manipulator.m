@@ -140,31 +140,24 @@ OCP = OCP.initSolver("useCasadiStepFunctions", true);
 % Plot constraint residuals of the initial guess
 OCP.plotConstraintResiduals(q_init, u_init_z, "figureName", "Constr. Res. IG");
 
-% Initial guess objective components
-if ~OCP.useSplineInputs
-    disp("Objective function components initial guess:")
-    disp(cellfun( @(x) full(x), OCP.constrDef.Fun_fComp.call({quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.w}) ))
-end
+% Display cost values for the initial guess trajectory
+[J_init, cR_init, cF_init] = OCP.evaluateObjectiveComponents(q_init, u_init_z);
+disp("Objective DEL initial guess:")
+disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 % Solve OCP
 % with weights and x_TCP specified in OCP object
-[q_sol, u_sol_z] = OCP.solve(q_init, u_init_z);
+[q_sol, u_sol, u_sol_z] = OCP.solve(q_init, u_init_z);
 
 % Plot solution data
 OCP.plotConstraintResiduals(q_sol, u_sol_z, "figureName", "Constr. Res. Solution");
-
-if OCP.useSplineInputs
-    u_sol = (B*u_sol_z.').';
-else
-    u_sol = u_sol_z;
-end
-
 elara.ocp.plot.coordinatesInputs(OCP, q_sol, u_sol, "plotDerivatives", true, "FDOrder", 2);
 
-if ~OCP.useSplineInputs
-    disp("Objective function components solution:")
-    disp(cellfun( @(x) full(x), OCP.constrDef.Fun_fComp.call({quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.w}) ))
-end
+% Display cost values for the solution trajectory
+[J_sol, cR_sol, cF_sol] = OCP.evaluateObjectiveComponents(q_sol, u_sol_z);
+disp("Objective DEL solution:")
+disp(table(J_sol, cR_sol, cF_sol, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
+
 
 
 %% Post-process etc.

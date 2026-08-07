@@ -1,4 +1,4 @@
-function [x_sol, u_sol, sol, stats] = solve(OCP, xInit, uInit, opts)
+function [x_sol, u_sol, u_sol_z, sol, stats] = solve(OCP, xInit, uInit, opts)
     %% Solve an OCP with CasADi NLP solver
     %
     % Maximilian Herrmann
@@ -136,8 +136,13 @@ function [x_sol, u_sol, sol, stats] = solve(OCP, xInit, uInit, opts)
         nStates = 2*nDoF;
     end
     if OCP.useSplineInputs
-        [x_sol, u_sol] = XVec2qzMat(full(sol.x), nSteps, nStates, nInputs, OCP.nInputSplinePoints);
+        [x_sol, u_sol_z] = XVec2qzMat(full(sol.x), nSteps, nStates, nInputs, OCP.nInputSplinePoints);
+    
+        % Compute controls trajectory from spline parameterization
+        B = OCP.getInputSplineBasisMatrix;
+        u_sol = (B*u_sol_z.').';
     else
-        [x_sol, u_sol] = XVec2quMat(full(sol.x), nSteps, nStates, nInputs);
+        [x_sol, u_sol_z] = XVec2quMat(full(sol.x), nSteps, nStates, nInputs);
+        u_sol = u_sol_z;
     end
 end

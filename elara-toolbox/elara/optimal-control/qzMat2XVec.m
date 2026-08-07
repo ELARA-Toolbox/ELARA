@@ -4,8 +4,8 @@ function XVec = qzMat2XVec(q, z)
         % Matrix of configurations at all time nodes
         % dimensions (nDoF, nSteps+1)
         q       (:,:)
-        % Matrix of inputs at all time nodes
-        % dimensions (nInputs, nSteps+1)
+        % Matrix of input parameters
+        % dimensions (nInputs, nSplinePoints)
         z       (:,:)
     end
     nSteps  = size(q,2)-1;
