@@ -14,7 +14,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
             obj.method = method;
         end
         function stageVals = get.timeStepStageValues(obj)
-            [~, ~, stageVals] = elara.ocp.DiscretizationRK.getButcherTableau(obj.method);
+            [~, ~, stageVals] = getButcherTableau(obj.method);
         end
         function J = integrateCostFunctionValue(obj, OCP, x)
             arguments
@@ -27,7 +27,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 x   (:,:)
             end
             J = casadi.MX.zeros(1,1);
-            [~, bRK, cRK] = elara.ocp.DiscretizationRK.getButcherTableau(obj.method);
+            [~, bRK, cRK] = getButcherTableau(obj.method);
             for k = 1:OCP.nSteps
                 for i = 1:length(bRK) % loop over nr. of stages s
                     % Interpolated RK stage values
@@ -54,7 +54,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 x_C   (:,:) cell
             end
             J = casadi.MX.zeros(1,1);
-            [~, bRK, ~] = (obj.method);
+            [~, bRK, ~] = getButcherTableau(obj.method);
             for k = 1:OCP.nSteps
                 for i = 1:length(bRK) % loop over nr. of stages s
                     % Accumulate weighted stage cost
@@ -78,7 +78,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 h           (1,1)
             end
             % RK discretization with multiple steps per NLP interval
-            [A, b, c] = elara.ocp.DiscretizationRK.getButcherTableau(obj.method);
+            [A, b, c] = getButcherTableau(obj.method);
             % Todo: Add MultiStep RK function
             % x_curr = x_kSym;
             % for iStep = 1%:OCP.nRKSteps
@@ -106,34 +106,9 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 h           (1,1)
             end
             % RK discretization with multiple steps per NLP interval
-            [A, b, c] = elara.ocp.DiscretizationRK.getButcherTableau(obj.method);
+            [A, b, c] = getButcherTableau(obj.method);
             x_k1 = RKStepOCP(FFun, x_kSym, u_kStageSym, h, A, b, c);
             eq_int = x_k1 - x_k1Sym;
-        end
-    end
-    methods (Hidden,Static)
-        function [A, b, c] = getButcherTableau(method)
-            arguments
-                method (1,1) string {mustBeMember(method,["RK2","RK4"])}
-            end
-            switch upper(method)
-                case "RK2"  % Heun's method
-                    A = [0   0;
-                        1   0];
-                    b = [0.5; 0.5];
-                    c = [0; 1];
-
-                case "RK4"  % Classic 4th order
-                    A = [0   0   0   0;
-                        0.5 0   0   0;
-                        0   0.5 0   0;
-                        0   0   1   0];
-                    b = [1; 2; 2; 1] / 6;
-                    c = [0; 0.5; 0.5; 1];
-
-                otherwise
-                    error("Unknown method: %s", method);
-            end
         end
     end
 end
