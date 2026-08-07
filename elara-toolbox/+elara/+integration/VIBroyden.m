@@ -45,14 +45,14 @@ classdef VIBroyden < elara.abstract.Integrator
             end
 
             % Check if compiled mex files are available
-            useMex = exist("integrateMBSDynamics_Broyden_mex", "file");
+            useMex = exist("integrateVIBroyden_mex", "file") == 3;
 
             if obj.showConsoleOutput
                 fprintf('Starting integration (varint-broyden)...\n');
             end
 
             % Copy solver settings into object (needed for codegen function)
-            solverOptionsVI = varIntSolverConfig;
+            solverOptionsVI = elara.internal.integration.VIBroydenConfig;
             solverOptionsVI.h                = obj.h;
             solverOptionsVI.tolerance      = obj.tolerance;
             solverOptionsVI.toleranceLimit = obj.toleranceLimit;
@@ -68,18 +68,22 @@ classdef VIBroyden < elara.abstract.Integrator
 
             tic;
             if useMex
-                simRes = integrateMBSDynamics_Broyden_mex(MBSim.system, MBSim.parameters, solverOptionsVI);
+                simRes = integrateVIBroyden_mex( ...
+                    MBSim.system, MBSim.parameters, solverOptionsVI);
             else
-                simRes = integrateMBSDynamics_Broyden(MBSim.system, MBSim.parameters, solverOptionsVI);
+                simRes = elara.internal.integration.integrateVIBroyden( ...
+                    MBSim.system, MBSim.parameters, solverOptionsVI);
             end
             tSim = toc;
 
             % Run simulation again with timeit (if desired) for more accurate times
             if obj.accurateTiming
                 if useMex
-                    timingFun = @() integrateMBSDynamics_Broyden_mex(MBSim.system, MBSim.parameters, solverOptionsVI);
+                    timingFun = @() integrateVIBroyden_mex( ...
+                        MBSim.system, MBSim.parameters, solverOptionsVI);
                 else
-                    timingFun = @() integrateMBSDynamics_Broyden(MBSim.system, MBSim.parameters, solverOptionsVI);
+                    timingFun = @() elara.internal.integration.integrateVIBroyden( ...
+                        MBSim.system, MBSim.parameters, solverOptionsVI);
                 end
                 tSim = timeit(timingFun);
             end

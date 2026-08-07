@@ -14,13 +14,13 @@ end
 %% Check for compiled mex files
 
 mexFileNames = [
-    "integrateMBSDynamics_Broyden_mex"
+    "integrateVIBroyden_mex"
     "firstOrderRHS_mex"
     "firstOrderMassMatrix_mex"
     "firstOrderDerivative_mex"
-    "getSimResFromStateTrajectory_mex"
+    "getResultsFromStateTrajectory_mex"
     "staticResidual_mex"
-    "computeSimulationEnergies_mex"
+    "computeEnergies_mex"
     ];
 fileExists = zeros(size(mexFileNames));
 for iFile = 1:numel(mexFileNames)

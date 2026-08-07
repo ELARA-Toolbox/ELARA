@@ -1,4 +1,4 @@
-function simRes = getSimResFromStateTrajectory(system, tout, q, q_dot)
+function simRes = getResultsFromStateTrajectory(system, tout, q, q_dot)
     %% Get simRes object from trajectory of states q, q_dot
     % E.g., to post-process integration results from ODE integrator
     arguments

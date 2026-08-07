@@ -23,23 +23,23 @@ targetDir = fullfile(elara.internal.getToolboxRootFolder, "build");
 fprintf("Compiling MEX functions...\n\n");
 
 functionNames = [
-    "integrateMBSDynamics_Broyden"
+    "elara.internal.integration.integrateVIBroyden"
     "elara.dynamics.num.firstOrderRHS"
     "elara.dynamics.num.firstOrderMassMatrix"
     "elara.dynamics.num.firstOrderDerivative"
-    "getSimResFromStateTrajectory"
+    "elara.internal.simulation.getResultsFromStateTrajectory"
     "elara.statics.num.residual"
-    "computeSimulationEnergies"
+    "elara.internal.simulation.computeEnergies"
     ];
 
 outputNames = [
-    "integrateMBSDynamics_Broyden"
+    "integrateVIBroyden"
     "firstOrderRHS"
     "firstOrderMassMatrix"
     "firstOrderDerivative"
-    "getSimResFromStateTrajectory"
+    "getResultsFromStateTrajectory"
     "staticResidual"
-    "computeSimulationEnergies"
+    "computeEnergies"
     ];
 
 for iFun = 1:numel(functionNames)

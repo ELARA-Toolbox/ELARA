@@ -1,4 +1,4 @@
-function [u, solInfo] = computeInverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
+function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
     %% Compute inverse dynamics for given coordinate trajectory using DEL Equs.
     arguments
         system  (1,1) elara.SystemNum
@@ -54,7 +54,8 @@ function [u, solInfo] = computeInverseDynamicsDEL(system, simPars, q, qd, h, lbu
         % Underactuated system
         % Note: We directly combine the trapezoidal rule factor (1-a) in the
         % first step with the time step h
-        [u(:,1), solInfo_1] = solveEOMInputs(system, res_0/(1-a), q(:,1), lbu, ubu);
+        [u(:,1), solInfo_1] = elara.internal.dynamics.solveSystemInputs( ...
+            system, res_0/(1-a), q(:,1), lbu, ubu);
 
         solInfo.resNorm(1)  = solInfo_1.resNorm;
         %solInfo.residual(1) = solInfo_1.residual;
@@ -84,7 +85,8 @@ function [u, solInfo] = computeInverseDynamicsDEL(system, simPars, q, qd, h, lbu
         if isFullyActuated
             u(:,k) = -system.computeInputMatrix(q(:,k)) \ res_k;
         else
-            [u(:,k), solInfo_k] = solveEOMInputs(system, res_k, q(:,k), lbu, ubu);
+            [u(:,k), solInfo_k] = elara.internal.dynamics.solveSystemInputs( ...
+                system, res_k, q(:,k), lbu, ubu);
 
             solInfo.resNorm(k)  = solInfo_k.resNorm;
             %solInfo.residual(k) = solInfo_k.residual;
@@ -101,7 +103,8 @@ function [u, solInfo] = computeInverseDynamicsDEL(system, simPars, q, qd, h, lbu
     if isFullyActuated
         u(:,nSteps+1) = -(a*system.computeInputMatrix(q(:,nSteps+1))) \ res_N1;
     else
-        [u(:,nSteps+1), solInfo_k] = solveEOMInputs(system, res_N1/a, q(:,nSteps+1), lbu, ubu);
+        [u(:,nSteps+1), solInfo_k] = elara.internal.dynamics.solveSystemInputs( ...
+            system, res_N1/a, q(:,nSteps+1), lbu, ubu);
         solInfo.resNorm(nSteps+1)  = solInfo_k.resNorm;
         solInfo.rank_B(nSteps+1) = rank(system.computeInputMatrix(q(:,nSteps+1)));
         solInfo.cond_B(nSteps+1) = cond(system.computeInputMatrix(q(:,nSteps+1)));

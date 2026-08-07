@@ -1,4 +1,4 @@
-function [T,U,V,H] = computeSimulationEnergies(system, simPars, simRes, isVarInt, useFiniteDifferences) %#codegen
+function [T,U,V,H] = computeEnergies(system, simPars, simRes, isVarInt, useFiniteDifferences) %#codegen
     %% Compute energy evolution for simulation results
     arguments (Input)
         system      (1,1) elara.SystemNum
@@ -25,7 +25,7 @@ function [T,U,V,H] = computeSimulationEnergies(system, simPars, simRes, isVarInt
 
     % Get system inputs for varInts
     if isVarInt
-        u = getIntegratorInputs(system, simPars, simRes.tout);
+        u = elara.internal.simulation.evaluateSystemInputs(system, simPars, simRes.tout);
         h = simRes.tout(2) - simRes.tout(1);
 
         % Get velocities via finite differences

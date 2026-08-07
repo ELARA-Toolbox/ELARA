@@ -154,7 +154,8 @@ classdef SystemVisualization < handle
             %% Interpolate results at fixed sampling rate
             tSample = 1/options.frameRate;
             tQuery = simRes.tout(1):tSample:simRes.tout(end);
-            gQuery = interpolateSimulationResultsTime(systemVisualization.system, simRes, tQuery);
+            gQuery = elara.internal.simulation.interpolateResults( ...
+                systemVisualization.system, simRes, tQuery);
 
 
             %% Prepare animation

@@ -1,4 +1,4 @@
-function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
+function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELBroyden( ...
         system, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
         f_frame_k_b, f_gen_k, solverConfig, a)
     %% Solve implicit part of the DEL function using Broyden's Good Method
@@ -41,7 +41,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELEquBroyden( ...
         f_gen_k         (:,1) double
 
         % solver configuration
-        solverConfig    (1,1) varIntSolverConfig
+        solverConfig    (1,1) elara.internal.integration.VIBroydenConfig
 
         % Weighting factor in the generalized trapezoidal rule
         % Rectangle rule: a = 0, trapezoidal rule: a = 1/2

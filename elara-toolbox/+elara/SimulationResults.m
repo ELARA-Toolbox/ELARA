@@ -72,12 +72,13 @@ classdef SimulationResults
             end
 
             % Check if compiled mex files are available
-            useMex = exist("firstOrderRHS_mex", "file");
+            useMex = exist("getResultsFromStateTrajectory_mex", "file") == 3;
 
             if useMex
-                simRes = getSimResFromStateTrajectory_mex(system, tout, q, q_dot);
+                simRes = getResultsFromStateTrajectory_mex(system, tout, q, q_dot);
             else
-                simRes = getSimResFromStateTrajectory(system, tout, q, q_dot);
+                simRes = elara.internal.simulation.getResultsFromStateTrajectory( ...
+                    system, tout, q, q_dot);
             end
         end
     end

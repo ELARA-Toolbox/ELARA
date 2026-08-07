@@ -202,7 +202,8 @@ classdef Simulation
 
             %% Interpolate results at fixed sampling rate
             tQuery = linspace(obj.results.tout(1), obj.results.tout(end), opts.nSnapShots);
-            gQuery = interpolateSimulationResultsTime(obj.system, obj.results, tQuery);
+            gQuery = elara.internal.simulation.interpolateResults( ...
+                obj.system, obj.results, tQuery);
 
             %% Prepare axis limits
             % Extra margin
@@ -270,11 +271,11 @@ classdef Simulation
             isVarInt = obj.integrator.type ==  "varint";
 
             % Check if compiled mex files are available
-            if exist("computeSimulationEnergies_mex", "file") == 3
-                [T,U,V,H] = computeSimulationEnergies_mex( ...
+            if exist("computeEnergies_mex", "file") == 3
+                [T,U,V,H] = computeEnergies_mex( ...
                     obj.system, obj.parameters, obj.results, isVarInt, opts.useFiniteDifferences);
             else
-                [T,U,V,H] = computeSimulationEnergies( ...
+                [T,U,V,H] = elara.internal.simulation.computeEnergies( ...
                     obj.system, obj.parameters, obj.results, isVarInt, opts.useFiniteDifferences);
             end
             obj.results.kineticEnergy   = T;

@@ -1,4 +1,4 @@
-classdef varIntSolverConfig
+classdef VIBroydenConfig
     % Class to all settings for the variational integrator solvers
 
     properties

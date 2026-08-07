@@ -1,4 +1,4 @@
-function [gQuery, qQuery] = interpolateSimulationResultsTime(system, simRes, tQuery)
+function [gQuery, qQuery] = interpolateResults(system, simRes, tQuery)
     %% Interpolate simulation results in time at fixed time grid
     %
     % Maximilian Herrmann

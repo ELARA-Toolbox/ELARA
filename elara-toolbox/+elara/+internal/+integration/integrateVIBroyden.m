@@ -1,4 +1,4 @@
-function simResults = integrateMBSDynamics_Broyden(system, simPars, solverConfig) %#codegen
+function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codegen
     %% Variational Integrator for a rigid-flexible multibody system
     %
     % Maximilian Herrmann
@@ -14,7 +14,7 @@ function simResults = integrateMBSDynamics_Broyden(system, simPars, solverConfig
         simPars         (1,1) elara.SimulationParameters
 
         % solver configuration
-        solverConfig    (1,1) varIntSolverConfig
+        solverConfig    (1,1) elara.internal.integration.VIBroydenConfig
     end
 
     %% Validate Simulation Input Data
@@ -61,7 +61,7 @@ function simResults = integrateMBSDynamics_Broyden(system, simPars, solverConfig
     ExitFlag            = nan(1,nSteps+1);
 
     % Prepare System Inputs
-    u = getIntegratorInputs(system, simPars, tout);
+    u = elara.internal.simulation.evaluateSystemInputs(system, simPars, tout);
 
 
     %% Compute initial step k=1 -> k=2
@@ -102,7 +102,7 @@ function simResults = integrateMBSDynamics_Broyden(system, simPars, solverConfig
     updateInvJacobian    = true;
 
     q_k0 = q_k; % Only for the initial value of the implicit solver
-    [q_k1, eta_k, g_rel_k1, H_k, solData_k] = solveImplicitDELEquBroyden( ...
+    [q_k1, eta_k, g_rel_k1, H_k, solData_k] = elara.internal.integration.solveImplicitDELBroyden( ...
         system, q_k, q_k0, g_rel_0, zeros(system.nDoF), updateInvJacobian, forceSolverIteration, f_frame_0_b, f_gen_0, ...
         solverConfig, a  ...
         );
@@ -162,7 +162,7 @@ function simResults = integrateMBSDynamics_Broyden(system, simPars, solverConfig
             + aLoop*system.dSys .* (q_k-q_k0);
 
         % Solve implicit DEL equation
-        [q_k1, eta_k, g_rel_k1, H_k, solData_k] = solveImplicitDELEquBroyden( ...
+        [q_k1, eta_k, g_rel_k1, H_k, solData_k] = elara.internal.integration.solveImplicitDELBroyden( ...
             system, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
             f_frame_k_b, f_gen_k, solverConfig, aLoop );
 

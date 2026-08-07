@@ -1,4 +1,4 @@
-function u = getIntegratorInputs(system, simPars, tout)
+function u = evaluateSystemInputs(system, simPars, tout)
     %% Prepare system inputs at integration time steps for variational integrators
     %
     % Maximilian Herrmann

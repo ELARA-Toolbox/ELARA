@@ -1,4 +1,4 @@
-function [u, solInfo] = computeInverseDynamicsODE(system, simPars, q, qd, qdd, lbu, ubu)
+function [u, solInfo] = inverseDynamicsODE(system, simPars, q, qd, qdd, lbu, ubu)
     %% Compute inverse dynamics for given coordinate trajectory
     % using continuous-time equations of motion (ODEs)
     arguments
@@ -39,7 +39,8 @@ function [u, solInfo] = computeInverseDynamicsODE(system, simPars, q, qd, qdd, l
             % Fully actuated system: Directly invert input matrix
             u(:,k) = -system.computeInputMatrix(q(:,k)) \ res_k;
         else
-            [u(:,k), solInfo_k] = solveEOMInputs(system, res_k, q(:,k), lbu, ubu);
+            [u(:,k), solInfo_k] = elara.internal.dynamics.solveSystemInputs( ...
+                system, res_k, q(:,k), lbu, ubu);
             solInfo.resNorm(k)  = solInfo_k.resNorm;
             solInfo.rank_B(k) = rank(system.computeInputMatrix(q(:,k)));
             solInfo.cond_B(k) = cond(system.computeInputMatrix(q(:,k)));

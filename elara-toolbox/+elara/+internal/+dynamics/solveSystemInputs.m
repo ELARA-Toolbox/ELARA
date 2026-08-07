@@ -1,4 +1,4 @@
-function [u, solInfo] = solveEOMInputs(system, res_k, q_k, lb, ub)
+function [u, solInfo] = solveSystemInputs(system, res_k, q_k, lb, ub)
     %% Solve (Underactuated) Equations of Motion for System Inputs u
     % with u inside lower and upper bounds lb, ub
     %
