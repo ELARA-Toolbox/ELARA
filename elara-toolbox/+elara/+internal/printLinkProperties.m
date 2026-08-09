@@ -1,8 +1,11 @@
 function tLinks = printLinkProperties(links)
-    %% Display link properties of a MB system as a table
+    %% Display link properties of an ELARA system as a table
 
-    % Disable warning appearing when we convert an object to struct
-    warning('off','MATLAB:structOnObject');
+    % Disable warning appearing when we convert an object to struct;
+    % Restore the caller's warning state after constructing the display tables.
+    warningState = warning("query", "MATLAB:structOnObject");
+    warningCleanup = onCleanup(@() warning(warningState));
+    warning("off", "MATLAB:structOnObject");
 
     %% Print link properties
 

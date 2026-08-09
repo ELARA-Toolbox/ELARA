@@ -1,8 +1,11 @@
 function tFrames = printFrameProperties(system)
-    %% Display frame properties of a MB system as a table
+    %% Display frame properties of an ELARA system as a table
 
-    % Disable warning appearing when we convert an object to struct
-    warning('off','MATLAB:structOnObject');
+    % Disable warning appearing when we convert an object to struct;
+    % Restore the caller's warning state after constructing the display tables.
+    warningState = warning("query", "MATLAB:structOnObject");
+    warningCleanup = onCleanup(@() warning(warningState));
+    warning("off", "MATLAB:structOnObject");
 
     % Get frames as a suitable struct
     frameStr = struct(system.frames);
@@ -16,8 +19,6 @@ function tFrames = printFrameProperties(system)
 
     disp("System Frame Properties:")
     disp(tFrames);
-
-
 end
 
 function s = prepareStruct(s, nFrames)

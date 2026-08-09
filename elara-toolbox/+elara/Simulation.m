@@ -47,12 +47,12 @@ classdef Simulation
                 obj.links = links;
                 obj.system = elara.SystemNum(links);
 
-                % Plot system information
+                % Display system information
                 if options.displayInfo
-                    printLinkProperties(links);
-                    printFrameProperties(obj.system);
+                    elara.internal.printLinkProperties(links);
+                    elara.internal.printFrameProperties(obj.system);
+                    elara.internal.printInputProperties(obj.system);
                     elara.plot.systemGraphs(obj.system);
-                    printInputProperties(obj.system);
                 end
             end
         end
@@ -116,7 +116,8 @@ classdef Simulation
                 else
                     figureName = strcat(obj.Name, ": ", options.figureName);
                 end
-                fig = init3Dplot("Name", figureName, "NumberTitle", "off");
+                fig = elara.visualization.initializeAxes( ...
+                    "Name", figureName, "NumberTitle", "off");
             else
                 fig = gcf;
             end
@@ -134,7 +135,7 @@ classdef Simulation
                 opts.figureName     (1,1) string = "Animation";
 
                 % Figure to plot in
-                opts.figure         (:,1) matlab.ui.Figure = init3Dplot;
+                opts.figure         (:,1) matlab.ui.Figure = elara.visualization.initializeAxes;
 
                 % Animation frame rate
                 opts.frameRate      (1,1) double = 30;
@@ -170,7 +171,7 @@ classdef Simulation
                 obj             (1,1)
 
                 % Figure to plot in
-                opts.figure     (:,1) matlab.ui.Figure = init3Dplot;
+                opts.figure     (:,1) matlab.ui.Figure = elara.visualization.initializeAxes;
 
                 % Figure Name (for newly created figure)
                 opts.figureName (1,1) string = "Snapshots";

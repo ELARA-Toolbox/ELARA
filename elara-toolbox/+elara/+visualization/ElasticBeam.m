@@ -63,10 +63,10 @@ classdef ElasticBeam < handle
         centerLine     (1,1) matlab.graphics.chart.primitive.Line
 
         % Array with node coordinate system objects
-        crossSectionCoordSys           (:,1) CoordSysSE3
+        crossSectionCoordSys           (:,1) elara.visualization.CoordinateFrame
 
         % End coordinate system object
-        endCoordSys        (1,1) CoordSysSE3
+        endCoordSys        (1,1) elara.visualization.CoordinateFrame
 
         % Array with patches for cross-sections
         crossSectionPatches    (:,1) matlab.graphics.primitive.Patch
@@ -129,7 +129,7 @@ classdef ElasticBeam < handle
                 obj.crossSectionTransforms(iN) = hgtransform();
 
                 % Plot node coordinate frame
-                obj.crossSectionCoordSys(iN) = CoordSysSE3(...
+                obj.crossSectionCoordSys(iN) = elara.visualization.CoordinateFrame(...
                     eye(4), ...
                     "DrawLabels", obj.ShowLabels, ...
                     'Scale', 0.03, 'Name', num2str(iN),...

@@ -74,7 +74,7 @@ OCP.nlpOptions.expand = false;
 MBSim = OCP.getSimulationObject;
 
 [~, vis] = MBSim.visualizeSystemRefConf();
-CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 OCP.workspace.visualize("createFigure", false);
 
 %% Compute Initial Guess
@@ -89,8 +89,8 @@ if COMPUTE_IG
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
 
     % Animate results
-    fig = init3Dplot('Name', "Animation Initial Guess");
-    CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+    fig = elara.visualization.initializeAxes('Name', "Animation Initial Guess");
+    elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
     OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
@@ -175,15 +175,16 @@ MBSimCasadi.results = elara.SimulationResults.fromStateTrajectory( ...
 MBSimCasadi.plotAll;
 
 % Draw snapshots
-fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-CoordSysSE3(gTCPDes);
+fig = elara.visualization.initializeAxes( ...
+    'Name', "Snapshots Solution", "NumberTitle", "off");
+elara.visualization.CoordinateFrame(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
 TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 % Animate results
-fig = init3Dplot('Name', "Animation Solution");
-CoordSysSE3(gTCPDes);
+fig = elara.visualization.initializeAxes('Name', "Animation Solution");
+elara.visualization.CoordinateFrame(gTCPDes);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 
 %% End script

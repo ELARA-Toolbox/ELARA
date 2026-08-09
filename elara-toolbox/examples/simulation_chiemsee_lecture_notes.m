@@ -200,8 +200,8 @@ fh.Theme = "Light";
 view(-37.5,30);
 
 % 2D Projections
-drawSystemProjectionOntoPlane(vis, "yz", fh.CurrentAxes.XLim(2));
-drawSystemProjectionOntoPlane(vis, "xz", fh.CurrentAxes.YLim(2));
+vis.plotProjection("yz", fh.CurrentAxes.XLim(2));
+vis.plotProjection("xz", fh.CurrentAxes.YLim(2));
 
 
 %%% Initial config
@@ -219,8 +219,8 @@ fh.Theme = "Light";
 view(-37.5,30);
 
 % 2D Projections
-drawSystemProjectionOntoPlane(vis, "yz", fh.CurrentAxes.XLim(2));
-drawSystemProjectionOntoPlane(vis, "xz", fh.CurrentAxes.YLim(2));
+vis.plotProjection("yz", fh.CurrentAxes.XLim(2));
+vis.plotProjection("xz", fh.CurrentAxes.YLim(2));
 
 
 %%% Snapshots

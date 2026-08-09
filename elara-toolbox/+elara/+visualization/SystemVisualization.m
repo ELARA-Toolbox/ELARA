@@ -20,7 +20,7 @@ classdef SystemVisualization < handle
     end
     properties(SetAccess=protected)
         % Coordinate frame for the inertial system
-        coordSysI               (1,1) CoordSysSE3
+        coordSysI               (1,1) elara.visualization.CoordinateFrame
     end
 
     %% Main Methods
@@ -83,7 +83,7 @@ classdef SystemVisualization < handle
             % Draw inertial frame
             coordSysScale = 0.075;
             inertialColor = summer(1);
-            systemVisualization.coordSysI = CoordSysSE3(eye(4), ...
+            systemVisualization.coordSysI = elara.visualization.CoordinateFrame(eye(4), ...
                 'scale', coordSysScale, ...
                 'name','I', ...
                 'AxisColors', repmat(inertialColor, [3,1]), ...
@@ -128,6 +128,62 @@ classdef SystemVisualization < handle
                     gLink = cat(3, g0, gLink);
                 end
                 systemVisualization.linkVisualization(iLink) = systemVisualization.linkVisualization(iLink).updateConfiguration(gLink);
+            end
+        end
+
+        function projectionPatches = plotProjection(systemVisualization, plane, planePosition, options)
+            %PLOTPROJECTION Plot the current system geometry on a coordinate plane.
+            arguments
+                systemVisualization (1,1) elara.visualization.SystemVisualization
+                plane (1,1) string {mustBeMember(plane, ["xy", "xz", "yz"])}
+                planePosition (1,1) double
+                options.Parent (1,1) matlab.graphics.axis.Axes = gca
+                options.FaceAlpha (1,1) double = 0.3
+                options.EdgeAlpha (1,1) double = 0
+                options.Color (1,3) double = 0.8 * ones(1,3)
+            end
+
+            projectionMatrix = [eye(3), zeros(3,1)];
+            switch plane
+                case "xy"
+                    projectionMatrix(3,:) = [0, 0, 0, planePosition];
+                case "xz"
+                    projectionMatrix(2,:) = [0, 0, 0, planePosition];
+                case "yz"
+                    projectionMatrix(1,:) = [0, 0, 0, planePosition];
+            end
+
+            nLinks = numel(systemVisualization.linkVisualization);
+            projectionPatches = gobjects(nLinks, 1);
+            for iLink = 1:nLinks
+                linkVis = systemVisualization.linkVisualization(iLink);
+
+                if isa(linkVis, "elara.visualization.FlexibleLinkVisualization")
+                    vertices = linkVis.beamVisualization.beamPatch.Vertices;
+                    homogeneousVertices = [vertices, ones(size(vertices,1), 1)];
+                    faces = linkVis.beamVisualization.beamPatch.Faces;
+                elseif isa(linkVis, "elara.visualization.RigidLinkVisualization")
+                    vertices = linkVis.boundingBoxPatch.Vertices;
+                    homogeneousVertices = ( ...
+                        linkVis.configurationTransform.Matrix ...
+                        * linkVis.boundingBoxTransform.Matrix ...
+                        * [vertices, ones(size(vertices,1), 1)].').';
+                    faces = linkVis.boundingBoxPatch.Faces;
+                else
+                    error("elara:SystemVisualization:UnsupportedLinkVisualization", ...
+                        "Cannot project link visualization of class '%s'.", ...
+                        class(linkVis));
+                end
+
+                projectedVertices = (projectionMatrix * homogeneousVertices.').';
+                projectionPatches(iLink) = patch( ...
+                    "Parent", options.Parent, ...
+                    "Faces", faces, ...
+                    "Vertices", projectedVertices, ...
+                    "FaceColor", options.Color, ...
+                    "EdgeColor", options.Color, ...
+                    "FaceAlpha", options.FaceAlpha, ...
+                    "EdgeAlpha", options.EdgeAlpha);
             end
         end
 

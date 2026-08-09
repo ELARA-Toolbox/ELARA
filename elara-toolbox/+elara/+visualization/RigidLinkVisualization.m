@@ -14,7 +14,7 @@ classdef RigidLinkVisualization < elara.abstract.LinkVisualization
         configurationTransform  (1,1) matlab.graphics.primitive.Transform
 
         % Coordinate system objects for the reference frame(s)
-        coordSysRef     (1,1) CoordSysSE3
+        coordSysRef     (1,1) elara.visualization.CoordinateFrame
 
         % Transform object for the bounding box (relative to link COM)
         boundingBoxTransform    (1,1) matlab.graphics.primitive.Transform
@@ -79,7 +79,7 @@ classdef RigidLinkVisualization < elara.abstract.LinkVisualization
             obj = obj.drawTCPFrame(obj.configurationTransform);
 
             %% Draw body (CoM) frame
-            obj.coordSysRef = CoordSysSE3( eye(4), ...
+            obj.coordSysRef = elara.visualization.CoordinateFrame( eye(4), ...
                 'scale', 0.1, ...
                 'name', sprintf('$C_{%s}$', obj.Name), ...
                 'AxisColors', repmat(obj.Color.', [3,1]), ...

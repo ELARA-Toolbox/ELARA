@@ -130,7 +130,7 @@ classdef Workspace
                 options.createFigure  (1,1) logical = true;
             end
             if options.createFigure
-                init3Dplot("Name", options.figureName);
+                elara.visualization.initializeAxes("Name", options.figureName);
             end
 
             polyColors = lines(2);

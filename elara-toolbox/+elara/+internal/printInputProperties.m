@@ -1,8 +1,11 @@
 function tInputs = printInputProperties(system)
-    %% Display input properties of a MB system as a table
+    %% Display input properties of an ELARA system as a table
 
-    % Disable warning appearing when we convert an object to struct
-    warning('off','MATLAB:structOnObject');
+    % Disable warning appearing when we convert an object to struct;
+    % Restore the caller's warning state after constructing the display tables.
+    warningState = warning("query", "MATLAB:structOnObject");
+    warningCleanup = onCleanup(@() warning(warningState));
+    warning("off", "MATLAB:structOnObject");
 
     %% Get input information
 
@@ -42,7 +45,7 @@ function tInputs = printInputProperties(system)
                 inputType(iInput) = "Joint Actuation";
 
             case 2
-                inputType(iInput) = "Cable Actuation";
+                inputType(iInput) = "Tendon Actuation";
 
             otherwise
                 error("Joint type not defined.")

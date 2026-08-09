@@ -102,13 +102,13 @@ OCP.qMax = [inf, 0.1];
 figure("Name", "initial/final config");
 tiledlayout;
 nexttile;
-init3Dplot("createFigure", false);
+elara.visualization.initializeAxes("createFigure", false);
 MBSim.visualizeSystemConfig(OCP.q0, "createFigure", false);
 title("Initial Configuration");
 nexttile;
 MBSim.visualizeSystemConfig(OCP.qF, "createFigure", false);
 title("Final Configuration");
-init3Dplot("createFigure", false);
+elara.visualization.initializeAxes("createFigure", false);
 
 
 %% Compute Initial Guess
@@ -121,7 +121,8 @@ if COMPUTE_IG
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
     if ~isempty(OCP.x_TCP_F)
-        CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+        elara.visualization.CoordinateFrame( ...
+            elara.SE3.matrix(eye(3), OCP.x_TCP_F));
     end
     OCP.workspace.visualize("createFigure", false);
 
@@ -129,9 +130,10 @@ if COMPUTE_IG
 
     % Animate results
     if ANIMATE_IG
-        fig = init3Dplot('Name', "Animation Initial Guess");
+        fig = elara.visualization.initializeAxes('Name', "Animation Initial Guess");
         if ~isempty(OCP.x_TCP_F)
-            CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+            elara.visualization.CoordinateFrame( ...
+                elara.SE3.matrix(eye(3), OCP.x_TCP_F));
         end
         OCP.workspace.visualize("createFigure", false);
         MBSimIG.animateSimResults("figure", fig);
@@ -242,15 +244,16 @@ MBSimCasadi.results = elara.SimulationResults.fromStateTrajectory( ...
 MBSimCasadi.plotAll;
 
 % Draw snapshots
-fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-CoordSysSE3(gTCPDes);
+fig = elara.visualization.initializeAxes( ...
+    'Name', "Snapshots Solution", "NumberTitle", "off");
+elara.visualization.CoordinateFrame(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 15);
 TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 %% Animate results
-fig = init3Dplot('Name', "Animation Solution");
-CoordSysSE3(gTCPDes);
+fig = elara.visualization.initializeAxes('Name', "Animation Solution");
+elara.visualization.CoordinateFrame(gTCPDes);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 
 

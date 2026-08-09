@@ -100,13 +100,14 @@ OCP.workspace = OCP.workspace.addBoxSideLengths( ...
 % Get Simulation object from OCP
 MBSim = OCP.getSimulationObject;
 
-init3Dplot("Name", "System Visualization", "NumberTitle", "off");
+elara.visualization.initializeAxes( ...
+    "Name", "System Visualization", "NumberTitle", "off");
 
 % Visualize system in reference configuration
 MBSim.visualizeSystemRefConf("createFigure", false);
 
 % Mark final TCP position
-CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 
 % Visualize workspace
 OCP.workspace.visualize("createFigure", false);
@@ -131,8 +132,8 @@ if COMPUTE_IG
         "figureName", "Initial Guess", "plotDerivatives", true);
 
     % Animate results
-    fig = init3Dplot('Name', "Animation Initial Guess");
-    CoordSysSE3(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+    fig = elara.visualization.initializeAxes('Name', "Animation Initial Guess");
+    elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
     OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
@@ -241,13 +242,14 @@ MBSimCasadi.plotAll;
 
 % Draw snapshots
 gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
-fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-CoordSysSE3(gTCPDes);
+fig = elara.visualization.initializeAxes( ...
+    'Name', "Snapshots Solution", "NumberTitle", "off");
+elara.visualization.CoordinateFrame(gTCPDes);
 MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
 
 % Animate results
-fig = init3Dplot('Name', "Animation Solution");
-CoordSysSE3(gTCPDes);
+fig = elara.visualization.initializeAxes('Name', "Animation Solution");
+elara.visualization.CoordinateFrame(gTCPDes);
 MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
 xlim([-0.2, 0.8]);
 ylim([-0.2, 0.3]);
