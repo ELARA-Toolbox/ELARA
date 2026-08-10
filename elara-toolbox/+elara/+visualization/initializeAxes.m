@@ -25,7 +25,7 @@ function [figureHandle, axesHandle] = initializeAxes(options, figureArguments)
     hold(axesHandle, "on");
     axis(axesHandle, "equal");
     view(axesHandle, [37.5, 30]);
-    xlabel(axesHandle, "x axis");
-    ylabel(axesHandle, "y axis");
-    zlabel(axesHandle, "z axis");
+    xlabel(axesHandle, "$x$ in m", "Interpreter", "latex");
+    ylabel(axesHandle, "$y$ in m", "Interpreter", "latex");
+    zlabel(axesHandle, "$z$ in m", "Interpreter", "latex");
 end
