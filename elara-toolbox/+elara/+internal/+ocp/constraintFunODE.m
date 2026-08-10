@@ -1,6 +1,7 @@
 function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     %% Evaluate the constraint function c for a ODE discretization scheme
-    % i.e., the function c(q,u) that defines the constraints c = 0
+    % i.e., the function c(x,u) containing the dynamics equality constraints
+    % and workspace inequalities at the state nodes.
     arguments
         OCP     (1,1) elara.ocp.Problem
 
@@ -17,16 +18,21 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     simPars = OCP.simPars;
     h = OCP.h;
 
-    % Get workspace constraint functions
-    % NOTE:
-    % Workspace constraints are currently not considered for the reference
-    % implementations!
-    %[dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(system.nFrames);
+    % Get workspace constraint functions. Include the TCP position when a
+    % TCP transformation is defined for the system.
+    if system.indexTCPFrame
+        nFramesWS = system.nFrames + 1;
+        g_B_TCP = elara.SE3.matrix2Element(system.g_B_TCP);
+    else
+        nFramesWS = system.nFrames;
+        g_B_TCP = elara.SE3.Element;
+    end
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(nFramesWS);
 
 
     %% Define step constraint function
 
-    % Define Casadi RHS Function
+    % Define CasADi RHS Function
     xSym = casadi.MX.sym('x', 2*system.nDoF, 1);
     uSym = casadi.MX.sym('x', system.nInputs, 1);
     Fsym = elara.dynamics.sym.firstOrderDerivative(0, xSym, uSym, system, simPars);
@@ -51,11 +57,12 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     %% Evaluate constraints
 
     % Initialize empty arrays
-    lb_c = cell(nSteps, 1);
-    ub_c = cell(nSteps, 1);
-    c     = cell(nSteps, 1);
+    % Bounds: column 1 = dynamics, column 2 = workspace interior,
+    % column 3 = workspace exterior/obstacles.
+    lb_c = cell(nSteps, 3);
+    ub_c = cell(nSteps, 3);
     c_dyn = cell(nSteps, 1); % Holds the dynamics constraints at each time step
-    c_WS  = cell(0,2);       % Holds the workspace constraints at each time step
+    c_WS  = cell(nSteps+1,2); % Workspace constraints (interior and exterior)
     g    = cell(nSteps+1,1); % Frame configurations at each time step
 
     % All steps 1, ..., N
@@ -65,18 +72,50 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
         else
             c_dyn_k = FStep(x{k}, x{k+1}, u{k}, u{k+1});
         end
-        c{k}     = c_dyn_k;
         c_dyn{k} = c_dyn_k;
-        lb_c{k} = zeros(2*system.nDoF, 1);
-        ub_c{k} = zeros(2*system.nDoF, 1);
-        g{k} = system.computeFwdKin(x{k}(1:system.nDoF));
+        lb_c{k,1} = zeros(2*system.nDoF, 1);
+        ub_c{k,1} = zeros(2*system.nDoF, 1);
+
+        g_k = system.computeFwdKin(x{k}(1:system.nDoF));
+        g{k} = g_k;
+
+        % Workspace constraints at the current state node.
+        if system.indexTCPFrame
+            g_k_TCP = g_k(system.indexTCPFrame) * g_B_TCP;
+            x_k_WS = [[g_k.x], g_k_TCP.x];
+        else
+            x_k_WS = [g_k.x];
+        end
+
+        c_WSInt_k = dIntFun(x_k_WS);
+        c_WSExt_k = dExtFun(x_k_WS);
+
+        c_WS{k,1} = c_WSInt_k;
+        lb_c{k,2} = zeros(size(c_WSInt_k));
+        ub_c{k,2} = inf(size(c_WSInt_k));
+
+        c_WS{k,2} = c_WSExt_k;
+        lb_c{k,3} = -inf(size(c_WSExt_k));
+        ub_c{k,3} = zeros(size(c_WSExt_k));
     end
 
-    % Kinematics final step
-    g{end} = system.computeFwdKin(x{nSteps+1}(1:system.nDoF));
+    % Kinematics and workspace constraints at the final state node.
+    g_N = system.computeFwdKin(x{nSteps+1}(1:system.nDoF));
+    g{end} = g_N;
+    if system.indexTCPFrame
+        g_N_TCP = g_N(system.indexTCPFrame) * g_B_TCP;
+        x_N_WS = [[g_N.x], g_N_TCP.x];
+    else
+        x_N_WS = [g_N.x];
+    end
+
+    c_WSInt_N = dIntFun(x_N_WS);
+    c_WSExt_N = dExtFun(x_N_WS);
+    c_WS{end,1} = c_WSInt_N;
+    c_WS{end,2} = c_WSExt_N;
 
 
-    % For spline input parameterization: Add input contraints
+    % For spline input parameterization: Add input constraints
     % Todo: Not nice to do it here; better would be in the solve function
     % function, but there we don't have access to the decision variables
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))
@@ -98,11 +137,16 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     else
         c_u = cell(nSteps,0);
     end
-    c = reshape([c_dyn, c_u].', [], 1);
+    c = reshape([c_dyn, c_WS(1:nSteps,:), c_u].', [], 1);
     lb_c = reshape(lb_c.', [], 1);
     ub_c = reshape(ub_c.', [], 1);
     lb_c = vertcat(lb_c{:});
     ub_c = vertcat(ub_c{:});
+
+    % Append workspace constraints at the final state node
+    c = [c; {c_WSInt_N; c_WSExt_N}];
+    lb_c = [lb_c; zeros(size(c_WSInt_N)); -inf(size(c_WSExt_N))];
+    ub_c = [ub_c; inf(size(c_WSInt_N)); zeros(size(c_WSExt_N))];
 
     % Final constraint for u
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))

@@ -140,7 +140,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     g{end} = system.computeFwdKin(q{nSteps+1});
 
 
-    % For spline input parameterization: Add input contraints
+    % For spline input parameterization: Add input constraints
     % Todo: Not nice to do it here; better would be in the solve function
     % function, but there we don't have access to the decision variables
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))

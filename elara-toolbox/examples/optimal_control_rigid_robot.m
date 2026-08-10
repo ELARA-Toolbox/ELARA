@@ -1,12 +1,9 @@
 %% Optimal Control / Trajectory Generation for a Rigid Two-Link Robot
-% In this exmaple, the robot must follow a prescribed TCP trajectory while
-% avoiding an obstacle in the workspace.
+% In this example, the robot must follow a prescribed TCP trajectory while
+% avoiding an obstacle in the workspace. The workspace constraints are 
+% enforced at the discretization nodes
 % For comparison, the problem is solved with an RK2 and the VI
 % discretization.
-%
-% NOTE: The workspace constraints (to avoid the obstacle) are currently
-% only implemented for the VI discretization -- hence, the RK2 solution
-% ignores the obstacle.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
@@ -167,7 +164,13 @@ OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK2");
 OCP_ODE.Name = "RK2";
 x_init = [q_init; qd_init];
 
-OCP_ODE = OCP_ODE.initSolver;
+% Initialize the ODE solver.
+% Additionally show the constraint Jacobian to inspect its structure and
+% make sure it has approximately block-diagonal structure
+OCP_ODE = OCP_ODE.initSolver("showDebugPlots", true);
+
+% Plot constraint residuals of the initial guess: this will reveal a
+% violation of the workspace constraints
 OCP_ODE.plotConstraintResiduals(x_init, u_init_z, "figureName", "Constr. Res. IG");
 
 % Display cost values for the initial guess trajectory
@@ -200,7 +203,8 @@ OCP_DEL = OCP;
 OCP_DEL.Name ="VI";
 OCP_DEL.discretization = elara.ocp.DiscretizationVI;
 
-OCP_DEL = OCP_DEL.initSolver;
+% Initialize DEL solver; again inspect the constraint Jacobian
+OCP_DEL = OCP_DEL.initSolver("showDebugPlots", true);
 
 % Solve DEL OCP
 % with weights and x_TCP specified in OCP object
