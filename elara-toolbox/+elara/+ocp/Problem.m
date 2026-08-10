@@ -96,8 +96,11 @@ classdef Problem
 
         % Desired TCP pose at the final time
         % If left empty, it will not be considered
-        R_TCP_F (:,3) % Must be 3x3 rotation matrix, but can be left empty
         x_TCP_F (3,1)
+
+        % Desired rotation (not implemented yet)
+        %R_TCP_F (:,3) % Must be 3x3 rotation matrix, but can be left empty
+
 
         % Whether to add a constraint for the final time TCP position
         addTCPFinalTimeConstraint (1,1) logical = false;

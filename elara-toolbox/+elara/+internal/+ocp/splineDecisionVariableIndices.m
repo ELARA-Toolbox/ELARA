@@ -1,5 +1,5 @@
 function [indexMat_q, indexMat_z] = splineDecisionVariableIndices( ...
-        nSteps, nDoF, nInputs, nInputSplinePoints, opts)
+        nSteps, nDoF, nInputs, nInputSplinePoints)
     %% Get decision-vector indices of node variables and spline control points
     arguments
         nSteps      (1,1) double
@@ -7,10 +7,6 @@ function [indexMat_q, indexMat_z] = splineDecisionVariableIndices( ...
         nDoF        (1,1) double
         nInputs     (1,1) double
         nInputSplinePoints (1,1) double
-
-        % Whether each node contains an ODE state x = [q; qDot] (true)
-        % or only a configuration q (for VI discretizations -> false)
-        opts.isODEDiscr  (1,1) logical = false;
     end
 
     % Total number of interleaved node-variable and control-point vectors

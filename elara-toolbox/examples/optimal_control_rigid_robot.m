@@ -42,9 +42,8 @@ OCP.uMax = ones(OCP.systemNum.nInputs,1)*100;
 OCP.h = 1e-2;
 OCP.tEnd = 2;
 
-% Desired TCP pose
+% Desired TCP position
 OCP.x_TCP_F = [0.7; 0.2; 0.3];
-OCP.R_TCP_F = []; % Rotation arbitrary
 
 % Running cost
 OCP.runningCostWeights = [

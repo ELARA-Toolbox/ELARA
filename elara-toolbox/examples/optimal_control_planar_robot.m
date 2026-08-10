@@ -67,7 +67,6 @@ OCP.u0 = [];
 OCP.h = 1e-2;
 OCP.tEnd = 1;
 
-
 % Desired end configuration
 OCP.qF = [-pi/2; 0];
 OCP.addTCPFinalTimeConstraint = false;

@@ -37,9 +37,8 @@ OCP.uMax = ones(OCP.systemNum.nInputs,1)*100;
 OCP.h = 2^-6;
 OCP.tEnd = 2;
 
-% Desired TCP pose
+% Desired TCP position
 OCP.x_TCP_F = [0.55; 0.3; 0.05];
-OCP.R_TCP_F = []; % Rotation arbitrary
 
 % Running cost
 OCP.runningCostWeights = [ % Weights
@@ -76,6 +75,9 @@ MBSim = OCP.getSimulationObject;
 MBSim.visualizeSystemRefConf();
 elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 OCP.workspace.visualize("createFigure", false);
+xlim([-0.1,0.7]);
+ylim([-0.1,0.5]);
+zlim([0,0.8]);
 
 %% Compute Initial Guess
 

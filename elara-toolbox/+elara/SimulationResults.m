@@ -7,11 +7,11 @@ classdef SimulationResults
     % Technical University of Munich
     properties
         %% Simulation Results Data
-        eta   (6,:,:)   double  % se(3) frame velocities        (6, nFrames, nTimes)
+        eta   (6,:,:)   double  % se(3) frame velocities   (6, nFrames, nTimes)
         g     (4,4,:,:) double  % Frame configurations     (4, 4, nFrames, nTimes)
-        q     (:,:)     double  % Generalized coordinates          (nDoF, nTimes)
-        q_dot (:,:)     double  % Generalized velocities           (nDoF, nTimes)
-        tout  (:,1)     double  % Time values                           (nTimes, 1)
+        q     (:,:)     double  % Generalized coordinates  (nDoF, nTimes)
+        q_dot (:,:)     double  % Generalized velocities   (nDoF, nTimes)
+        tout  (:,1)     double  % Time values              (nTimes, 1)
 
 
         %% System Energies corresponding to the Simulation Results
