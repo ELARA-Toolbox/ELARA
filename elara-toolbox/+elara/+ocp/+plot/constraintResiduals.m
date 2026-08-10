@@ -54,10 +54,11 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
     semilogy(cV_ub, '.-', "DisplayName", "violation ub");
     semilogy(cV_lb, '.-', "DisplayName", "violation lb");
     title("constraint function values")
-    xlabel("time step $k$", "Interpreter", "latex");
+    xlabel("function element", "Interpreter", "latex");
     ylabel('$|c(x)|$', "Interpreter", "latex");
     legend("Interpreter", "latex", "location", "best");
     grid on;
+    xlim([0, numel(res_c)]);
 
     nexttile;
     semilogy(vecnorm(res_cDyn), "DisplayName", "sys. dyn. constraints norm");
@@ -65,6 +66,8 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
     xlabel("time step $k$", "Interpreter", "latex");
     ylabel("constraint residuals norm $||c(x)||$", "Interpreter", "latex");
     grid on;
+    xlim([0, OCP.nSteps+1]);
+
 
     if ~isempty(res_cWS_int) || ~isempty(res_cWS_ext)
         nexttile;
@@ -79,6 +82,7 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
         ylabel("constraint residuals $c(x)$", "Interpreter", "latex");
         legend("Interpreter", "latex")
         title("Workspace constraints")
+        xlim([0, OCP.nSteps+1]);
     end
     drawnow;
 end
