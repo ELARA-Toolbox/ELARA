@@ -1,13 +1,13 @@
 function [x_dot, x_ddot] = diffHigherOrder(x, h, order)
-    %% Compute first and second derivatives with Higher-Order finite differences
+    %% Compute first and second derivatives with higher-order finite differences
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        % Matrix of function values with size (n,N), where N are the
-        % number of time nodes (i.e., time steps in the columns)
+        % Matrix of function values with size (n,N), where N is the number
+        % of time nodes (minimum N depends on the requested order)
         x (:,:)
 
         % Time step
@@ -32,8 +32,8 @@ end
 function [x_dot, x_ddot] = diff1stOrder(x, h)
     %% Compute derivatives with 1st-order finite differences
     arguments
-        % Matrix of function values with size (n,N), where N are the
-        % number of time nodes (i.e., time steps in the columns)
+        % Matrix of function values with size (n,N), where N >= 3 is the
+        % number of time nodes
         x (:,:)
 
         % Time step

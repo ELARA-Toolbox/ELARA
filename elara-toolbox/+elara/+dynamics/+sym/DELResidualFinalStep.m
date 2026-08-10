@@ -7,11 +7,11 @@ function DEL_res_N = DELResidualFinalStep( ...
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        % Generalized coordinates at steps N-1 and N (nDoF, 1)
         q_N0    (:,1)
         q_N     (:,1)
 
-        % Vector of inputs (1,nInputs)
+        % Control input at the final step N (nInputs, 1)
         u_N       (:,1)
 
         % Generalized velocity at the end

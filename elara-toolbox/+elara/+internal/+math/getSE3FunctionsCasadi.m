@@ -1,5 +1,5 @@
 function f = getSE3FunctionsCasadi
-    %% Get CasADi functions for the SE3 functions
+    %% Get CasADi functions for the SE(3) functions
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -18,7 +18,7 @@ function f = getSE3FunctionsCasadi
 
     %% Symbolic variables
     % Note: The duplicate variables with -2 are used in definitions that
-    % include previously defined casadi functions
+    % Include previously defined CasADi functions
 
     omS     = casadi.SX.sym('om', 3, 1);
     omS2    = casadi.SX.sym('om2', 3, 1);

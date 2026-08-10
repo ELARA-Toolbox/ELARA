@@ -8,7 +8,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     arguments
         OCP     (1,1) elara.ocp.Problem
 
-        % Use a casadi function to evaluate the DEL in each time step
+        % Use a CasADi function to evaluate the DEL at each time step
         opts.useCasadiStepFunctions (1,1) logical = false;
 
         % Draw debug plots (constraint Jacobian etc.)?
@@ -39,7 +39,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
         assert(~isempty(OCP.x_TCP_traj), ...
             "No TCP trajectory specified but TCP tracking cost active.");
         assert(size(OCP.x_TCP_traj,2) == OCP.nSteps+1, ...
-            "TCP trajectory has wrong dimensions (nr. of time steps).");
+            "TCP trajectory must contain one column per OCP time node.");
     end
 
 
@@ -59,7 +59,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
                 X_nlp, nSteps, nDoF, ...
                 nInputs, "cell", true);
         end
-        x_C = q_C; % System states at each time step
+        x_C = q_C; % Configurations are the VI node variables
     else
         if OCP.useSplineInputs
             X_nlp = casadi.MX.sym('x', 2*nDoF*(nSteps+1) + OCP.nInputSplinePoints*nInputs, 1);
@@ -79,13 +79,13 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
         end
     end
 
-    % Compute input variables and derivatives for B-spline parameterization
+    % Evaluate controls and their derivatives from B-spline control points
     if OCP.useSplineInputs
         % Prepare stage values of the input variables
         % (= sub-steps in fractions of h)
         stageVals = OCP.discretization.timeStepStageValues;
 
-        % Get input values at time step
+        % Evaluate the spline at all requested node and stage times
         [B, B_dt, B_ddt] = OCP.getInputSplineBasisMatrix("stageValues", stageVals);
         u_C = cell(size(B,1),1);
         ud_C = cell(size(B,1),1);
@@ -127,10 +127,10 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     tic;
 
     if OCP.discretization.type == "varint"
-        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.internal.ocp.constraintFunDEL(OCP, x_C, u_C, ...
+        [c, lb_c, ub_c, g, c_dyn, c_WS] = elara.internal.ocp.constraintFunDEL(OCP, x_C, u_C, ...
             "useCasadiStepFunctions", opts.useCasadiStepFunctions);
     else
-        [c, lb_c, ub_c, g, c_DEL, c_WS] = elara.internal.ocp.constraintFunODE(OCP, x_C, u_C);
+        [c, lb_c, ub_c, g, c_dyn, c_WS] = elara.internal.ocp.constraintFunODE(OCP, x_C, u_C);
     end
     g_F = g{end};
 
@@ -157,7 +157,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     tMeas = toc;
     fprintf("took %.3f s.\n", tMeas);
 
-    % Plot constraint jacobian for debugging
+    % Plot the constraint Jacobian for debugging
     if opts.showDebugPlots
         figure("Name", "Jacobian Constraints", "NumberTitle", "off");
         spy(jacobian(c, X_nlp),5)
@@ -176,7 +176,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     wR = casadi.MX.sym('wR', 5,1);
     JR = cell(5,1);
 
-    % TPC trajectory tracking cost
+    % TCP trajectory-tracking cost
     J_TCP_tr = casadi.MX.zeros(1,1);
     if OCP.runningCostActive(5)
         for iStep = 1:OCP.nSteps + 1
@@ -234,8 +234,8 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     constrDef.Fun_c = casadi.Function('c', ...
         {X_nlp, x_TCP_F}, {c}, {'x_nlp', 'x_TCP_F'}, {'c'} ...
         );
-    constrDef.Fun_cDyn = casadi.Function('cDEL', ...
-        {X_nlp},{horzcat(c_DEL{:})}, {'x_nlp'}, {'cDEL'} ...
+    constrDef.Fun_cDyn = casadi.Function('cDyn', ...
+        {X_nlp},{horzcat(c_dyn{:})}, {'x_nlp'}, {'cDyn'} ...
         );
     constrDef.Fun_cWS_int  = casadi.Function('cWS_int', ...
         {X_nlp, x_TCP_F},{horzcat(c_WS{:,1})}, ...

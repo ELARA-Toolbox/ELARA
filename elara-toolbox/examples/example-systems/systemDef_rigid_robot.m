@@ -16,9 +16,6 @@ function links = systemDef_rigid_robot(opts)
     %% Define link geometry
 
     % Link lengths
-    % l(1) = 0.2;
-    % l(2) = 0.5;
-    % l(3) = 0.5;
     l = opts.l;
 
     % Constant transformations in the joints
@@ -43,7 +40,7 @@ function links = systemDef_rigid_robot(opts)
         g_COM_J2(:,:,iLink) = g_J1_COM(:,:,iLink) \ g_J1_J2(:,:,iLink);
     end
 
-    % Check SE3 arrays
+    % Validate the SE(3) arrays
     elara.internal.validation.mustBeSE3Matrix(g_J_const);
     elara.internal.validation.mustBeSE3Matrix(g_J1_COM);
     elara.internal.validation.mustBeSE3Matrix(g_COM_J2);

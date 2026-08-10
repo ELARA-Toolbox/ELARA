@@ -1,6 +1,6 @@
 function omega = cayInv( Lambda )
     %% Inverse of the Cayley map for SO(3)
-    % Implements the inverse Cayley map for SO(3): cayInv : SO3(3) -> so(3)
+    % Implements the inverse Cayley map for SO(3): cayInv : SO(3) -> so(3)
     %
     % Source: [Dem+14, p.9], eq. 15
     %
@@ -20,4 +20,3 @@ function omega = cayInv( Lambda )
 
     omega = elara.SO3.skewInv(omegaH);
 end
-

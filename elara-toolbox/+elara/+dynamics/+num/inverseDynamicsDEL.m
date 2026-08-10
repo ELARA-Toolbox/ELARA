@@ -1,5 +1,5 @@
 function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
-    %% Compute inverse dynamics for given coordinate trajectory using DEL Equs.
+    %% Compute inverse dynamics for a configuration trajectory using the discrete Euler-Lagrange equations
     arguments
         system  (1,1) elara.SystemNum
         simPars (1,1) elara.SimulationParameters
@@ -16,7 +16,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
         ubu      (:,1) double
     end
 
-    % Nr. of time steps
+    % Number of time steps
     nSteps = size(q, 2) - 1;
 
     % Output time vector
@@ -58,7 +58,6 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
             system, res_0/(1-a), q(:,1), lbu, ubu);
 
         solInfo.resNorm(1)  = solInfo_1.resNorm;
-        %solInfo.residual(1) = solInfo_1.residual;
         solInfo.rank_B(1) = rank(system.computeInputMatrix(q(:,1)));
         solInfo.cond_B(1) = cond(system.computeInputMatrix(q(:,1)));
     end
@@ -89,7 +88,6 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
                 system, res_k, q(:,k), lbu, ubu);
 
             solInfo.resNorm(k)  = solInfo_k.resNorm;
-            %solInfo.residual(k) = solInfo_k.residual;
             solInfo.rank_B(k) = rank(system.computeInputMatrix(q(:,k)));
             solInfo.cond_B(k) = cond(system.computeInputMatrix(q(:,k)));
         end

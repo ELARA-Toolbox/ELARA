@@ -14,7 +14,7 @@ function tFrames = printFrameProperties(system)
 
     % Construct table
     tIndex = table((1:system.nFrames).');
-    tIndex.Properties.VariableNames = "Nr.";
+    tIndex.Properties.VariableNames = "Number";
     tFrames = [tIndex, struct2table(frameStr)];
 
     disp("System Frame Properties:")
@@ -25,8 +25,8 @@ function s = prepareStruct(s, nFrames)
     % Prepare the struct for display output:
     % * Check a struct for fields that are row vectors and transpose
     %   them to obtain column vectors
-    % * Remove fields that are empty or have wrong dimensions to display
-    %   them in a table
+    % * Remove empty fields and fields whose dimensions are incompatible
+    %   with a table
     fieldNames = fields(s);
 
     for iFld = 1:length(fieldNames)
@@ -35,7 +35,7 @@ function s = prepareStruct(s, nFrames)
             s.(fieldNames{iFld}) = s.(fieldNames{iFld}).';
         end
 
-        % Transpose matrices with wrong dimensions
+        % Transpose matrices stored with frames along the second dimension
         if size(s.(fieldNames{iFld}),2) == nFrames && size(s.(fieldNames{iFld}),3) == 1
             s.(fieldNames{iFld}) = s.(fieldNames{iFld}).';
         end

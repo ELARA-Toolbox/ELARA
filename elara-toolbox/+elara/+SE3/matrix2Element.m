@@ -1,5 +1,5 @@
 function gSE3 = matrix2Element(gNum)
-    %% Convert array of 4x4 SE3 Matrices to array of SE3 objects
+    %% Convert an array of 4x4 matrices to an array of SE(3) elements
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -18,7 +18,7 @@ function gSE3 = matrix2Element(gNum)
         return;
     end
     if isscalar(dims)
-        % Add singleton dimension if the input array is just a SE3 vector
+        % Add a singleton dimension if the input is an SE(3) vector
         % so that createArray outputs correct dimensions
         dims = [dims, 1];
     end

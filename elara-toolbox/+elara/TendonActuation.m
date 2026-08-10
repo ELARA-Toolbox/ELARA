@@ -45,7 +45,7 @@ classdef TendonActuation
                 sNodes       (:,1) double {mustBeNonnegative}
             end
             arguments(Output)
-                % SE3 transformation corresponding to the (tangential)
+                % SE(3) transformation corresponding to the tangential
                 % Frenet-Serret frame at the  intersection of the cable
                 % path with the cross-section plane; relative to the
                 % backbone
@@ -65,10 +65,6 @@ classdef TendonActuation
             assert(length(obj.x_td_funs) == length(obj.x_td_ds_funs));
             assert(length(obj.x_td_funs) == length(obj.x_td_dds_funs));
             assert(length(obj.x_td_funs) == length(obj.LTermination));
-
-            % Vector with node arc length positions
-            %l = L / nSegments;
-            %sNodes = 0:l:L;
 
             nNodes  = length(sNodes);
             nCables = length(obj.x_td_funs);

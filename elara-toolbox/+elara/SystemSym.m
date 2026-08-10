@@ -1,5 +1,5 @@
 classdef SystemSym < elara.abstract.System
-    %% elara.SystemSym class for symbolic variables
+    %% Symbolic representation of an ELARA multibody system
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.
     %
@@ -68,7 +68,8 @@ classdef SystemSym < elara.abstract.System
             end
 
             nSegments = numel(linkFrames);
-            assert(size(xi,2) == nSegments, "Wrong dimensions for xi.")
+            assert(size(xi,2) == nSegments, ...
+                "The deformation matrix xi must have one column per beam segment.")
 
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
@@ -133,8 +134,8 @@ classdef SystemSym < elara.abstract.System
 
             % Get coordinates and store them in array of size
             % (nAllwd,nSegments)
-            % Note: We assume all segments have same nr. of dof/allowed
-            %       modes
+            % Note: We assume all segments have the same number of allowed
+            %       deformation modes.
             nAllwd = system.frames.nDof(linkFrames(1));
             psi = reshape(q(qIndices), nAllwd, nSegments);
 
@@ -154,13 +155,14 @@ classdef SystemSym < elara.abstract.System
                 q       (:,1)
             end
             arguments (Output)
-                % SE3 Matrices with relative configurations between body frames
+                % SE(3) elements with relative configurations between body frames
                 g_rel   (:,1) elara.SE3.Element
             end
             f = elara.internal.math.getSE3Functions(q);
             g_rel = createArray(system.nFrames,1, "elara.SE3.Element");
             for iFrm = 1:system.nFrames
-                indices = double(system.frames.qIndices(1,iFrm):system.frames.qIndices(2,iFrm)); % Casadi fix: Explicitly convert to double; unit16 integers do not work as indices
+                % CasADi does not accept uint16 values as indices.
+                indices = double(system.frames.qIndices(1,iFrm):system.frames.qIndices(2,iFrm));
                 qi = q(indices);
                 switch system.frames.jointType(iFrm)
                     case 1
@@ -301,7 +303,7 @@ classdef SystemSym < elara.abstract.System
             arguments (Output)
                 % Jacobian matrices with dimensions
                 % 6 x (nAllwd_1*nSegments1 + ... + nAllwdB*nSegmentsB + nLinks) x nFrames
-                % where B is the nr. of flexible beams in the system
+                % where B is the number of flexible beams in the system
                 J       (:,:) cell
 
                 % Relative configurations between body frames
@@ -424,8 +426,6 @@ classdef SystemSym < elara.abstract.System
             for iFrm = 1:system.nFrames
                 if system.frames.uIndices(1,iFrm)
                     uIndices = double(system.frames.getUIndices(iFrm));
-                    %qIndices = double(system.frames.getQIndices(iFrm));
-
                     switch system.frames.jointType(iFrm)
                         case 1
                             % Rigid joint (scalar input)
@@ -529,7 +529,7 @@ classdef SystemSym < elara.abstract.System
 
         function eta_k = computeDiscreteAbsoluteVelocities(system, g_rel_k, g_rel_k1, h)
             %% Compute discrete absolute velocities in the interval (k,k+1)
-            % i.e., compute absolute body-fixed velocities eta in se3
+            % i.e., compute absolute body-fixed velocities eta in se(3)
             % (vector form) from given relative transformations at time
             % instances k and k+1
             arguments (Input)

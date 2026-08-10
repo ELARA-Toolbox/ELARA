@@ -1,16 +1,16 @@
 function fh = constraintResiduals(OCP, x, u_z, opts)
-    %% Plot OCP Constraints residuals for a given trajectory
+    %% Plot OCP constraint residuals for a given trajectory
     arguments
         OCP         (1,1) elara.ocp.Problem
 
-        % State trajectory
-        % For varInt discretization: (nDoF, nSteps+1)
-        % For ODE discretization:    (2*nDoF, nSteps+1)
+        % Configuration or state trajectory
+        % Variational discretization: configurations q, (nDoF, nSteps+1)
+        % ODE discretization: states x = [q; qDot], (2*nDoF, nSteps+1)
         x       (:,:) double
 
-        % Control parameters trajectory
-        % Direct parameterization: (nInputs, nSteps+1) (u_sol_z = u_sol)
-        % Spline parameterization: (nInputs, nSplinePoints)
+        % Control decision variables
+        % Direct parameterization: time-node values, (nInputs, nSteps+1)
+        % Spline parameterization: B-spline control points (nInputs, nSplinePoints)
         u_z     (:,:) double
 
         opts.figureName (1,1) string = "Constraint Residuals";
@@ -20,23 +20,20 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
     %% Compute residuals
 
     if OCP.useSplineInputs
-        xVec = elara.internal.ocp.packSplineDecisionVariables(x, u_z);
+        decisionVector = elara.internal.ocp.packSplineDecisionVariables(x, u_z);
     else
-        xVec = elara.internal.ocp.packNodeDecisionVariables(x, u_z);
+        decisionVector = elara.internal.ocp.packNodeDecisionVariables(x, u_z);
     end
-    res_c = full(constrDef.Fun_c(xVec, OCP.x_TCP_F));
-    res_cDyn = full(constrDef.Fun_cDyn(xVec));
-    res_cWS_int = full(constrDef.Fun_cWS_int(xVec, OCP.x_TCP_F));
-    res_cWS_ext = full(constrDef.Fun_cWS_ext(xVec, OCP.x_TCP_F));
+    res_c = full(constrDef.Fun_c(decisionVector, OCP.x_TCP_F));
+    res_cDyn = full(constrDef.Fun_cDyn(decisionVector));
+    res_cWS_int = full(constrDef.Fun_cWS_int(decisionVector, OCP.x_TCP_F));
+    res_cWS_ext = full(constrDef.Fun_cWS_ext(decisionVector, OCP.x_TCP_F));
 
     % Compute violations of lower and upper bounds
     cV_ub = nan(size(res_c));
     cV_ub(res_c>constrDef.ub_c) = abs(res_c(res_c>constrDef.ub_c) - constrDef.ub_c(res_c>constrDef.ub_c));
     cV_lb = nan(size(res_c));
     cV_lb(res_c<constrDef.lb_c) = abs(res_c(res_c<constrDef.lb_c) - constrDef.lb_c(res_c<constrDef.lb_c));
-
-    %disp("Norm constraint function c(x):")
-    %disp(norm(abs(res_c)));
 
     %% Plot
 
@@ -51,9 +48,9 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
     nexttile;
     semilogy(abs(res_c), "DisplayName", "$c(x)$");
     hold on;
-    semilogy(cV_ub, '.-', "DisplayName", "violation ub");
-    semilogy(cV_lb, '.-', "DisplayName", "violation lb");
-    title("constraint function values")
+    semilogy(cV_ub, '.-', "DisplayName", "upper-bound violation");
+    semilogy(cV_lb, '.-', "DisplayName", "lower-bound violation");
+    title("Constraint function values")
     xlabel("function element", "Interpreter", "latex");
     ylabel('$|c(x)|$', "Interpreter", "latex");
     legend("Interpreter", "latex", "location", "best");
@@ -61,8 +58,8 @@ function fh = constraintResiduals(OCP, x, u_z, opts)
     xlim([0, numel(res_c)]);
 
     nexttile;
-    semilogy(vecnorm(res_cDyn), "DisplayName", "sys. dyn. constraints norm");
-    title("norm system dynamics constraint residuals")
+    semilogy(vecnorm(res_cDyn), "DisplayName", "dynamics-constraint norm");
+    title("System-dynamics constraint residual norms")
     xlabel("time step $k$", "Interpreter", "latex");
     ylabel("constraint residuals norm $||c(x)||$", "Interpreter", "latex");
     grid on;

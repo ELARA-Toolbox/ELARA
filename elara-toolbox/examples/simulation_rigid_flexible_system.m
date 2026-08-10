@@ -38,7 +38,7 @@ q0 = MBSim.system.setJointAngles(deg2rad([-30,90]));
 MBSim.parameters.q0 = q0;
 MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
-% Visualize initial config
+% Visualize the initial configuration
 fig = MBSim.visualizeSystemConfig(q0, "figureName", "Visualization Initial Config");
 title("Initial Configuration", "Interpreter", "latex");
 xlim([0, 1.5]);
@@ -76,7 +76,6 @@ MBSimVI.animateSimResults("figureName", "Animation VI");
 %% Integration with ODE solver
 
 MBSimODE = MBSim;
-%MBSimODE.parameters.tEnd = 3;
 
 % Solver settings
 MBSimODE.integrator = elara.integration.ODEDirect;

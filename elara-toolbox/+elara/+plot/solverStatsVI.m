@@ -26,17 +26,17 @@ function figHandle = solverStatsVI(simRes, opts)
         grid on
         xlabel(ax, 'time $t$ / s', 'interpreter', 'latex')
 
-        % Nr. of iterations and error flag of the implicit solver
+        % Iteration count and error flag of the implicit solver
         ax = nexttile(t);
         yyaxis left
         plot(ax, simRes.tout, simRes.solverIterations', '-o');
-        ylabel('Nr. of iterations', 'Interpreter','latex');
+        ylabel('Number of iterations', 'Interpreter','latex');
 
         yyaxis right
         plot(ax, simRes.tout, simRes.solverExitFlag', '-o', 'MarkerSize', 3)
         ylabel('Error Flag', 'Interpreter','latex');
 
-        title(ax, 'Nr. of Iteration and Error Flag', 'interpreter', 'latex')
+        title(ax, 'Iteration Count and Error Flag', 'interpreter', 'latex')
         xlim(ax, [0, simRes.tout(end)])
         grid on
 

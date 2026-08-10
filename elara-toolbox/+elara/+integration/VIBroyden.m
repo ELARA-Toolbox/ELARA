@@ -15,11 +15,11 @@ classdef VIBroyden < elara.abstract.Integrator
         % Solver error margin at which the simulation is cancelled
         toleranceLimit              (1,1) double = 1e-8;
 
-        % Max. nr. of iterations of the implicit solver
+        % Maximum number of implicit-solver iterations
         maxIterations               (1,1) double = 100;
 
         % For Broyden integrator:
-        % Nr. of iterations that are allowed in one time step before the
+        % Number of iterations allowed in one time step before the
         % Jacobian matrix is recomputed
         JacobianIterationThreshold  (1,1) double = 4;
 
@@ -90,17 +90,16 @@ classdef VIBroyden < elara.abstract.Integrator
 
             % Compute some metadata values of the simulation
             simRes.computationTime = tSim;
-            % obj.results.getSimMetaData();
 
             if obj.showConsoleOutput
-                % Display meta data
+                % Display metadata
                 if obj.accurateTiming
                     fprintf('   Total integration time (timeit):     %f s\n', tSim);
                 else
                     fprintf('   Total integration time (tictoc):     %f s\n', tSim);
                 end
                 fprintf('   Simulation end time:                 %.3f s\n', simRes.tout(end));
-                fprintf('   Nr. of successful time steps:        %d\n', length(simRes.tout));
+                fprintf('   Number of successful time steps:     %d\n', length(simRes.tout));
                 fprintf('   Time step:                           %.3e s = 2^%.2f s\n', obj.h, log2(obj.h));
                 fprintf('   Approx. comp. time per step:         %.3e s\n', tSim / length(simRes.tout))
                 fprintf('   Iteration Count (Avg/Min/Max/Total): %.4f / %d / %d / %d\n', ...

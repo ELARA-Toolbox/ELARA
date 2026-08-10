@@ -4,9 +4,9 @@ function [res_N, eta_N0] = DELResidualFinalStep(system, h, simPars, q_N0, q_N, u
         system  (1,1) elara.abstract.System
         h       (1,1) 
         simPars (1,1) elara.SimulationParameters
-        q_N0    (:,1) % Coordinate variable at time step N
-        q_N     (:,1) % Coordinate variable at (final) time step N+1
-        u_N     (:,1) % Input variable at time step N
+        q_N0    (:,1) % Generalized coordinates at step N-1
+        q_N     (:,1) % Generalized coordinates at the final step N
+        u_N     (:,1) % Control input at the final step N
 
         qDotEnd (:,1) % Final velocity
 

@@ -1,23 +1,23 @@
 function [res, g, g_rel] = residual(system, simPars, q, u)
-    %% Compute Residual of Static Equilbrium Equation
+    %% Compute the static-equilibrium residual
     arguments
         % Multibody system
         system   (1,1) elara.SystemSym
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF)
+        % Generalized coordinates (nDoF, 1)
         q       (:,1)
 
-        % Vector of inputs (1,nInputs)
+        % System inputs (nInputs, 1)
         u       (:,1)
     end
 
     % Check argument sizes
     assert( size(q,1) == system.nDoF, ...
-        "Vector of generalized coordinates has wrong dimensions.");
+        "The generalized-coordinate vector must contain nDoF elements.");
     assert( size(u,1) == system.nInputs, ...
-        "Vector of inputs has wrong dimensions.");
+        "The input vector must contain nInputs elements.");
 
     % Forward Kinematics and Jacobians
     [g, g_rel] = system.computeFwdKin(q);
@@ -35,7 +35,6 @@ function [res, g, g_rel] = residual(system, simPars, q, u)
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    %f_frame_b = -f_frame_b + elara.dynamics.num.bodyFixedFrameForces(g, f_frame_s, system, simPars);
     f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(system, g, f_frame_s, simPars.g);
 
     % Compute sum of generalized forces
@@ -67,5 +66,4 @@ function [res, g, g_rel] = residual(system, simPars, q, u)
 
     res = vertcat(resC{:}) + f_gen;
 
-    %x = {g.x};
 end

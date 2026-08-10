@@ -21,7 +21,7 @@ classdef DiscretizationVI < elara.abstract.OCPDiscretization
                 OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
-                % each column represents one time step
+                % each column represents one time node
                 x   (:,:)
             end
             % Trapezoidal rule
@@ -36,15 +36,15 @@ classdef DiscretizationVI < elara.abstract.OCPDiscretization
                 OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
-                % each column represents one time step
+                % each column represents one time node
                 x   (:,:)
 
                 % Placeholder argument for consistency with class function
                 % interface
                 ~
             end
-            % No special integration with spline values (no intermediate
-            % stage values); just use regular integration function
+            % No special integration is required for spline controls because
+            % the VI has no intermediate stage values.
             J = obj.integrateCostFunctionValue(OCP, x);
         end
     end

@@ -1,10 +1,10 @@
 function Z = smallCoAd(xi)
-    % small Co-ad representation (6x6 matrix) of an element of se3
+    % Small co-adjoint representation of an element of se(3)
     % after [Sel05, p. 68]
-    % convention for se3 elements in vector form: [omega; v] (also [Lee08] convention)
+    % Convention for se(3) elements in vector form: [omega; v] (also [Lee08])
     % (see p. 56 in [Sel05])
     %
-    % Input xi: se3 element in vector form
+    % Input xi: se(3) element in vector form
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

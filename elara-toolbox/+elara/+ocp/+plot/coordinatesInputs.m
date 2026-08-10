@@ -1,5 +1,5 @@
 function fhs = coordinatesInputs(OCP, q, u, opts)
-    %% Plot coordinates and inputs of a solved OCP
+    %% Plot configurations and controls of a solved OCP
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -11,7 +11,7 @@ function fhs = coordinatesInputs(OCP, q, u, opts)
         % Coordinates with dimensions (nDoF, nSteps+1)
         q    (:,:) double
 
-        % Inputs with dimensions (nDoF, nSteps+1)
+        % Controls with dimensions (nInputs, nSteps+1)
         u    (:,:) double
 
         % Coordinate velocities
@@ -46,7 +46,7 @@ function fhs = coordinatesInputs(OCP, q, u, opts)
 
     % Coordinates
     nexttile;
-    plot(OCP.tout, q)
+    plot(OCP.tout, q.')
     grid on
     xlabel('time $t$ in s', 'Interpreter', 'latex');
     ylabel('$q^k$', 'Interpreter', 'latex');
@@ -62,34 +62,34 @@ function fhs = coordinatesInputs(OCP, q, u, opts)
 
     if ~isempty(opts.q_dot)
         hold on;
-        plot(OCP.tout, opts.q_dot, "--");
+        plot(OCP.tout, opts.q_dot.', "--");
     end
     ax.ColorOrder = lines(size(q, 1));
     xlabel('time $t$ in s', 'Interpreter', 'latex');
     grid on
 
-    % Inputs
+    % Controls
     ax = nexttile;
-    plot(OCP.tout, u);
+    plot(OCP.tout, u.');
     ylabel('$u^k$', 'Interpreter', 'latex');
-    title("inputs", "interpreter", "latex");
+    title("controls", "interpreter", "latex");
     ax.ColorOrder = lines(size(u, 1));
     xlabel('time $t$ in s', 'Interpreter', 'latex');
     grid on
-    legend(arrayfun(@(x) sprintf("input $u_{%d}$", x), 1:size(u,1)), 'Interpreter', 'latex');
+    legend(arrayfun(@(x) sprintf("control $u_{%d}$", x), 1:size(u,1)), 'Interpreter', 'latex');
 
-    % Add markers to indicate B-spline control points
+    % Mark the Greville abscissae on the evaluated control trajectory
     if OCP.useSplineInputs
         % Get Greville abscissae points as time values for the control
         % points (average time value of the time span influenced by a
         % control point)
         [~,~,~,tCP] = OCP.getInputSplineBasisMatrix;
 
-        % Get data value at Greville points
-        uCP = interp1(OCP.tout, u.', tCP.');
+        % Evaluate the control trajectory at the Greville abscissae
+        uAtGreville = interp1(OCP.tout, u.', tCP.');
 
         hold on;
-        plot(tCP, uCP, "o", "HandleVisibility", "off");
+        plot(tCP, uAtGreville, "o", "HandleVisibility", "off");
     end
 
 
@@ -110,7 +110,7 @@ function fhs = coordinatesInputs(OCP, q, u, opts)
         % See https://www.mathworks.com/matlabcentral/answers/2044242-how-to-create-tiledlayout-grid-in-vertical-order
         % for "tileindexing"
         tiledlayout(3, 2, 'TileIndexing', 'columnmajor');
-        plotDerivative(OCP.tout, u, ud, udd, "inputs", "u");
+        plotDerivative(OCP.tout, u, ud, udd, "controls", "u");
         plotDerivative(OCP.tout, q, qd, qdd, "coordinates", "q");
     end
 end
@@ -130,7 +130,7 @@ function ax = plotDerivative(tout, x, xd, xdd, varName, varSymbol)
 
     % Variable
     ax(1) = nexttile;
-    plot(tout, x)
+    plot(tout, x.')
     grid on
     xlabel('time $t$ in s', 'Interpreter', 'latex');
     ylabel(sprintf("$%s$", varSymbol), 'Interpreter', 'latex');
@@ -139,7 +139,7 @@ function ax = plotDerivative(tout, x, xd, xdd, varName, varSymbol)
 
     % First derivative
     ax(2) = nexttile;
-    plot(tout, xd)
+    plot(tout, xd.')
     grid on
     xlabel('time $t$ in s', 'Interpreter', 'latex');
     ylabel(sprintf("$\\dot{%s}$", varSymbol), 'Interpreter', 'latex');
@@ -147,7 +147,7 @@ function ax = plotDerivative(tout, x, xd, xdd, varName, varSymbol)
 
     % Second derivative
     ax(3) = nexttile;
-    plot(tout, xdd)
+    plot(tout, xdd.')
     grid on
     xlabel('time $t$ in s', 'Interpreter', 'latex');
     ylabel(sprintf("$\\ddot{%s}$", varSymbol), 'Interpreter', 'latex');

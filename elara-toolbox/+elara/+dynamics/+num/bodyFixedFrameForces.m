@@ -1,5 +1,5 @@
 function f_frame_b = bodyFixedFrameForces(g, f_frame_s, system, simPars)
-    %% Compute the body-fixed forces for all frames: Gravity and Ext. Forces
+    %% Compute gravity and external forces in body-fixed coordinates for all frames
     %
     f_frame_b = zeros(6,system.nFrames);
     for iFrm = 1:system.nFrames

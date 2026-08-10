@@ -1,10 +1,10 @@
 function xi = smallAdInv(Z)
-    % extract se3 element from small ad representation
+    % Extract an se(3) element from its small adjoint representation
     % after [Sel05, p. 68]
-    % convention for se3 elements in vector form: [omega; v]
-    % (see p. 56 in [Sel05]
+    % Convention for se(3) elements in vector form: [omega; v]
+    % (see p. 56 in [Sel05])
 
-    % Output: se3 element in vector form!
+    % Output: se(3) element in vector form
 
     arguments
         Z (6,6)

@@ -6,11 +6,11 @@ function DEL_res_k = DELResidualInitialStep(system, simPars, q_0, q_1, u_0, qDot
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        % Generalized coordinates at steps 0 and 1 (nDoF, 1)
         q_0     (:,1)
         q_1     (:,1)
 
-        % Vector of inputs (1,nInputs)
+        % Control input at step 0 (nInputs, 1)
         u_0     (:,1)
 
         % Initial generalized velocity

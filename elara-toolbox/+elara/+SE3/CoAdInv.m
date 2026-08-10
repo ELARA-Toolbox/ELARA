@@ -1,12 +1,12 @@
 function CoAdInv = CoAdInv(g)
-    % Large inverse Co-Ad representation (6x6 matrix) of an element of SE3
-    % Follows convention for se3 elements in vector form: [omega; v].
+    % Large inverse co-adjoint representation of an element of SE(3)
+    % Follows the convention for se(3) elements in vector form: [omega; v].
     %
     % This inverse can be derived easily using the matrix representation of
-    % an inverse SE3 element and the identity (Rp)^ = R(p^)R^T from
+    % an inverse SE(3) element and the identity (Rp)^ = R(p^)R^T from
     % [LLM18, p.10].
     %
-    % Input g: SE3 element in (4x4) matrix representation
+    % Input g: SE(3) element in (4x4) matrix representation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -20,7 +20,7 @@ function CoAdInv = CoAdInv(g)
     R = g(1:3, 1:3);
     p = g(1:3, 4);
 
-    % Inverse Co-Ad representation
+    % Inverse co-adjoint representation
     CoAdInv = [
         R,        elara.SO3.skew(p)*R;
         zeros(3), R

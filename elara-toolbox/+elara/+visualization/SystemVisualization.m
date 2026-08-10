@@ -32,7 +32,7 @@ classdef SystemVisualization < handle
 
                 links   (1,:) elara.abstract.Link = elara.RigidLink.empty();
 
-                % Array of SE3 matrices defining the system's configuration
+                % Array of SE(3) matrices defining the system configuration
                 g       (4,4,:) double {elara.internal.validation.mustBeSE3Matrix} = zeros(4,4,0)
 
                 % Additional options
@@ -43,8 +43,8 @@ classdef SystemVisualization < handle
                 options.showTendons        (1,1) logical = true;
 
                 % Function handle for a color map used to specify link 
-                % colors in the form colors = cmap(n), where n is the nr.
-                % of link
+                % colors in the form colors = cmap(n), where n is the link
+                % index
                 options.linkColorMap       (1,1) function_handle = @lines;
             end
 
@@ -62,7 +62,7 @@ classdef SystemVisualization < handle
                 % If configuration is given: Draw given configuration
                 systemVisualization = systemVisualization.updateConfiguration(g);
             else
-                % If no configuration is given: Draw reference config.
+                % If no configuration is given, draw the reference configuration.
                 systemVisualization = systemVisualization.visualizeReferenceConfig;
             end
 
@@ -318,7 +318,7 @@ classdef SystemVisualization < handle
             arguments
                 systemVisualization     (1,1)
 
-                % Array of SE3 configuration matrices for simulation results
+                % Array of SE(3) configuration matrices from simulation results
                 % dimensions (4,4,nFrames,nSteps)
                 g       (4,4,:,:) double
 

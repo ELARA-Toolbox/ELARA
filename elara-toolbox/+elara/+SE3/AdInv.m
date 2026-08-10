@@ -1,8 +1,8 @@
 function AdInv = AdInv(g)
-    % *Inverse* large Ad representation (6x6 matrix) of an element of SE3
-    % Follows convention for se3 elements in vector form: [omega; v]
+    % Inverse large adjoint representation of an element of SE(3)
+    % Follows the convention for se(3) elements in vector form: [omega; v]
     %
-    % Input g: SE3 element in (4x4) matrix representation
+    % Input g: SE(3) element in (4x4) matrix representation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

@@ -1,19 +1,16 @@
 classdef (Abstract) Integrator
-    %% Abstract class defining an integrator for a ELARA Simulation
+    %% Abstract class defining an integrator for an ELARA simulation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
     % TUM School of Engineering and Design
     % Technical University of Munich
     properties
-        % Whether or not to print simulation meta data to the
-        % console
+        % Whether to print simulation metadata to the console
         showConsoleOutput (1,1) logical = true;
 
-        % if true, time is measured using an simulation run that is
-        % measured using the timeit() function, which results in
-        % much higher overall runtime (but is more accurate, of
-        % course)
+        % If true, benchmark integration with timeit. This improves timing
+        % accuracy but increases the overall runtime.
         accurateTiming (1,1) logical = false;
     end
     properties(Abstract,Constant)
@@ -24,15 +21,15 @@ classdef (Abstract) Integrator
 
     methods (Abstract)
         % Main integration function; must have arguments and output
-        %   simRes = simulateSystem(obj, MBSim)
+        %   simRes = simulateSystem(obj, simulation)
         % with classes:
         %   simRes: elara.SimulationResults
-        %   MBSim: MB-Simulation
+        %   simulation: elara.Simulation
         simulateSystem
 
         % Function to plot the solver metadata/statistics from a completed
-        % simulaton. Must have the signature:
-        %  figureHandles = plotSolverStats(obj, MBSim)
+        % simulation. Must have the signature:
+        %  figureHandles = plotSolverStats(obj, simulation)
         plotSolverStats
     end
 end

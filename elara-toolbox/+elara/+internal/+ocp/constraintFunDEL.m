@@ -4,11 +4,15 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     arguments
         OCP     (1,1) elara.ocp.Problem
 
-        % Cell vectors of coordinates and inputs at time steps
-        q       (:,1) cell % (nDof,    nSteps+1)
-        u       (:,1) cell % (nInputs, nSteps+1)
+        % Configuration vectors at the time nodes. Each cell contains an
+        % nDoF-by-1 vector.
+        q       (:,1) cell
 
-        % Use a casadi function to evaluate the DEL in each time step
+        % Control vectors at the time nodes. Each cell contains an
+        % nInputs-by-1 vector.
+        u       (:,1) cell
+
+        % Use a CasADi function to evaluate the DEL at each time step
         opts.useCasadiStepFunctions    (1,1) logical = false;
     end
 
@@ -27,10 +31,10 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     % Get workspace constraint functions
     % Include TCP position in workspace constraints if TCP is defined
     if system.indexTCPFrame
-        % Nr. of frames included in the workspace constraints
+        % Number of frames included in the workspace constraints
         nFramesWS = system.nFrames + 1;
 
-        % TCP transf. as SE3 Element
+        % TCP transformation as an SE(3) element
         g_B_TCP = elara.SE3.matrix2Element(OCP.systemSym.g_B_TCP);
     else
         nFramesWS = system.nFrames;
@@ -205,7 +209,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     ub_c = [ub_c; inf(size(c_WSInt_k));  zeros(size(c_WSExt_k))];
     c_WS = [c_WS; {c_WSInt_k, c_WSExt_k}];
 
-    % Final constraint for u
+    % Control limit at the final time node
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))
         c{end+1} = u{end};
         if ~isempty(OCP.uMin)

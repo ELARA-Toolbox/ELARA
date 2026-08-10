@@ -1,6 +1,5 @@
 function simRes = getResultsFromStateTrajectory(system, tout, q, q_dot)
-    %% Get simRes object from trajectory of states q, q_dot
-    % E.g., to post-process integration results from ODE integrator
+    %% Create simulation results from configuration and velocity trajectories
     arguments
         % Object defining the multibody system
         system  (1,1) elara.SystemNum
@@ -8,29 +7,29 @@ function simRes = getResultsFromStateTrajectory(system, tout, q, q_dot)
         % Time vector
         tout    (:,1) double
 
-        % Matrix of configurations at time steps tout,
-        % dimensions (nDoF, nSteps)
+        % Configurations at the times in tout, (nDoF, nTimes)
         q       (:,:) double
 
-        % Matrix of velocities at time steps tout
-        % dimensions (nDoF, nSteps)
+        % Generalized velocities at the times in tout, (nDoF, nTimes)
         q_dot   (:,:) double;
     end
 
     % Check dimensions of configurations and velocities
-    assert(size(q,1) == system.nDoF, "Matrix of Configurations has wrong dimensions");
-    assert(size(q_dot,1) == system.nDoF, "Matrix of Velocities has wrong dimensions");
+    nTimes = numel(tout);
+    assert(size(q,1) == system.nDoF && size(q,2) == nTimes, ...
+        "The configuration trajectory must have size nDoF-by-nTimes.");
+    assert(size(q_dot,1) == system.nDoF && size(q_dot,2) == nTimes, ...
+        "The velocity trajectory must have size nDoF-by-nTimes.");
 
-    nSteps = numel(tout);
-    eta    = zeros(6, system.nFrames, nSteps);
-    g      = zeros(4,4, system.nFrames, nSteps);
+    eta = zeros(6, system.nFrames, nTimes);
+    g   = zeros(4,4, system.nFrames, nTimes);
 
-    for iStep = 1:nSteps
+    for iTime = 1:nTimes
         % Forward kinematics and absolute velocities
-        [g(:,:,:,iStep), g_rel] = system.computeFwdKin(q(:,iStep));
-        J = system.computeGeomJacobianFast( q(:,iStep), g_rel);
+        [g(:,:,:,iTime), g_rel] = system.computeFwdKin(q(:,iTime));
+        J = system.computeGeomJacobianFast(q(:,iTime), g_rel);
         for iFrm = 1:system.nFrames
-            eta(:,iFrm,iStep) = J(:,:,iFrm) * q_dot(:,iStep);
+            eta(:,iFrm,iTime) = J(:,:,iFrm) * q_dot(:,iTime);
         end
     end
 

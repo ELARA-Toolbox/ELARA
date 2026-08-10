@@ -1,5 +1,5 @@
 function gNum = element2Matrix(gSE3)
-    %% Convert array of SE3 objects to double array of 4x4 matrices
+    %% Convert an array of SE(3) elements to an array of 4x4 matrices
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

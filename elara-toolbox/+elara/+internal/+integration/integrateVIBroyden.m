@@ -20,19 +20,19 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
     %% Validate Simulation Input Data
 
     assert( numel(simPars.q0) == system.nDoF, ...
-        "Vector of initial coordinates has wrong dimensions.");
+        "The initial-coordinate vector must contain nDoF elements.");
     assert( solverConfig.h > 0, ...
         "Time step h must be non-zero and positive.");
     assert( simPars.tEnd > 0, ...
         "Simulation end time tEnd must be non-zero and positive.");
     assert( isempty(simPars.uConst) || numel(simPars.uConst) == system.nInputs, ...
-        "Vector of constant system inputs has wrong dimensions.");
+        "The constant-input vector must contain nInputs elements.");
     assert( isempty(simPars.uSampleValues) || size(simPars.uSampleValues,1) == system.nInputs, ...
-        "Nr. of rows of the matrix of time-varying system inputs does not match the nr. of system inputs.");
+        "The time-varying input matrix must have one row per system input.");
     assert( isempty(simPars.externalWrench_b.maximumWrench) || size(simPars.externalWrench_b.maximumWrench,2) == system.nFrames, ...
-        "Nr. of columns of the matrix of body-fixed wrenches does not match the nr. of frames.");
+        "The body-fixed wrench matrix must have one column per frame.");
     assert( isempty(simPars.externalWrench_s.maximumWrench) || size(simPars.externalWrench_s.maximumWrench,2) == system.nFrames, ...
-        "Nr. of columns of the matrix of spatial frame forces does not match the nr. of frames.");
+        "The spatial-wrench matrix must have one column per frame.");
 
 
     %% Initialize output arrays
@@ -44,7 +44,7 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
     % Time step / Sample time
     h = solverConfig.h;
 
-    % Nr. of integration steps
+    % Number of integration steps
     nSteps = round( simPars.tEnd / h );
 
     % Time vector (has length nSteps + 1)
@@ -132,7 +132,7 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
     aLoop = solverConfig.aTrapez;
 
     for k = 2:nSteps
-        % Check nr. of iterations in the previous time step and recompute
+        % Check the iteration count from the previous time step and recompute
         % Jacobian if necessary
         updateInvJacobian = ImplicitIterations(k-1) > solverConfig.JacobianIterationThreshold;
 

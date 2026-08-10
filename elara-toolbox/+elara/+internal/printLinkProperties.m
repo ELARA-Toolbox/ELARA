@@ -21,7 +21,7 @@ function tLinks = printLinkProperties(links)
             tLinks = [tLinks;struct2table(linkStr, "AsArray", 1)];
         end
         tIndex = table(linkClassIndices{iClass}.');
-        tIndex.Properties.VariableNames = "Nr.";
+        tIndex.Properties.VariableNames = "Number";
         tLinks = [tIndex, tLinks];
 
         disp("System Link Properties (" + linkClasses(iClass) + " Links):");
@@ -33,7 +33,7 @@ function s = prepareStructFields(s)
     % Prepare struct for display output:
     %  * Check a struct for fields that are column vectors and transpose
     %    them to obtain row vectors
-    %  * Remove fields for SE3 transformations, i.e., fields starting with
+    %  * Remove fields for SE(3) transformations, i.e., fields starting with
     %    "g_"
     fieldNames = fields(s);
 

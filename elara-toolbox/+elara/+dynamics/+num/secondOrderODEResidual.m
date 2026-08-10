@@ -4,7 +4,7 @@ function f = secondOrderODEResidual(t, q, q_dot, q_ddot, u, system, simPars) %#c
         % Integration time (from ode solver)
         t           (1,1) double
 
-        % Configuration vector and its derivatives (nDof,1)
+        % Configuration vector and its derivatives (nDoF, 1)
         q           (:,1) double
         q_dot       (:,1) double
         q_ddot      (:,1) double

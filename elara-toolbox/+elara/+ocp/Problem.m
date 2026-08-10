@@ -14,7 +14,7 @@ classdef Problem
         % Sample time
         h       (1,1)
 
-        % Initial values for inputs and coordinates
+        % Initial control and configuration
         u0      (:,1)
         q0      (:,1)
 
@@ -22,7 +22,7 @@ classdef Problem
         qDot0   (:,1)
         qDotF   (:,1)    % Leave empty to disable final velocity constraint
 
-        % Input limits
+        % Control limits
         uMin    (:,1)
         uMax    (:,1)
 
@@ -80,12 +80,12 @@ classdef Problem
         finiteDifferenceOrder (1,1) double {mustBeMember(finiteDifferenceOrder, [2,4])} = 2;
 
 
-        %% Input parameterization
+        %% Control parameterization
 
-        % Parameterize input trajectory with B-Splines?
+        % Parameterize the control trajectory with B-splines?
         useSplineInputs (1,1) logical = false;
 
-        % Nr. of control points for the input spline
+        % Number of control points for the control spline
         nInputSplinePoints (1,1) double = 10;
 
         % Order of the B-spline (standard: cubic)
@@ -111,9 +111,8 @@ classdef Problem
 
         x_TCP_traj          (3,:) double;
 
-        % Time spans for pre and post actuation (i.e., duration, at which
-        % the initial guess trajectory is held constant at the beginning
-        % and at the end; required for trajectory tracking)
+        % Pre- and post-actuation durations during which the initial-guess
+        % trajectory is held constant (required for trajectory tracking)
         tPreAct             (1,1) double = 0;
         tPostAct            (1,1) double = 0;
 
@@ -137,7 +136,7 @@ classdef Problem
     end
 
     properties (Dependent)
-        % Nr. of time intervals in the OCP
+        % Number of time intervals in the OCP
         nSteps  (1,1)
 
         % Time vector of the OCP
@@ -179,7 +178,7 @@ classdef Problem
             arguments
                 obj     (1,1) elara.ocp.Problem
 
-                % Use a casadi function to evaluate the DEL in each time step
+                % Use a CasADi function to evaluate the DEL equations at each time step
                 opts.useCasadiStepFunctions (1,1) logical = false;
 
                 % Draw debug plots (constraint Jacobian etc.)?
@@ -195,14 +194,16 @@ classdef Problem
             arguments (Input)
                 obj         (1,1) elara.ocp.Problem
 
-                % Initial guess state trajectory
-                % For varInt discretization: configurations q, (nDoF, nSteps+1)
-                % For ODE discretization: states [q, d_dot],   (2*nDoF, nSteps+1)
+                % Initial guess configuration or state trajectory
+                % Variational discretization: configurations q, (nDoF, nSteps+1)
+                % ODE discretization: states x = [q; qDot], (2*nDoF, nSteps+1)
                 xInit   (:,:) double
 
-                % Initial guess input trajectory, can be direct or spline parameterization
-                % Direct: (nInputs, nSteps+1)
-                % Spline: (nInputs, nSplinePoints)
+                % Initial guess control decision variables
+                % Direct parameterization: values at the time nodes,
+                % (nInputs, nSteps+1)
+                % Spline parameterization: B-spline control points,
+                % (nInputs, nSplinePoints)
                 uInit   (:,:) double
 
                 % Struct with the results of a previous solver run;
@@ -210,17 +211,19 @@ classdef Problem
                 opts.solWarmStart    (1,1) struct = struct();
             end
             arguments (Output)
-                % Solution state trajectory 
-                % Can be configurations or states, analogous to the initial
-                % guess
+                % Solved configuration or state trajectory, analogous to
+                % xInit
                 x_sol
 
-                % Controls trajectory (nInputs, nSteps+1)
+                % Solved control trajectory evaluated at the time nodes,
+                % (nInputs, nSteps+1)
                 u_sol
 
-                % Control parameters trajectory
-                % Direct parameterization: (nInputs, nSteps+1) (u_sol_z = u_sol)
-                % Spline parameterization: (nInputs, nSplinePoints)
+                % Solved control decision variables
+                % Direct parameterization: time-node values
+                % (nInputs, nSteps+1), with u_sol_z equal to u_sol
+                % Spline parameterization: B-spline control points
+                % (nInputs, nSplinePoints)
                 u_sol_z
 
                 % CasADi NLP solver solution object
@@ -231,7 +234,7 @@ classdef Problem
             end
             % Check if solver has been defined
             assert(~strcmp(obj.NLPSolver.name, 'null') && isfield(obj.constrDef, "lb_c"), ...
-                "Cannot start solver: NLP solver not initizalized. Call initSolver() first.");
+                "Cannot start solver: NLP solver not initialized. Call initSolver() first.");
 
             % Solve problem
             [x_sol, u_sol, u_sol_z, sol, stats] = elara.internal.ocp.solve(obj, xInit, uInit, ...
@@ -246,18 +249,18 @@ classdef Problem
 
         %% Other Methods
         function fh = plotConstraintResiduals(obj, x, u_z, opts)
-            %% Plot OCP Constraints residuals for a given trajectory
+            %% Plot OCP constraint residuals for a given trajectory
             arguments
                 obj         (1,1) elara.ocp.Problem
 
-                % State trajectory
-                % For varInt discretization: configurations q, (nDoF, nSteps+1)
-                % For ODE discretization: states [q, d_dot],   (2*nDoF, nSteps+1)
+                % Configuration or state trajectory
+                % Variational discretization: configurations q, (nDoF, nSteps+1)
+                % ODE discretization: states x = [q; qDot], (2*nDoF, nSteps+1)
                 x       (:,:) double
 
-                % Input trajectory, can be direct or spline parameterization
-                % Direct: (nInputs, nSteps+1)
-                % Spline: (nInputs, nSplinePoints)
+                % Control decision variables
+                % Direct parameterization: values at the time nodes, (nInputs, nSteps+1)
+                % Spline parameterization: B-spline control points, (nInputs, nSplinePoints)
                 u_z     (:,:) double
 
                 opts.figureName (1,1) string = "Constraint Residuals";
@@ -266,13 +269,13 @@ classdef Problem
                 "figureName", opts.figureName);
         end
         function [B, B_dt, B_ddt, tau] = getInputSplineBasisMatrix(obj, opts)
-            % Compute the basis matrix of the input B-spline
+            % Compute the basis matrix of the control B-spline
             % (and its derivatives)
             arguments
                 obj                     (1,1) elara.ocp.Problem
 
-                % Vector of stage values / sub-samples of input values in
-                % each standard time interval defined by OCP.tout.
+                % Normalized stage locations within each time interval
+                % defined by OCP.tout.
                 % For each element of the vector, an additional time
                 % instance t_k_i is added to the overall time vector,
                 % where t_k_i = t_k + c(i)*h.
@@ -292,14 +295,14 @@ classdef Problem
             arguments
                 obj (1,1) elara.ocp.Problem
 
-                % State trajectory
-                % For varInt discretization: (nDoF, nSteps+1)
-                % For ODE discretization:    (2*nDoF, nSteps+1)
+                % Configuration or state trajectory
+                % Variational discretization: configurations q, (nDoF, nSteps+1)
+                % ODE discretization: states x = [q; qDot], (2*nDoF, nSteps+1)
                 x       (:,:) double
 
-                % Control parameters trajectory
-                % Direct parameterization: (nInputs, nSteps+1) (u_sol_z = u_sol)
-                % Spline parameterization: (nInputs, nSplinePoints)
+                % Control decision variables
+                % Direct parameterization: values at the time nodes, (nInputs, nSteps+1)
+                % Spline parameterization: B-spline control points, (nInputs, nSplinePoints)
                 u_z     (:,:) double
             end
             % Check if solver is initialized

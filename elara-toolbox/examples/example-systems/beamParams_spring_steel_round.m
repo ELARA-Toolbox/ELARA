@@ -48,12 +48,10 @@ function pars = beamParams_spring_steel_round(opts)
 
     % Young's modulus (N/m^2)
     % Average value from term paper, p. 28
-    %pars.mat.E = 207.8695e9 * opts.factorE; Hiwi doc
     baseParams.E = 185e9 * opts.factorE; % online
 
     % Poisson's number
     % Average value from term paper, p.29
-    %pars.mat.nu = 0.3660;
     baseParams.nu = 0.3; % online
 
     %% Dissipation coefficients

@@ -3,7 +3,7 @@ function g = expScrew( X, theta )
     % Implements the Exponential map for SE(3): exp : se(3) -> SE(3)
     % with a constant screw axis (twist) X and magnetude ("angle") theta.
     % 
-    % We use the standard formulas for the SE3 exponential mapping, e.g.,
+    % We use the standard formulas for the SE(3) exponential map, e.g.,
     % from [MLS94].
     %
     % Maximilian Herrmann

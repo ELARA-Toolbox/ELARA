@@ -8,7 +8,7 @@ function T = dcayInv( xi )
     % Source: [KM11], eq. 34, [Dem+14] eq. 20
     % cf. [KM11] and other sources for background information
     %
-    % Follows convention for se3 elements in vector form: [omega; v]
+    % Follows the convention for se(3) elements in vector form: [omega; v]
     %
     % Input xi: se(3) element in *vector* form
     % Output T: 6x6 matrix

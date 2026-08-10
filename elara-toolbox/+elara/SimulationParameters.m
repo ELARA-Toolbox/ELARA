@@ -7,11 +7,11 @@ classdef SimulationParameters
     % Technical University of Munich
     properties
         % Initial relative coordinates for the simulation
-        % dimensions (1, nDoF)
+        % dimensions (nDoF, 1)
         q0      (:,1)   double
 
         % Initial coordinate velocities for the simulation
-        % dimensions (1, nDoF)
+        % dimensions (nDoF, 1)
         qDot0   (:,1)   double
 
         % Simulation end time (= length of the simulation)
@@ -42,13 +42,13 @@ classdef SimulationParameters
 
 
         %% External wrenches acting on the frames
-        % defined by elara.ExternalWrenchDefinition objects.
-        % See elara.ExternalWrenchDefinition class for details.
+        % defined by elara.ExternalWrench objects.
+        % See elara.ExternalWrench for details.
 
-        % Definition of body-fixed ext. wrenches
+        % Definition of body-fixed external wrenches
         externalWrench_b (1,1) elara.ExternalWrench
 
-        % Definition of spatial ext. wrenches
+        % Definition of spatial external wrenches
         externalWrench_s (1,1) elara.ExternalWrench
     end
 end

@@ -9,7 +9,7 @@ function tInputs = printInputProperties(system)
 
     %% Get input information
 
-    % Max. nr. of inputs one frame can have
+    % Maximum number of inputs on one frame
     maxNrInputs = max(system.frames.uIndices(2,:)-system.frames.uIndices(1,:))+1;
 
     % Matrix with the indices of all inputs of each frame (padded with
@@ -54,7 +54,7 @@ function tInputs = printInputProperties(system)
 
     %% Display as table
     tInputs = table((1:system.nInputs).', inputType, inputLink, ...
-        'VariableNames', ["Input Nr.", "Type", "Link"]);
+        'VariableNames', ["Input Number", "Type", "Link"]);
     disp("System Input Properties:")
     disp(tInputs);
 end

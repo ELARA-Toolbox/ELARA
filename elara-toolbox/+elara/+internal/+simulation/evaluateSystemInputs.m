@@ -17,8 +17,8 @@ function u = evaluateSystemInputs(system, simPars, tout)
     if ~isempty(simPars.uSampleValues) && ~isempty(simPars.uSampleTimes)
         % Check dimensions
         assert( size(simPars.uSampleValues,2) == size(simPars.uSampleTimes,1), ...
-            ['Nr. of sample times and sample values for time-varying inputs not equal', ...
-            ' (Nr. of columns of uSampleValues does not match nr. of rows of uSampleTimes)']);
+            ['The number of sample times must match the number of samples ', ...
+            'in uSampleValues.']);
 
         % Interpolate input values
         u = interp1(simPars.uSampleTimes, simPars.uSampleValues.', tout, 'linear', 0).';

@@ -7,7 +7,7 @@ function T = dcay( xi )
     % Source: [Kob14], eq. 17; cf. [Dem+14, p.11];
     % cf. [KM11] and other sources for background information
     %
-    % Follows convention for se3 elements in vector form: [omega; v]
+    % Follows the convention for se(3) elements in vector form: [omega; v]
     %
     % Input xi: se(3) element in *vector* form
     % Output T: 6x6 matrix

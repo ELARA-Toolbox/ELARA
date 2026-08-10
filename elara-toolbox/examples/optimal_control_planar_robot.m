@@ -30,11 +30,11 @@ MBSim.visualizeSystemRefConf();
 MBSimFwd = MBSim;
 MBSimFwd.parameters.tEnd = 5;
 
-q0 = deg2rad([30,-30]);
+q0 = deg2rad([30; -30]);
 MBSimFwd.parameters.q0 = q0;
 MBSimFwd.parameters.qDot0 = zeros(2,1);
 
-% Visualize initial config
+% Visualize the initial configuration
 MBSimFwd.visualizeSystemConfig(q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
@@ -57,7 +57,7 @@ MBSimFwd.animateSimResults("figureName", "AnimVI");
 
 OCP = elara.ocp.Problem(links);
 
-OCP.q0    = [pi/2, 0];
+OCP.q0    = [pi/2; 0];
 OCP.qDot0 = zeros(OCP.systemNum.nDoF,1); % Initial velocity
 OCP.qDotF = zeros(OCP.systemNum.nDoF,1); % Final velocity
 
@@ -69,7 +69,7 @@ OCP.tEnd = 1;
 
 
 % Desired end configuration
-OCP.qF = [-pi/2, 0];
+OCP.qF = [-pi/2; 0];
 OCP.addTCPFinalTimeConstraint = false;
 
 OCP.useSplineInputs = false;
@@ -93,13 +93,13 @@ OCP.finalCostActive = zeros(3,1); % Defines which cost terms are active
 OCP.uMin = ones(2,1)*-25;
 OCP.uMax = ones(2,1)*+25;
 
-OCP.qMin = [-inf, -4];
-OCP.qMax = [inf, 0.1];
+OCP.qMin = [-inf; -4];
+OCP.qMax = [inf; 0.1];
 
 
 %% Visualize reference configuration and target position
 
-figure("Name", "initial/final config");
+figure("Name", "Initial and Final Configurations");
 tiledlayout;
 nexttile;
 elara.visualization.initializeAxes("createFigure", false);
@@ -126,7 +126,7 @@ if COMPUTE_IG
     end
     OCP.workspace.visualize("createFigure", false);
 
-    fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess");
+    elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess");
 
     % Animate results
     if ANIMATE_IG
@@ -149,7 +149,7 @@ if OCP.useSplineInputs
     u_init_z =  (B \ u_init.').';
 
     % Plot initial guess fit
-    figure("Name", "Initial Guess B-Spline Fit");
+    figure("Name", "Initial Guess B-spline Fit");
     tiledlayout("vertical");
     nexttile;
     plot(OCP.tout, u_init, "-.x", "DisplayName", "Original Data");
@@ -176,8 +176,8 @@ OCP_ODE = OCP;
 OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK4");
 OCP_ODE.Name = "RK4";
 
-qDotInit = diff2ndOrder(q_init, OCP_ODE.h);
-x_init = [q_init;qDotInit];
+q_dot_init = diff2ndOrder(q_init, OCP_ODE.h);
+x_init = [q_init; q_dot_init];
 
 OCP_ODE = OCP_ODE.initSolver;
 OCP_ODE.plotConstraintResiduals(x_init, u_init_z, "figureName", "Constr. Res. IG");
@@ -232,29 +232,30 @@ disp("Objective DEL solution:")
 disp(table(J_sol, cR_sol, cF_sol, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 
-%% Post-process etc.
+%% Post-process and visualize the solution
 
 disp('Post processing...')
 gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 
-MBSimCasadi = MBSim;
-MBSimCasadi.Name = "Optimization";
-MBSimCasadi.results = elara.SimulationResults.fromStateTrajectory( ...
+MBSimOCP = MBSim;
+MBSimOCP.Name = "Optimization";
+MBSimOCP.results = elara.SimulationResults.fromStateTrajectory( ...
     OCP_DEL.systemNum, OCP_DEL.tout, q_sol, "finiteDifferenceOrder", 2);
-MBSimCasadi.plotAll;
+MBSimOCP.plotAll;
 
 % Draw snapshots
 fig = elara.visualization.initializeAxes( ...
     'Name', "Snapshots Solution", "NumberTitle", "off");
 elara.visualization.CoordinateFrame(gTCPDes);
-MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 15);
-TCPTraj = squeeze(MBSimCasadi.results.g(1:3,4,end,:));
+MBSimOCP.drawSnapshots("figure", fig, "nSnapShots", 15);
+TCPTraj = squeeze(MBSimOCP.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 %% Animate results
 fig = elara.visualization.initializeAxes('Name', "Animation Solution");
 elara.visualization.CoordinateFrame(gTCPDes);
-MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
+MBSimOCP.animateSimResults("figure", fig, "saveMovie", false, ...
+    "fileName", "example_optControl_planarRobot");
 
 
 %% End script

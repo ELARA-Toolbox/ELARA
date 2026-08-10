@@ -8,7 +8,7 @@ function DEL_res_k = DELResidual_noKinematics( system, simPars, ...
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        % Generalized coordinates at steps k-1, k, and k+1 (nDoF, 1)
         q_k0    (:,1) double
         q_k     (:,1) double
         q_k1    (:,1) double
@@ -19,7 +19,7 @@ function DEL_res_k = DELResidual_noKinematics( system, simPars, ...
         eta_k   (6,:) double
         eta_k0  (6,:) double
 
-        % Vector of inputs (1,nInputs)
+        % Control input at step k (nInputs, 1)
         u_k     (:,1) double
 
         % Matrix of external wrenches
@@ -35,9 +35,9 @@ function DEL_res_k = DELResidual_noKinematics( system, simPars, ...
 
     % Check argument sizes
     assert( size(q_k,1) == system.nDoF, ...
-        "Vector of generalized coordinates has wrong dimensions.");
+        "The generalized coordinate vector must contain nDoF elements.");
     assert( size(u_k,1) == system.nInputs, ...
-        "Vector of inputs has wrong dimensions.");
+        "The input vector must contain nInputs elements.");
 
     %% Jacobians
     J_k = system.computeGeomJacobianFast(q_k, g_rel_k);

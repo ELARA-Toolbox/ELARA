@@ -1,12 +1,12 @@
 function M_fo = firstOrderMassMatrix(t, x, system)
     %% Compute the overall mass matrix for a multibody system in first-order form
-    % I.e., the mass matrix diag(I, M) with dimension 2*nDof x 2*nDof
+    % That is, the mass matrix diag(I, M) has size 2*nDoF-by-2*nDoF.
     arguments (Input)
         % Integration time (from ode solver)
         % Not needed for the function, but "~" is not allowed for codegen
         t       (1,1)
 
-        % State vector [q; q_dot] (2*nDof,1)
+        % State vector x = [q; q_dot] (2*nDoF, 1)
         x       (:,1)
 
         system  (1,1) elara.abstract.System
@@ -24,7 +24,7 @@ function [M, J] = computeSystemMassMatrix(~, x, system)
         % Integration time (from ode solver)
         ~%t
 
-        % State vector [q; q_dot] (2*nDof,1)
+        % State vector x = [q; q_dot] (2*nDoF, 1)
         x      (:,1)
 
         system (1,1) elara.abstract.System

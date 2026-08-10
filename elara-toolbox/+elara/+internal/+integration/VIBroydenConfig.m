@@ -11,11 +11,11 @@ classdef VIBroydenConfig
         % Solver error margin at which the simulation is cancelled
         toleranceLimit            (1,1) double = 1e-8;
 
-        % Max. nr. of iterations of the implicit solver
+        % Maximum number of implicit-solver iterations
         maxIterations               (1,1) double = 100;
 
         % For Broyden integrator:
-        % Nr. of iterations that are allowed in one time step before the
+        % Number of iterations allowed in one time step before the
         % Jacobian matrix is recomputed
         JacobianIterationThreshold  (1,1) double = 4;
 

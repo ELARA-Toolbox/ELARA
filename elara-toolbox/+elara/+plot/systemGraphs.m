@@ -1,5 +1,5 @@
 function [fhLinkGraph, fhFrameGraph] = systemGraphs(system)
-    %% Plot Topology Graphs of a MB System
+    %% Plot topology graphs of a multibody system
     arguments
         system (1,1) elara.abstract.System
     end

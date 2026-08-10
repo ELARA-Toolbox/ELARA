@@ -8,7 +8,7 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        % Generalized coordinates at steps 0 and 1 (nDoF, 1)
         q_0     (:,1)
         q_1     (:,1)
 
@@ -17,7 +17,7 @@ function DEL_res_k = DELResidualInitialStep_noKinematics( ...
         g_rel_0 (:,1) elara.SE3.Element
         eta_0   (:,2) cell
 
-        % Vector of inputs at initial time t0 (1,nInputs)
+        % Control input at the initial time (nInputs, 1)
         u_0     (:,1)
 
         % Vector of initial generalized velocities at t0

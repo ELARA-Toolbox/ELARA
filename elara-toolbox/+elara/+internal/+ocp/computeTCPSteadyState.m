@@ -1,5 +1,5 @@
 function [qOpt, uOpt] = computeTCPSteadyState(OCP)
-    %% Compute optimal steady-state system inputs for given TCP position
+    %% Compute a static configuration and controls for a specified TCP position
     arguments
         OCP (1,1) elara.ocp.Problem
     end
@@ -8,7 +8,7 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
     systemSym = OCP.systemSym;
     simPars = OCP.simPars;
 
-     % Verify that the TCP is defined for the system
+    % Verify that the TCP is defined for the system
     if ~systemSym.indexTCPFrame
         warning("No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
         indexTCPFrame = systemSym.nFrames;
@@ -16,7 +16,7 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
         indexTCPFrame = systemSym.indexTCPFrame;
     end
 
-    % Casadi function for signed workspace distance function
+    % CasADi functions for signed workspace distances
     [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(systemSym.nFrames);
 
 
@@ -28,7 +28,6 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
 
 
     % Statics/force balance constraint
-    %[res_statics, x] = elara.statics.sym.residual(sysFuns, q, u);
     [res_statics, g] = elara.statics.sym.residual(systemSym, simPars, q, u);
     opti.subject_to( res_statics == 0 );
 
@@ -44,7 +43,7 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
         opti.subject_to(c_WSExt < safetyMargin);
     end
 
-    % Input limits
+    % Control limits
     if ~isempty(OCP.uMin)
         opti.subject_to(u > OCP.uMin );
     end
@@ -62,11 +61,6 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
     a2 = 1;
     a3 = 100000;
     
-    % % For SRFRobot
-    % a1 = 1e5;
-    % a2 = 1;
-    % a3 = 100;
-
     J = a2 * 1/2*sumsqr(u) ...
         + a3 * 1/2 * sumsqr(q);
 
@@ -81,9 +75,6 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
     p_opts = struct();
     s_opts = struct();
     p_opts.expand = true;
-    %s_opts.max_iter = 100;
-    %s_opts.fixed_variable_treatment = 'relax_bounds';
-
     opti.solver('ipopt', p_opts, s_opts);
 
     q0 = zeros(systemSym.nDoF,1);

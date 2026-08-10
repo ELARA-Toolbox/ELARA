@@ -1,23 +1,23 @@
-function XVec = packSplineDecisionVariables(q, z)
-    %% Convert matrices of inputs and configurations q, u to vector of decision variables
+function XVec = packSplineDecisionVariables(x, z)
+    %% Pack node variables and B-spline control points into a decision variable vector
     arguments
-        % Matrix of configurations at all time nodes
-        % dimensions (nDoF, nSteps+1)
-        q       (:,:)
-        % Matrix of input parameters
-        % dimensions (nInputs, nSplinePoints)
+        % Configuration (VI) or state (ODE) values at all time nodes,
+        % (nNodeVariables, nSteps+1)
+        x       (:,:)
+
+        % B-spline control points, (nInputs, nSplinePoints)
         z       (:,:)
     end
-    nSteps  = size(q,2)-1;
-    nDoF    = size(q,1);
+    nSteps  = size(x,2)-1;
+    nNodeVariables = size(x,1);
     nInputs = size(z,1);
     nInputSplinePoints = size(z,2);
 
-    [indexMat_q, indexMat_z] = elara.internal.ocp.splineDecisionVariableIndices( ...
-        nSteps, nDoF, nInputs, nInputSplinePoints);
+    [indexMat_x, indexMat_z] = elara.internal.ocp.splineDecisionVariableIndices( ...
+        nSteps, nNodeVariables, nInputs, nInputSplinePoints);
 
-    nVarsTotal =  nDoF*(nSteps+1) + nInputSplinePoints*nInputs;
+    nVarsTotal = nNodeVariables*(nSteps+1) + nInputSplinePoints*nInputs;
     XVec = zeros(nVarsTotal, 1);
-    XVec(indexMat_q(:)) = q(:);
+    XVec(indexMat_x(:)) = x(:);
     XVec(indexMat_z(:)) = z(:);
 end

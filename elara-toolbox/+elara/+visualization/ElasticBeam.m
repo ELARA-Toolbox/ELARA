@@ -6,7 +6,7 @@ classdef ElasticBeam < handle
     % TUM School of Engineering and Design
     % Technical University of Munich
     %
-    % Visualization of a spatially discretized.
+    % Visualization of a spatially discretized elastic beam.
     % Note: Direction of the beam length is in (local) Z-direction, i.e.,
     % the cross-sections lie in the XY planes of the local frames
     % (corresponding to [Dem12] / [Dem+15]).
@@ -22,10 +22,10 @@ classdef ElasticBeam < handle
         % Beam color
         Color               (3,1) double = lines(1);
 
-        % Enable / Disable coordinate system label
+        % Show coordinate-frame labels
         ShowLabels          (1,1) matlab.lang.OnOffSwitchState = false;
 
-        % Enable / Disable coordinate systems
+        % Show coordinate frames
         ShowFrames          (1,1) matlab.lang.OnOffSwitchState = true;
 
         % Plot center line?
@@ -79,7 +79,7 @@ classdef ElasticBeam < handle
         function obj = ElasticBeam(g, options)
             %% Constructor
             arguments
-                % Array of SE3 node configuration matrices with dimension
+                % Array of SE(3) node configuration matrices with dimension
                 % (4, 4, nNodes)
                 g (4,4,:) double = zeros(4,4,0)
 
@@ -190,7 +190,7 @@ classdef ElasticBeam < handle
             arguments
                 obj
 
-                % Array of SE3 node configuration matrices with dimension
+                % Array of SE(3) node configuration matrices with dimension
                 % (4, 4, nNodes)
                 g (4,4,:) double
             end
@@ -205,7 +205,7 @@ classdef ElasticBeam < handle
                 obj.crossSectionTransforms(iN).Matrix = g(:,:,iN);
             end
 
-            % Interpolate data if needed (spatial interpolation on SE3)
+            % Interpolate data if needed (spatial interpolation on SE(3))
             if obj.InterpolateBeam && (obj.DrawCenterline || obj.EdgeAlpha || obj.FaceAlpha)
                 % Spatial query points (normalize beam length to 1)
                 sInput = 0:1/(nNodes-1):1;

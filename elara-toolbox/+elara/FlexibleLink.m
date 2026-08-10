@@ -15,7 +15,7 @@ classdef FlexibleLink < elara.abstract.Link
 
         %% Flexible Link properties
 
-        % Nr. of segments of the discretized beam
+        % Number of segments in the discretized beam
         nSegments        (1,1) double {mustBeNonnegative}
 
         % Length of the beam (from first to last cross section)
@@ -47,11 +47,11 @@ classdef FlexibleLink < elara.abstract.Link
             end
 
             %%% Validate properties of flexible links
-            % Check for valid segment number
+            % Require at least two segments for the beam discretization
             assert(link.nSegments > 1, ...
-                "Nr. of segments for flexible links must be specified and positive.");
+                "A flexible link must have at least two segments.");
 
-            % Check that inertia tensor, mass and COM transf. arrays for
+            % Check that inertia, mass, and center-of-mass transform arrays for
             % attached masses are either all empty or have the
             % correct dimensions
             assert( size(link.M_a, 3) == size(link.m_a, 2), ...
@@ -59,18 +59,18 @@ classdef FlexibleLink < elara.abstract.Link
                 'To include attached bodies, both arrays must have values and the correct dimensions.'] ...
                 );
             assert( size(link.M_a, 3) == size(link.g_a, 3), ...
-                ['Inconsistent array sizes for position vectors and inertia tensors of attached bodies. ' ...
+                ['Inconsistent array sizes for transforms and inertia tensors of attached bodies. ' ...
                 'To include attached bodies, both arrays must have values and the correct dimensions.'] ...
                 );
 
             % Check properties of selection matrices
-            r = size(link.Ba, 2); % Nr. of allowed deformation modes
+            r = size(link.Ba, 2); % Number of allowed deformation modes
             assert( size(link.Bc, 2) == 6-r, ...
-                "Selection matrix Bc does not have the right nr. of columns." );
+                "Selection matrix Bc has an incorrect number of columns." );
             assert( all(link.Ba .' * link.Ba == eye(r), "all"), ...
-                "Selection matrix Ba does not have the right form." );
+                "Selection matrix Ba must have orthonormal columns." );
             assert( all(link.Bc .' * link.Bc == eye(6-r), "all"), ...
-                "Selection matrix Bc does not have the right form." );
+                "Selection matrix Bc must have orthonormal columns." );
             assert( all(link.Bc .' * link.Ba == zeros(6-r,r), "all"), ...
                 "Selection matrices Ba and Bc are not complementary." );
         end

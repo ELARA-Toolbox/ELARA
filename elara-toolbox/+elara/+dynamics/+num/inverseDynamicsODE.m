@@ -15,7 +15,7 @@ function [u, solInfo] = inverseDynamicsODE(system, simPars, q, qd, qdd, lbu, ubu
         ubu      (:,1) double
     end
 
-    % Nr. of time steps
+    % Number of time steps
     nSteps = size(q, 2) - 1;
 
     % Zero input vector used in the dynamics functions

@@ -33,10 +33,9 @@ MBSim.parameters.tEnd = 5;
 
 % Initial configuration
 MBSim.parameters.q0    = zeros(MBSim.system.nDoF,1);
-%MBSim.parameters.q0(2) = pi/4;
 MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
-% Visualize initial config
+% Visualize the initial configuration
 MBSim.visualizeSystemConfig(MBSim.parameters.q0, "figureName", "visInitConf");
 title("Initial Configuration")
 

@@ -63,7 +63,7 @@ classdef ExternalWrench
                 % Object defining the external wrenches
                 externalWrench (1,1) elara.ExternalWrench
 
-                % Nr. of frames
+                % Number of frames
                 nFrames             (1,1) double
 
                 % Current simulation time

@@ -10,9 +10,9 @@ function [res_0, eta_0] = DELResidualInitialStep(system, h, simPars, q_0, q_1, u
         system  (1,1) elara.abstract.System
         h       (1,1)
         simPars (1,1) elara.SimulationParameters
-        q_0     (:,1) double % Coordinate variable at time step k = 1
-        q_1     (:,1) double % Coordinate variable at time step k = 2
-        u_0     (:,1) double % System input variable at time step k = 1
+        q_0     (:,1) double % Generalized coordinates at step 0
+        q_1     (:,1) double % Generalized coordinates at step 1
+        u_0     (:,1) double % Control input at step 0
 
         % Weighting factor in the generalized trapezoidal rule
         a       (1,1) double

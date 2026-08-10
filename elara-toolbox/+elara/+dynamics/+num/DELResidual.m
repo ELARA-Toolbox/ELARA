@@ -7,12 +7,12 @@ function DEL_res_k = DELResidual(system, simPars, q_k0, q_k, q_k1, u_k, h, a)
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        % Generalized coordinates at steps k-1, k, and k+1 (nDoF, 1)
         q_k0    (:,1) double
         q_k     (:,1) double
         q_k1    (:,1) double
 
-        % Vector of inputs (1,nInputs)
+        % Control input at step k (nInputs, 1)
         u_k     (:,1) double
 
         % Time step

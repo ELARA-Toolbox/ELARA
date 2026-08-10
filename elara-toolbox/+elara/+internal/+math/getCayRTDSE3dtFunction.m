@@ -7,12 +7,12 @@ function f = getCayRTDSE3dtFunction(q)
     % Technical University of Munich
     arguments
         % Variable that defines the type of the output function:
-        % Numeric or Casadi function handles (if q is numeric, output
+        % Numeric or CasADi function handles (if q is numeric, output
         % functions are numeric as well, etc.)
         q (:,:) = casadi.MX.sym('q',1,1);
     end
 
-    % Use persistent functions for casadi functions to make sure there are
+    % Use persistent functions for CasADi functions to make sure there are
     % no duplicate function definitions in the graph
     persistent fun
 

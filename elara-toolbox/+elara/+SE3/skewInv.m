@@ -3,13 +3,13 @@ function V = skewInv(gSk)
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
-    % Department of Mechanical Engineering
+    % TUM School of Engineering and Design
     % Technical University of Munich
     % 03/2021
     %
     % Inverse hat map for an element of se(3)
-    % (i.e. skew-symmetric form of a 6x1 vector [v; omega].
-    % For more details, see the skewInv function (for so(3)).
+    % (i.e., the matrix form of a 6x1 vector [omega; v]).
+    % For more details, see elara.SO3.skewInv.
     
     arguments
         gSk (4,4)
@@ -19,6 +19,6 @@ function V = skewInv(gSk)
     R = gSk(1:3, 1:3);
     v = gSk(1:3, 4);
     
-    % Give 6x1 vector
+    % Return the 6x1 vector [omega; v]
     V = [elara.SO3.skewInv(R); v];
 end

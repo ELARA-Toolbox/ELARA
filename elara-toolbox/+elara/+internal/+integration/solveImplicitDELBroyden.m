@@ -14,10 +14,10 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELBroyden( ...
         % Multibody system
         system  (1,1) elara.SystemNum
 
-        % Vector of generalized coordinates at current time step (1,nDoF)
+        % Generalized coordinates at the current time step (nDoF, 1)
         q_k     (:,1) double
 
-        % Vector of generalized coordinates at last time step (1, nDoF)
+        % Generalized coordinates at the previous time step (nDoF, 1)
         q_k0    (:,1) double
 
         % Array of update matrices for all frames (4,4,nFrames)
@@ -34,13 +34,14 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData] = solveImplicitDELBroyden( ...
         % Force a solver iteration by ignoring the error threshold
         forceSolverIteration    (1,1) logical
 
-        % External node forces (wrenches in se3*) at current time step (6,nNodes)
+        % External frame forces (wrenches in se(3)*) at the current time
+        % step, (6, nFrames)
         f_frame_k_b     (6,:) double   % Wrench in the local / body frame
 
-        % Vector of relative/generalized forces (nDof,1)
+        % Generalized forces (nDoF, 1)
         f_gen_k         (:,1) double
 
-        % solver configuration
+        % Solver configuration
         solverConfig    (1,1) elara.internal.integration.VIBroydenConfig
 
         % Weighting factor in the generalized trapezoidal rule
@@ -149,7 +150,7 @@ function DEL_res_k = MBSDynamics_DEL_implicitFun( ...
         % Array of body-fixed forces acting on the frames (6,nFrames)
         f_frame_k   (6,:) double
 
-        % Vector of relative/generalized forces (nDof,1)
+        % Generalized forces (nDoF, 1)
         f_gen_k     (:,1) double
 
         % Array of absolute frame velocities in interval (k,k1)

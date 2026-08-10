@@ -122,10 +122,10 @@ zlim([0, 1.3]);
 
 % Compute Initial Guess
 if COMPUTE_IG
-    [q_init, qd_init, u_init, MBSimIG] = elara.ocp.computeInitialGuessInvDyn( ...
+    [q_init, q_dot_init, u_init, MBSimIG] = elara.ocp.computeInitialGuessInvDyn( ...
         OCP, "createDebugPlots", false, "invDynMethod", "ODE");
 
-    fh_IG = elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, ...
+    elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, ...
         "figureName", "Initial Guess", "plotDerivatives", true);
 
     % Animate results
@@ -135,7 +135,8 @@ if COMPUTE_IG
     MBSimIG.animateSimResults("figure", fig);
 else
     q_init = repmat(OCP.q0, [1,OCP.nSteps+1]);
-    u_init = repmat(OCP.u0, [1,OCP.nSteps+1]);
+    q_dot_init = zeros(OCP.systemNum.nDoF, OCP.nSteps+1);
+    u_init = zeros(OCP.systemNum.nInputs, OCP.nSteps+1);
 end
 
 if OCP.useSplineInputs
@@ -144,7 +145,7 @@ if OCP.useSplineInputs
     u_init_z =  (B \ u_init.').';
 
     % Plot initial guess fit
-    figure("Name", "Initial Guess B-Spline Fit");
+    figure("Name", "Initial Guess B-spline Fit");
     plot(OCP.tout, u_init, "-.x", "DisplayName", "Original Data");
     hold on;
     plot(OCP.tout, B*u_init_z.', "--o", "DisplayName", "Fitted Spline");
@@ -162,7 +163,7 @@ end
 OCP_ODE = OCP;
 OCP_ODE.discretization = elara.ocp.DiscretizationRK("RK2");
 OCP_ODE.Name = "RK2";
-x_init = [q_init; qd_init];
+x_init = [q_init; q_dot_init];
 
 % Initialize the ODE solver.
 % Additionally show the constraint Jacobian to inspect its structure and
@@ -233,28 +234,29 @@ disp("Objective DEL solution:")
 disp(table(J_sol, cR_sol, cF_sol, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 
-%% Post-process etc.
+%% Post-process and visualize the solution
 
 disp('Post processing...')
 
-MBSimCasadi = OCP.getSimulationObject();
-MBSimCasadi.Name = "Optimization";
-MBSimCasadi.results = elara.SimulationResults.fromStateTrajectory( ...
+MBSimOCP = OCP.getSimulationObject();
+MBSimOCP.Name = "Optimization";
+MBSimOCP.results = elara.SimulationResults.fromStateTrajectory( ...
     OCP_DEL.systemNum, OCP_DEL.tout, q_sol, "finiteDifferenceOrder", 2);
 
-MBSimCasadi.plotAll;
+MBSimOCP.plotAll;
 
 % Draw snapshots
 gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 fig = elara.visualization.initializeAxes( ...
     'Name', "Snapshots Solution", "NumberTitle", "off");
 elara.visualization.CoordinateFrame(gTCPDes);
-MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
+MBSimOCP.drawSnapshots("figure", fig, "nSnapShots", 20);
 
 % Animate results
 fig = elara.visualization.initializeAxes('Name', "Animation Solution");
 elara.visualization.CoordinateFrame(gTCPDes);
-MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
+MBSimOCP.animateSimResults("figure", fig, "saveMovie", false, ...
+    "fileName", "example_optControl_rigidRobot");
 xlim([-0.2, 0.8]);
 ylim([-0.2, 0.3]);
 zlim([0, 1]);

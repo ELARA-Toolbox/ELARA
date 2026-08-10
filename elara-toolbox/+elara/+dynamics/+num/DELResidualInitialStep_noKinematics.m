@@ -11,10 +11,10 @@ function res_0 = DELResidualInitialStep_noKinematics(system, h, simPars, q_0, q_
         h       (1,1)
         simPars (1,1) elara.SimulationParameters
 
-        % Coordinates at time step k = 1
+        % Generalized coordinates at step 0
         q_0     (:,1) double
 
-        % Coordinate variable at time step k = 2
+        % Generalized coordinates at step 1
         q_1     (:,1) double
 
         % Externally computed kinematic quantities
@@ -22,7 +22,7 @@ function res_0 = DELResidualInitialStep_noKinematics(system, h, simPars, q_0, q_
         g_rel_0 (4,4,:) double
         eta_0   (6,:) double
 
-        u_0     (:,1) double % System input variable at time step k = 1
+        u_0     (:,1) double % Control input at step 0
 
         % Initial velocity at t = 0
         qDot0   (:,1) double

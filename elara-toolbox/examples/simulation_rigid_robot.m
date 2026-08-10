@@ -30,12 +30,12 @@ q0 = deg2rad([30,-30, -60]);
 MBSim.parameters.q0 = q0;
 MBSim.parameters.qDot0 = zeros(3,1);
 
-% Visualize initial config
+% Visualize the initial configuration
 MBSim.visualizeSystemConfig(q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
 % System inputs
-MBSim.parameters.uConst = [1,1,1]*0;
+MBSim.parameters.uConst = zeros(3,1);
 
 %% Integration with variational integrator
 

@@ -1,6 +1,6 @@
 classdef CoordinateFrame < handle
     %% Visualization of a 3D (cartesian) coordinate frame
-    % with the pose by a SE3 matrix
+    % with the pose defined by an SE(3) matrix
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -40,7 +40,7 @@ classdef CoordinateFrame < handle
         function obj = CoordinateFrame(g, options)
             % Construct coordinate system
             arguments
-                % SE3 matrix that defines the system's pose
+                % SE(3) matrix that defines the frame's pose
                 % (orientation and position)
                 g (4, 4) {mustBeNumeric} = eye(4);
 

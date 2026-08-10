@@ -51,7 +51,6 @@ function fh = framePositions(sim, opts)
             ylabel('pos. / m', 'interpreter', 'latex')
             grid on
             box on
-            %colororder(ax4(1, iTile), plotColors3);
         end
     end
 end

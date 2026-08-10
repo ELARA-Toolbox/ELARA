@@ -28,7 +28,7 @@ function sys = assembleSystem(links, sys)
 
     % Check that all parent numbers are valid link numbers
     assert( all([links.parentLink] < numel(links)), ...
-        "Parent link number not valid: Number exceed number of links in the system." ...
+        "Parent link number is invalid: Number exceeds the number of links in the system." ...
         );
 
     % Verify that we have only one body with TCP
@@ -76,7 +76,7 @@ function sys = assembleSystem(links, sys)
 
     for iLink = 1:sys.nLinks
 
-        % Nr. of frames of the current body
+        % Number of frames of the current body
         if links(iLink).isRigid
             nFrames = 1;
         else
@@ -235,10 +235,8 @@ function sys = assembleSystem(links, sys)
             % for cantilever beams, the node index of the first frame is 2
             if isempty(frameGraph.predecessors(linkFrames(1))) && sys.isCantilever
                 nodeIndices = 2:(nNodes+1);
-                %factors = [ones(nNodes-1,1);0.5];
             else
                 nodeIndices = 1:nNodes;
-                %factors = [0.5;ones(nNodes-2,1);0.5];
             end
 
             % Segment length for the current beam
@@ -329,7 +327,7 @@ function sys = assembleSystem(links, sys)
     sys.frames.uIndices = zeros(2, sys.nFrames);
 
     lastIndexU = 1; % Temp variable to compute the input vector indices
-    nCablesMax = 0; % Temp variable holding the max. nr. of cables of all links
+    nCablesMax = 0; % Maximum number of tendons across all links
 
     for iLink = 1:sys.nLinks
         linkFrames = sys.linkFrameIndices(1,iLink):sys.linkFrameIndices(2,iLink);
@@ -369,7 +367,7 @@ function sys = assembleSystem(links, sys)
         end
     end
 
-    % Nr. of system inputs
+    % Number of system inputs
     sys.nInputs =  max(sys.frames.uIndices(2,:));
 
 
@@ -390,7 +388,7 @@ function sys = assembleSystem(links, sys)
             % Get cable actuation data for current link
             [g_m, termNodes] = links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
 
-            % Get local node nr. from iN = 0, ... , nSegments
+            % Get the local node number from iN = 0, ..., nSegments
             if ~(links(iCurLink).parentLink) && sys.isCantilever
                 nodeIndexLocal = iFrm - sys.linkFrameIndices(1,iCurLink) + 2;
             else

@@ -3,10 +3,10 @@ function g = cay( xi )
     % Implements the Cayley map for SE(3): cay : se(3) -> SE(3)
     %
     % Source: [Dem+14, p.10], eq. 19
-    % Follows convention for se3 elements in vector form: [omega; v]
+    % Follows the convention for se(3) elements in vector form: [omega; v]
     %
     % Input xi: se(3) element in *vector* form
-    % Output g: Corresponding element of SE3 in matrix form
+    % Output g: Corresponding element of SE(3) in matrix form
     %
     % Maximilian Herrmann
     % Chair of Automatic Control

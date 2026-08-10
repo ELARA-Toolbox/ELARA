@@ -1,6 +1,6 @@
 function x_k1 = explicitRungeKuttaStepLinearInput(F, x_k, u_k, u_k1, h, A, b, c)
     %% Compute one integration step of an explicit Runge-Kutta method
-    % with linear interpolation of the inputs (from the node values at k
+    % with linear interpolation of the controls (from the node values at k
     % and k+1)
     arguments
         % Function to integrate with arguments F(x,u)
@@ -9,7 +9,7 @@ function x_k1 = explicitRungeKuttaStepLinearInput(F, x_k, u_k, u_k1, h, A, b, c)
         % Values at current time step
         x_k     (:,1)
 
-        % Input at time steps k and k+1
+        % Controls at time nodes k and k+1
         u_k     (:,1)
         u_k1    (:,1)
 

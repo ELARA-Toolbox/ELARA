@@ -1,5 +1,5 @@
 function f = getSE3FunctionsNumeric
-    %% Get function handles for numeric SE3 Functions
+    %% Get function handles for numeric SE(3) functions
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -134,7 +134,7 @@ function A = AdInvSE3Parts(R, x)
         ];
 end
 function Z = smallAdSE3Parts(om, v)
-    %% small ad representation (6x6 matrix) of an element of se3
+    %% Small adjoint representation of an element of se(3)
     arguments
         om (3,1)
         v  (3,1)

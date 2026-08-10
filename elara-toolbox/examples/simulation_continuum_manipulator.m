@@ -27,9 +27,8 @@ MBSim.parameters.tEnd = 5;
 % Initial configuration
 MBSim.parameters.q0    = zeros(MBSim.system.nDoF,1);
 MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
-%MBSim.parameters.q0(1) = 1;
 
-% Visualize initial config
+% Visualize the initial configuration
 MBSim.visualizeSystemConfig(MBSim.parameters.q0, "figureName", "visInitConf");
 title("Initial Configuration")
 
@@ -37,7 +36,6 @@ title("Initial Configuration")
 uConst = [0,25,0,0].';
 MBSim.parameters.uSampleTimes  = linspace(0, MBSim.parameters.tEnd, 100);
 MBSim.parameters.uSampleValues = repmat(((1-cos(pi*MBSim.parameters.uSampleTimes ./ MBSim.parameters.tEnd ))/2).', [4,1]) .* uConst;
-%MBSim.parameters.uConst = uConst;
 
 figure("Name", "System Inputs");
 plot(MBSim.parameters.uSampleTimes, MBSim.parameters.uSampleValues);
@@ -72,7 +70,6 @@ MBSimVI.animateSimResults("figureName", "AnimVI");
 %% Integration with ODE solver
 
 MBSimODE = MBSim;
-%MBSimODE.parameters.tEnd = 10;
 
 % Solver settings
 MBSimODE.integrator = elara.integration.ODEDirect;

@@ -3,9 +3,9 @@ function xi = cayInv( g )
     % Implements the inverse Cayley map for SE(3): cay : SE(3) -> se(3)
     %
     % Source: [Dem+14, p.10]
-    % Follows convention for se3 elements in vector form: [omega; v]
+    % Follows the convention for se(3) elements in vector form: [omega; v]
     %
-    % Input g:   Element of SE3 in matrix form
+    % Input g: Element of SE(3) in matrix form
     % Output xi: Corresponding se(3) element in *vector* form
     %
     % Maximilian Herrmann

@@ -1,15 +1,14 @@
 function CoAd = AdCayley(eta)
-    %% Co-Ad Map for a Cayley-transformed se3 element
-    % Helper function which returns the Co-Ad representation for the SE(3)
-    % element, which has been calculated from an se(3) element via the
-    % cayley map
-    % This is used for faster computations / reduce overhead.
+    %% Co-adjoint map for a Cayley-transformed se(3) element
+    % Returns the co-adjoint representation of the SE(3) element obtained
+    % from an se(3) element through the Cayley map. This avoids constructing
+    % the full transformation matrix.
     arguments (Input)
-        % (6,1) se3 vector
+        % (6,1) se(3) vector
         eta (6,1) double
     end
     arguments (Output)
-        % Ad representation in (6,6) matrix form
+        % Co-adjoint representation in (6,6) matrix form
         CoAd (6,6) double
     end
     [R,p] = elara.SE3.caySeparate( eta );

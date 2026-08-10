@@ -1,27 +1,27 @@
-function XVec = packNodeDecisionVariables(q, u)
-    %% Convert matrices of inputs and configurations q, u to vector of decision variables
+function XVec = packNodeDecisionVariables(x, u)
+    %% Pack node variables and controls into a decision variable vector
     arguments
-        % Matrix of configurations at all time nodes
-        % dimensions (nDoF, nSteps+1)
-        q       (:,:)
-        % Matrix of inputs at all time nodes
-        % dimensions (nInputs, nSteps+1)
+        % Configuration (VI) or state (ODE) values at all time nodes,
+        % (nNodeVariables, nSteps+1)
+        x       (:,:)
+
+        % Control values at all time nodes, (nInputs, nSteps+1)
         u       (:,:)
     end
-    nSteps  = size(q,2)-1;
-    nDoF    = size(q,1);
+    nSteps  = size(x,2)-1;
+    nNodeVariables = size(x,1);
     nInputs = size(u,1);
 
     assert(size(u,2)==nSteps+1);
 
-    nVarsStep  = nDoF + nInputs;
+    nVarsStep  = nNodeVariables + nInputs;
     nVarsTotal = (nSteps+1)*nVarsStep;
     XVec = zeros(nVarsTotal, 1);
     for k = 1:(nSteps+1)
         iX = (k-1)*nVarsStep+1:k*nVarsStep;
-        iq = iX((1:nDoF));
-        iu = iX(nDoF+1:end);
-        XVec(iq) = q(:,k);
+        ix = iX(1:nNodeVariables);
+        iu = iX(nNodeVariables+1:end);
+        XVec(ix) = x(:,k);
         XVec(iu) = u(:,k);
     end
 end

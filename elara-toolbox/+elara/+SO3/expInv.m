@@ -5,7 +5,7 @@ function omega = expInv( R )
     %
     % Source: [SCB14, p.470], eq. A.8
     %
-    % Input Lambda: Rotation matrix
+    % Input R: Rotation matrix
     % Output omega: Corresponding so(3) element in *vector* form
     %
     % Maximilian Herrmann

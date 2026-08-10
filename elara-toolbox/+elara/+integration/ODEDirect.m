@@ -98,7 +98,7 @@ classdef ODEDirect < elara.abstract.IntegratorODE
             simRes.computationTime = tSim;
 
             if obj.showConsoleOutput
-                % Display meta data
+                % Display metadata
                 tStepODE = diff(tout);
                 absTol = obj.odeObject.AbsoluteTolerance;
                 relTol = obj.odeObject.RelativeTolerance;
@@ -108,7 +108,7 @@ classdef ODEDirect < elara.abstract.IntegratorODE
                     fprintf('   Total integration time (tictoc):     %f s\n', tSim);
                 end
                 fprintf('   Simulation end time:                 %.3f s\n', tout(end));
-                fprintf('   Nr. of time steps:                   %d\n', numel(tout))
+                fprintf('   Number of time steps:                %d\n', numel(tout))
                 fprintf('   Time step (Avg/Min/Max):             %.3e / %.3e / %.3e s\n', ...
                     mean(tStepODE, 'omitnan'), min(tStepODE), max(tStepODE));
                 fprintf('   Approx. comp. time per step:         %.3e s\n', tSim / numel(tout))

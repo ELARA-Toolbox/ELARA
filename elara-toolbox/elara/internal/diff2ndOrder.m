@@ -6,8 +6,8 @@ function [x_dot, x_ddot] = diff2ndOrder(x, h)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        % Matrix of function values with size (n,N), where N are the
-        % number of time nodes (i.e., time steps in the columns)
+        % Matrix of function values with size (n,N), where N >= 4 is the
+        % number of time nodes
         x (:,:)
 
         % Time step

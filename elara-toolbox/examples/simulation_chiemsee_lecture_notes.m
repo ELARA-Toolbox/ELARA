@@ -185,7 +185,7 @@ MBSimVI.animateSimResults("figureName", "AnimVI");
 
 %% Plots
 
-%%% Reference config
+%%% Reference configuration
 [fh,vis]  = MBSim.visualizeSystemConfig(qRef, "figureName", "plotRefConf", ...
     "ShowInertialFrame", false);
 xlim([0, 0.65]);
@@ -204,7 +204,7 @@ vis.plotProjection("yz", fh.CurrentAxes.XLim(2));
 vis.plotProjection("xz", fh.CurrentAxes.YLim(2));
 
 
-%%% Initial config
+%%% Initial configuration
 [fh,vis] = MBSim.visualizeSystemConfig(q0, "figureName", "plotInitConf", ...
     "ShowInertialFrame", false);
 xlim([0, 0.65]);

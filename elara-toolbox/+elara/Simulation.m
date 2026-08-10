@@ -105,8 +105,8 @@ classdef Simulation
                 options.ShowInertialFrame  (1,1) logical = true;
 
                 % Function handle for a color map used to specify link
-                % colors in the form colors = cmap(n), where n is the nr.
-                % of link
+                % colors in the form colors = cmap(n), where n is the link
+                % index
                 options.linkColorMap       (1,1) function_handle = @lines;
             end
             g = obj.system.computeFwdKin(q);
@@ -156,7 +156,6 @@ classdef Simulation
                 end
             end
             % Change docked figure windows to separate window?
-            %fig.WindowStyle = "normal";
 
             MBVisAnim = elara.visualization.SystemVisualization(obj.system, obj.links);
 
@@ -327,7 +326,7 @@ classdef Simulation
             arguments
                 obj     (1,1)
 
-                % Array of SE3 configuration matrices for simulation results
+                % Array of SE(3) configuration matrices from simulation results
                 % dimensions (4,4,nFrames,nSteps)
                 g       (4,4,:,:) double
 

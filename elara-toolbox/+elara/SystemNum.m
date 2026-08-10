@@ -1,5 +1,5 @@
 classdef SystemNum < elara.abstract.System
-    %% elara.abstract.System class for numeric variables
+    %% Numeric representation of an ELARA multibody system
     % Specifies a complete multibody system in tree topology consisting
     % of several rigid or flexible links.
     %
@@ -32,7 +32,7 @@ classdef SystemNum < elara.abstract.System
             arguments
                 system    (1,1) elara.SystemNum
 
-                % Vector of joint angles with dimension (nJoints,theta)
+                % Joint angles with dimensions (nJoints, 1)
                 theta     (:,1) double
             end
             assert(size(theta,1) == system.nJoints, "Joint angle vector has incorrect length.");
@@ -68,7 +68,8 @@ classdef SystemNum < elara.abstract.System
             end
 
             nSegments = numel(linkFrames);
-            assert(size(xi,2) == nSegments, "Wrong dimensions for xi.")
+            assert(size(xi,2) == nSegments, ...
+                "The deformation matrix xi must have one column per beam segment.")
 
             % Get indices in q belonging to the flexible link
             % Note: We assume all coordinates of the link are stored
@@ -131,8 +132,8 @@ classdef SystemNum < elara.abstract.System
 
             % Get coordinates and store them in array of size
             % (nAllwd,nSegments)
-            % Note: We assume all segments have same nr. of dof/allowed
-            %       modes
+            % Note: We assume all segments have the same number of allowed
+            %       deformation modes.
             nAllwd = system.frames.nDof(linkFrames(1));
             psi = reshape(q(qIndices), nAllwd, nSegments);
 
@@ -152,7 +153,7 @@ classdef SystemNum < elara.abstract.System
                 q       (:,1) double
             end
             arguments (Output)
-                % SE3 Matrices with relative configurations between body frames
+                % SE(3) matrices with relative configurations between body frames
                 g_rel   (4,4,:) double
             end
             g_rel = zeros(4,4,system.nFrames);
@@ -243,7 +244,7 @@ classdef SystemNum < elara.abstract.System
             arguments (Output)
                 % Jacobian matrices with dimensions
                 % 6 x (nAllwd_1*nSegments1 + ... + nAllwdB*nSegmentsB + nLinks) x nFrames
-                % where B is the nr. of flexible beams in the system
+                % where B is the number of flexible beams in the system
                 J       (6,:,:) double
             end
 
@@ -288,7 +289,7 @@ classdef SystemNum < elara.abstract.System
             arguments (Output)
                 % Jacobian matrices with dimensions
                 % 6 x (nAllwd_1*nSegments1 + ... + nAllwdB*nSegmentsB + nLinks) x nFrames
-                % where B is the nr. of flexible beams in the system
+                % where B is the number of flexible beams in the system
                 J       (6,:,:) double
 
                 % Relative configurations between body frames
@@ -489,7 +490,7 @@ classdef SystemNum < elara.abstract.System
 
         function eta_k = computeDiscreteAbsoluteVelocities(system, g_rel_k, g_rel_k1, h)
             %% Compute discrete absolute velocities in the interval (k,k+1)
-            % i.e., compute absolute body-fixed velocities eta in se3
+            % i.e., compute absolute body-fixed velocities eta in se(3)
             % (vector form) from given relative transformations at time
             % instances k and k+1
             arguments

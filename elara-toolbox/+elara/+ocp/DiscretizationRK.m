@@ -23,13 +23,13 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
-                % each column represents one time step
+                % each column represents one time node
                 x   (:,:)
             end
             J = casadi.MX.zeros(1,1);
             [~, bRK, cRK] = elara.internal.ocp.butcherTableau(obj.method);
             for k = 1:OCP.nSteps
-                for i = 1:length(bRK) % loop over nr. of stages s
+                for i = 1:length(bRK) % Loop over Runge-Kutta stages
                     % Interpolated RK stage values
                     x_i = (1 - cRK(i)) * x(:,k)   + cRK(i) * x(:,k+1);
 
@@ -50,13 +50,13 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 ~
 
                 % Cell array with function values to integrate;
-                % dimensions (nStages, nSteps)
+                % dimensions (nStages, nSteps+1)
                 x_C   (:,:) cell
             end
             J = casadi.MX.zeros(1,1);
             [~, bRK, ~] = elara.internal.ocp.butcherTableau(obj.method);
             for k = 1:OCP.nSteps
-                for i = 1:length(bRK) % loop over nr. of stages s
+                for i = 1:length(bRK) % Loop over Runge-Kutta stages
                     % Accumulate weighted stage cost
                     J{1} = J{1} + OCP.h * bRK(i) * sumsqr(x_C{i, k});
                 end
@@ -69,7 +69,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 % Function object defining the ODE
                 FFun        (1,1)
 
-                % State and input variables at time steps k and k+1
+                % State and control variables at time nodes k and k+1
                 x_kSym      (:,1)
                 x_k1Sym     (:,1)
                 u_kSym      (:,1)
@@ -77,14 +77,8 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 % Time step
                 h           (1,1)
             end
-            % RK discretization with multiple steps per NLP interval
+            % Apply one Runge-Kutta step per NLP interval
             [A, b, c] = elara.internal.ocp.butcherTableau(obj.method);
-            % Todo: Add MultiStep RK function
-            % x_curr = x_kSym;
-            % for iStep = 1%:OCP.nRKSteps
-            %     x_curr = elara.internal.ocp.explicitRungeKuttaStepLinearInput( ...
-            %         FFun, x_curr, u_kSym, u_k1Sym, h/OCP.nRKSteps, A, b, c);
-            % end
             x_k1 = elara.internal.ocp.explicitRungeKuttaStepLinearInput( ...
                 FFun, x_kSym, u_kSym, u_k1Sym, h, A, b, c);
             eq_int = x_k1 - x_k1Sym;
@@ -96,18 +90,18 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                 % Function object defining the ODE
                 FFun        (1,1)
 
-                % State variables at time steps k and k+1
+                % State variables at time nodes k and k+1
                 x_kSym      (:,1)
                 x_k1Sym     (:,1)
 
-                % Input variables with intermediate stage values,
+                % Control variables at the intermediate stage values,
                 % dimensions (nInputs, nStages)
                 u_kStageSym (:,:)
 
                 % Time step
                 h           (1,1)
             end
-            % RK discretization with multiple steps per NLP interval
+            % Apply one Runge-Kutta step per NLP interval
             [A, b, c] = elara.internal.ocp.butcherTableau(obj.method);
             x_k1 = elara.internal.ocp.explicitRungeKuttaStep( ...
                 FFun, x_kSym, u_kStageSym, h, A, b, c);

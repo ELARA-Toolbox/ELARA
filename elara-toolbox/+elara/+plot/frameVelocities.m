@@ -55,7 +55,6 @@ function figHandles = frameVelocities(sim, opts)
             ylabel('$\omega_i$ / rad / s', 'interpreter', 'latex')
             grid on
             box on
-            %colororder(ax4(1, iTile), plotColors3);
 
             %%% Plot translational velocity
             t = nexttile(tl_trVel);

@@ -7,7 +7,7 @@ function T = dexpInv( eta )
     %
     % Source: [Mül21, p.9], Lemma 2.3
     %
-    % Follows convention for se3 elements in vector form: [omega; v]
+    % Follows the convention for se(3) elements in vector form: [omega; v]
     %
     % Input eta: se(3) element in *vector* form
     % Output T: 6x6 matrix
@@ -25,7 +25,7 @@ function T = dexpInv( eta )
     om = eta(1:3);
     v  = eta(4:end);
 
-    % General note: We explicitly include the formulas for the SO3
+    % General note: We explicitly include the formulas for the SO(3)
     % exponential map here so the auxiliary terms are only computed once
 
     % Rotation angle phi

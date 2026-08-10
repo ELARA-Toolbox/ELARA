@@ -1,11 +1,12 @@
-function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OCP, opts)
-    %% Generate Initial Guess for Optimal Control Problem with Inv. Dynamics
+function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OCP, opts)
+    %% Generate an OCP initial guess using inverse dynamics
     %
     % Method:
-    % 1. Compute static inputs for desired TCP position
-    % 2. Compute smooth trajectory for q from initial to final
-    %    configuration
-    % 3. Compute inputs with inverse dynamics
+    % 1. Compute a static configuration and controls for the desired TCP
+    %    position.
+    % 2. Compute a smooth configuration trajectory from the initial to the
+    %    final configuration.
+    % 3. Compute the corresponding control trajectory by inverse dynamics.
     arguments
         OCP     (1,1) elara.ocp.Problem
 
@@ -45,15 +46,15 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
         uStat = zeros(systemNum.nInputs, nWPts);
 
         for iWpt = 1:nWPts
-            %% Compute optimal steady-state inputs
+            %% Compute an optimal static equilibrium
             OCP_stat.x_TCP_F = x_TCP_waypoints(:,iWpt);
 
-            fprintf("Computing optimal steady state configuration...\n\n");
+            fprintf("Computing optimal steady-state configuration...\n\n");
 
             [qF, uF] = elara.ocp.computeStaticEquilibrium(OCP_stat);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
-            disp("Computed static inputs (N/Nm):")
+            disp("Computed static controls (N or Nm):")
             disp(uF.');
 
             % For revolute joints: Remove offsets by 2pi
@@ -80,11 +81,11 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
     uF = uStat(:,end);
 
 
-    %% Compute coordinate trajectory
+    %% Compute configuration trajectory
 
     % Simulation settings (inverse dynamics)
-    % Add one step to the time vector of the inverse dynamics to be able to
-    % compute the last step consistently
+    % Include both interval endpoints so the final step can be evaluated
+    % consistently.
     h_ID = opts.h;
     nSteps_ID = round(OCP.tEnd/h_ID);
     tout_ID = (0 : h_ID : h_ID*nSteps_ID).';
@@ -107,7 +108,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
 
         tpts = [OCP.tout(1) + OCP.tPreAct; OCP.tout(end)-OCP.tPostAct];
 
-        [q_init_dyn, qd_init_dyn, qdd_init_dyn] = minjerkpolytraj( ...
+        [q_init_dyn, q_dot_init_dyn, q_ddot_init_dyn] = minjerkpolytraj( ...
             qpts, tpts, round((tpts(2)-tpts(1))/OCP.h) + 1, ...
             "VelocityBoundaryCondition", qdpts);
 
@@ -116,24 +117,24 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
             q_init_dyn, ...
             repmat(qF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
             ];
-        qd_init = [
+        q_dot_init = [
             repmat(qDot0, [1, round((tpts(1)-OCP.tout(1))/OCP.h)]), ...
-            qd_init_dyn, ...
+            q_dot_init_dyn, ...
             repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
             ];
-        qdd_init = [
+        q_ddot_init = [
             zeros(systemNum.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
-            qdd_init_dyn, ...
+            q_ddot_init_dyn, ...
             zeros(systemNum.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
             ];
     else
-        [q_init, qd_init, qdd_init] = minjerkpolytraj(qStat, ...
+        [q_init, q_dot_init, q_ddot_init] = minjerkpolytraj(qStat, ...
             OCP.x_TCP_timepoints, length(OCP.tout));
     end
 
 
     if opts.createDebugPlots
-        % Visualize initial and final config
+        % Visualize the initial and final configurations
         MBSim.visualizeSystemConfig(OCP.q0, "figureName", "Vis. Initial Config");
         title("Initial Configuration")
         MBSim.visualizeSystemConfig(qF, "figureName", "Vis. Final Config");
@@ -142,7 +143,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
             elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 
 
-        % Plot generated trajectory
+        % Plot the generated trajectory
         figure("Name", "Coordinates IG Interp. Trajectory", "NumberTitle", "off");
         tiledlayout("vertical");
         nexttile;
@@ -154,7 +155,7 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
         xlim([tout_ID(1),tout_ID(end)]);
 
         nexttile;
-        plot(tout_ID, qd_init);
+        plot(tout_ID, q_dot_init);
         grid on;
         xlabel("time $t$ in s", "Interpreter", "latex");
         ylabel("$\dot{q}$", "Interpreter", "latex");
@@ -167,10 +168,10 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
     switch opts.invDynMethod
         case "DEL"
             [uInit_ID, solInfo] = elara.dynamics.num.inverseDynamicsDEL( ...
-                systemNum, simPars, q_init, qd_init, h_ID, OCP.uMin, OCP.uMax);
+                systemNum, simPars, q_init, q_dot_init, h_ID, OCP.uMin, OCP.uMax);
         case "ODE"
             [uInit_ID, solInfo] = elara.dynamics.num.inverseDynamicsODE( ...
-                systemNum, simPars, q_init, qd_init, qdd_init, OCP.uMin, OCP.uMax);
+                systemNum, simPars, q_init, q_dot_init, q_ddot_init, OCP.uMin, OCP.uMax);
         otherwise
     end
     fprintf("Inverse dynamics residual norm: max = %e, mean = %e\n", max(abs(solInfo.resNorm)), mean(abs(solInfo.resNorm)));
@@ -180,12 +181,12 @@ function [q_init, qd_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn(OC
 
     MBSim.Name = "Initial Guess";
 
-    % Specify Simulation Parameters
+    % Specify simulation parameters
     MBSim.parameters.tEnd  = OCP.tEnd;
     MBSim.parameters.q0    = OCP.q0;
     MBSim.parameters.qDot0 = qDot0;
 
-    % Initial guess inputs
+    % Initial-guess controls
     MBSim.parameters.uSampleTimes  = tout_ID;
     MBSim.parameters.uSampleValues = uInit_ID;
 

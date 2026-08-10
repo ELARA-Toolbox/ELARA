@@ -1,5 +1,5 @@
 function f = getSE3Functions(q)
-    %% Get function handles for the SE3 Functions
+    %% Get function handles for the SE(3) functions
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -7,12 +7,12 @@ function f = getSE3Functions(q)
     % Technical University of Munich
     arguments
         % Variable that defines the type of the output functions:
-        % Numeric or Casadi function handles (if q is numeric, output
+        % Numeric or CasADi function handles (if q is numeric, output
         % functions are numeric as well, etc.)
         q (:,:) = casadi.MX.sym('q',1,1);
     end
 
-    % Use persistent functions for casadi functions to make sure there are
+    % Use persistent functions for CasADi functions to make sure there are
     % no duplicate function definitions in the graph
     persistent fun
 

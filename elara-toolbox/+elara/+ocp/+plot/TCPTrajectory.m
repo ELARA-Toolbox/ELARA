@@ -1,8 +1,9 @@
 function fh = TCPTrajectory(OCP, q_sol)
-    %% Plot TCP Trajectory of OCP Solution
-    %   Detailed explanation goes here
+    %% Plot the TCP trajectory of an OCP solution
     arguments (Input)
         OCP         (1,1) elara.ocp.Problem
+
+        % Configuration trajectory, (nDoF, nSteps+1)
         q_sol       (:,:) double
     end
 

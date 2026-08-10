@@ -1,7 +1,7 @@
 classdef Workspace
-    %% Define the Workspace for an Optimal Control Problem
-    % which may consist of obstacles / and or workspace boundaries
-    % TODO: extend to other objects, e.g., spheres or ellipsoids
+    %% Define the workspace for an optimal control problem
+    % The workspace may contain obstacles and workspace boundaries.
+    % TODO: Extend workspace objects to shapes such as spheres or ellipsoids.
 
     properties(SetAccess = protected)
         nObjects (1,1) double
@@ -16,16 +16,16 @@ classdef Workspace
     end
 
     methods
-        %% Methods to add Objects to the Workspace
+        %% Methods for adding objects to the workspace
 
-        % TODO: Add other methods to add boxes / polytopes
+        % TODO: Add further methods for defining boxes or polytopes
         % (e.g. from side lengths and center position/rotation)
 
         function obj = addBoxFromAxisLimits(obj, boxMin, boxMax, boxType)
             % Add a box to the workspace by specifying the box boundaries
             % in terms of minimal and maximal axis coordinates; i.e.,
             % the box extends from the minimal (x,y,z) values given in
-            % box_min to the maximum values given box_max
+            % boxMin to the maximum values given by boxMax
             arguments
                 obj
                 boxMin     (3,1) double
@@ -59,11 +59,6 @@ classdef Workspace
 
                 boxType    (1,1) double
             end
-            % Dimensions of the bounding box, measured form g_bbox
-            % x+ y+ z+
-            % x- y- z-
-            %bBoxSize    (2,3) double
-
             % Compute dimensions of the box relative to its center
             % x+ y+ z+
             % x- y- z-
@@ -168,7 +163,7 @@ classdef Workspace
             nIntObjects = numel(indicesIntObjects);
             nExtObjects = numel(indicesExtObjects);
 
-            % Get casadi functions for min and max approximations via LogSumExp
+            % Get CasADi functions for min and max approximations via LogSumExp
             % (LSE)
             a = 500; % LSE scaling factor
             t = casadi.SX.sym('t', nExtObjects, 1);
@@ -195,20 +190,20 @@ classdef Workspace
             [A, b] = workspace.getPolytopeHalfSpaceRepresentation;
 
             % Interior objects
-            for iFrm = 1:nPoints
+            for iPoint = 1:nPoints
                 dIntPolys = cell(length(indicesIntObjects), 1);
                 dExtPolys = cell(length(indicesExtObjects), 1);
                 if ~isempty(indicesIntObjects)
                     for iPoly = indicesIntObjects'
-                        dIntPolys{iPoly} = workspace.polytopeDistance(x_SX(:,iFrm), A{iPoly}, b{iPoly});
+                        dIntPolys{iPoly} = workspace.polytopeDistance(x_SX(:,iPoint), A{iPoly}, b{iPoly});
                     end
-                    dAnyPolyInt{iFrm} = maxLSE(vertcat(dIntPolys{:}));
+                    dAnyPolyInt{iPoint} = maxLSE(vertcat(dIntPolys{:}));
                 end
                 if ~isempty(indicesExtObjects)
                     for iPoly = indicesExtObjects'
-                        dExtPolys{iPoly} = workspace.polytopeDistance(x_SX(:,iFrm), A{iPoly}, b{iPoly});
+                        dExtPolys{iPoly} = workspace.polytopeDistance(x_SX(:,iPoint), A{iPoly}, b{iPoly});
                     end
-                    dAnyPolyExt{iFrm} = minLSE(vertcat(dExtPolys{:}));
+                    dAnyPolyExt{iPoint} = minLSE(vertcat(dExtPolys{:}));
                 end
             end
             dIntFun = casadi.Function('dAnyInt', {x_SX}, {vertcat(dAnyPolyInt{:})}, {'x'}, {'dAnyPolyInt'});

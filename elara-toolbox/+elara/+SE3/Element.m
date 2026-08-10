@@ -1,5 +1,5 @@
 classdef Element
-    %% Class Representing an Element of SE3
+    %% Class representing an element of SE(3)
 
     properties
         R (3,3) = eye(3);
@@ -8,18 +8,12 @@ classdef Element
 
     methods
         function obj = Element(R,x)
-            % Note: We only use a very "lightweight" constructor for
-            % efficiency
+            % Keep construction lightweight because this value class is
+            % instantiated frequently in symbolic calculations.
             if nargin == 2
                 obj.R = R;
                 obj.x = x;
             end
-            % arguments
-            %     R (3,3) = eye(3);
-            %     x (3,1) = zeros(3,1);
-            % end
-            % obj.R = R;
-            % obj.x = x;
         end
         function gMat = mat(g)
             gMat = [g.R, g.x; 0,0,0,1];
@@ -56,15 +50,15 @@ classdef Element
     %% Overloaded Operators
     methods
         function g = mtimes(g1, g2)
-            %% Matrix Product as Product on SE3
+            %% Matrix product as a product on SE(3)
             g = elara.SE3.Element(g1.R * g2.R, g1.x + g1.R*g2.x);
         end
         function g = mrdivide(g1, g2)
-            %% Matrix Right Division as Operation on SE3
+            %% Matrix right division as an operation on SE(3)
             g = elara.SE3.Element(g1.R * g2.R.', g1.x - g1.R*g2.R.'*g2.x);
         end
         function g = mldivide(g1, g2)
-            %% Matrix Left Division as Operation on SE3
+            %% Matrix left division as an operation on SE(3)
             g = elara.SE3.Element(g1.R.' * g2.R, -g1.R.' * g1.x + g1.R.'*g2.x);
         end
 

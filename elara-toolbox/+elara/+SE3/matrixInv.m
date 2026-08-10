@@ -1,5 +1,5 @@
 function gInv = matrixInv(R, x)
-    % Get the (homogeneous) matrix representation of the *inverse* SE3
+    % Get the homogeneous matrix representation of the inverse SE(3)
     % element from rotation matrix and position vector
     % See e.g. [MLS94, p.37] and lots of other sources
 

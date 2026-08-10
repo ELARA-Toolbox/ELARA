@@ -25,20 +25,20 @@ classdef (Abstract) System
 
         %% System Topology Data
 
-        % Nr. of links in the system
+        % Number of links in the system
         nLinks              (1,1) double
 
-        % Nr. of 1dof joints in the system
+        % Number of one-DoF joints in the system
         nJoints             (1,1) double
 
-        % Nr. of frames in the system (including node frames from flexible
+        % Number of frames in the system (including node frames from flexible
         % beams)
         nFrames             (1,1) double
 
-        % Total nr. of DoFs in the system
+        % Total number of DoFs in the system
         nDoF                (1,1) double
 
-        % Nr. of system inputs (control inputs)
+        % Number of system inputs (control inputs)
         nInputs             (1,1) double
 
         % Assignment of link numbers to frame numbers

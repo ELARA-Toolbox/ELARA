@@ -1,15 +1,18 @@
 function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
-    %% Evaluate the constraint function c for a ODE discretization scheme
+    %% Evaluate the constraint function for an ODE discretization
     % i.e., the function c(x,u) containing the dynamics equality constraints
     % and workspace inequalities at the state nodes.
     arguments
         OCP     (1,1) elara.ocp.Problem
 
-        % Matrices of states and inputs at time steps
-        x       (:,1) cell % (2*nDoF,  nSteps+1)
-        u       (:,:) cell % (nInputs, nSteps+1)
-        % For RK: u is matrix, where the rows contain the input values at
-        % the stages of the RK method
+        % State vectors at the time nodes. Each cell contains a
+        % (2*nDoF)-by-1 vector.
+        x       (:,1) cell
+
+        % Control vectors at the time nodes and, for Runge-Kutta methods
+        % with spline controls, at the intermediate stages. Each cell
+        % contains an nInputs-by-1 vector.
+        u       (:,:) cell
     end
 
     %%
@@ -32,9 +35,9 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
 
     %% Define step constraint function
 
-    % Define CasADi RHS Function
+    % Define the CasADi right-hand-side function
     xSym = casadi.MX.sym('x', 2*system.nDoF, 1);
-    uSym = casadi.MX.sym('x', system.nInputs, 1);
+    uSym = casadi.MX.sym('u', system.nInputs, 1);
     Fsym = elara.dynamics.sym.firstOrderDerivative(0, xSym, uSym, system, simPars);
     FFun = casadi.Function('FFun', {xSym, uSym}, {Fsym});
 
@@ -148,7 +151,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     lb_c = [lb_c; zeros(size(c_WSInt_N)); -inf(size(c_WSExt_N))];
     ub_c = [ub_c; inf(size(c_WSInt_N)); zeros(size(c_WSExt_N))];
 
-    % Final constraint for u
+    % Control limit at the final time node
     if OCP.useSplineInputs && (~isempty(OCP.uMin) || ~isempty(OCP.uMax))
         c{end+1} = u{1,end};
         if ~isempty(OCP.uMin)

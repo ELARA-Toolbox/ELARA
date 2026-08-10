@@ -1,9 +1,9 @@
 function [B, B_d1t, B_d2t, tau] = computeBSplineBasis(nCP, p, tVec, t0, tEnd)
-    %% Compute the basis matrix for a B-Spline path evaluated at a given time vector
+    %% Compute B-spline basis matrices at specified times
     % and the basis matrices for the first and second time derivatives.
-    % With the basis matrix, the B-Spline path can be computed with
+    % With the basis matrix, the B-spline path can be computed with
     %      x = B * z,
-    % where z is the number of control points,
+    % where z contains the control points,
     % and the derivatives with
     %   x_dt = B_d1t * z,
     %  x_ddt = B_d2t * z.
@@ -15,7 +15,7 @@ function [B, B_d1t, B_d2t, tau] = computeBSplineBasis(nCP, p, tVec, t0, tEnd)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        % Nr. of control points
+        % Number of control points
         nCP     (1,1) double
 
         % Spline degree
@@ -31,7 +31,7 @@ function [B, B_d1t, B_d2t, tau] = computeBSplineBasis(nCP, p, tVec, t0, tEnd)
         tEnd    (1,1) double
     end
 
-    % Nr. of evaluation points
+    % Number of evaluation points
     S = length(tVec);
 
     % Compute spline parameters

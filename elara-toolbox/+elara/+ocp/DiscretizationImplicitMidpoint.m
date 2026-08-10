@@ -10,7 +10,7 @@ classdef DiscretizationImplicitMidpoint < elara.abstract.OCPDiscretizationODE
                 OCP (1,1) elara.ocp.Problem
 
                 % Matrix with function values to integrate;
-                % each column represents one time step
+                % each column represents one time node
                 x   (:,:)
             end
             x_mid = (x(:,1:end-1) + x(:,2:end))/2;
@@ -25,7 +25,7 @@ classdef DiscretizationImplicitMidpoint < elara.abstract.OCPDiscretizationODE
                 ~
 
                 % Cell array with function values to integrate;
-                % each column represents one time step
+                % each column represents one evaluation node
                 x_C   (:,:) cell
             end
             x_mid = horzcat(x_C{:});
@@ -40,7 +40,7 @@ classdef DiscretizationImplicitMidpoint < elara.abstract.OCPDiscretizationODE
                 % Function object defining the ODE
                 FFun        (1,1)
 
-                % State and input variables at time steps k and k+1
+                % State and control variables at time nodes k and k+1
                 x_kSym      (:,1)
                 x_k1Sym     (:,1)
                 u_kSym      (:,1)
@@ -57,11 +57,11 @@ classdef DiscretizationImplicitMidpoint < elara.abstract.OCPDiscretizationODE
                 % Function object defining the ODE
                 FFun        (1,1)
 
-                % State variables at time steps k and k+1
+                % State variables at time nodes k and k+1
                 x_kSym      (:,1)
                 x_k1Sym     (:,1)
 
-                % Input variables with intermediate stage values,
+                % Control variables at the intermediate stage value,
                 % dimensions (nInputs, nStages)
                 u_kStageSym (:,1)
 

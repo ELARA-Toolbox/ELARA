@@ -7,8 +7,8 @@ function x_k1 = explicitRungeKuttaStep(F, x_k, u_k, h, A, b, c)
         % Values at current time step
         x_k     (:,1)
 
-        % Matrix of input values at the RK stages,
-        % dimensions (nInputs, s)
+        % Matrix of control values at the RK stages,
+        % dimensions (nInputs, nStages)
         u_k     (:,:)
 
         % Time step

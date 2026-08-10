@@ -6,15 +6,15 @@ function [x_dot, x_ddot] = diff4thOrder(x, h)
     % TUM School of Engineering and Design
     % Technical University of Munich
     arguments
-        % Matrix of function values with size (n,N), where N are the
-        % number of time nodes (i.e., time steps in the columns)
+        % Matrix of function values with size (n,N), where N >= 5 is the
+        % number of time nodes
         x (:,:)
 
         % Time step
         h (1,1)
     end
 
-    % 5-Point FD Coefficients have been computed with: 
+    % Five-point finite-difference coefficients were computed with:
     % https://web.media.mit.edu/~crtaylor/calculator.html
     % See also
     % https://en.wikipedia.org/wiki/Finite_difference_coefficient

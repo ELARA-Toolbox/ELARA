@@ -1,7 +1,7 @@
 function [q, u] = computeStaticEquilibrium(problem)
     %% Compute a static equilibrium for the problem's desired TCP position
     % The equilibrium satisfies the static force balance, workspace
-    % constraints, input bounds, and configured final TCP objective or
+    % constraints, control bounds, and configured final TCP objective or
     % constraint of the optimal-control problem.
     arguments
         problem (1,1) elara.ocp.Problem

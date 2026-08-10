@@ -7,11 +7,11 @@ classdef SimulationResults
     % Technical University of Munich
     properties
         %% Simulation Results Data
-        eta   (6,:,:)   double  % se(3)/ R6 node velocity vectors            (6,   nLinks, nSteps)
-        g     (4,4,:,:) double  % link/node configuration matrices           (4,4, nLinks, nSteps)
-        q     (:,:)     double  % Generalized coordinates                    (nDoF, nSteps)
-        q_dot (:,:)     double  % Generalized velocities                     (6,   nJoints, nSteps)
-        tout  (:,1)     double  % time values                                (nSteps, 1)
+        eta   (6,:,:)   double  % se(3) frame velocities        (6, nFrames, nTimes)
+        g     (4,4,:,:) double  % Frame configurations     (4, 4, nFrames, nTimes)
+        q     (:,:)     double  % Generalized coordinates          (nDoF, nTimes)
+        q_dot (:,:)     double  % Generalized velocities           (nDoF, nTimes)
+        tout  (:,1)     double  % Time values                           (nTimes, 1)
 
 
         %% System Energies corresponding to the Simulation Results
@@ -20,28 +20,28 @@ classdef SimulationResults
         strainEnergy    (:,1) double      % Strain energy
         totalEnergy     (:,1) double      % Total energy (T+U+V)
 
-        %% Solver Meta Data for Implicit Solvers
+        %% Solver Metadata for Implicit Solvers
 
-        % Nr of iterations of the implicit solver (1, nSteps)
+        % Number of implicit-solver iterations (1, nTimes)
         solverIterations (1,:) double
 
-        % Residual error of the implicit equations after convergence (1, nSteps)
+        % Residual error after implicit-solver convergence (1, nTimes)
         solverResidual   (1,:) double
 
         % Exit flag of the implicit solver (Note: Meaning can depend on the
-        % used solver) (1, nSteps)
+        % solver used) (1, nTimes)
         solverExitFlag   (1,:) double
 
-        %% Meta Data of the Overall Simulation
+        %% Overall Simulation Metadata
 
         % Total computational time of the simulation
         computationTime (1,1) double
     end
     methods (Static)
         function simRes = fromStateTrajectory(system, tout, q, q_dot, opts)
-            %% Get simRes object from trajectory of states q, q_dot
-            % E.g., to post-process integration results from ODE
-            % integrator.
+            %% Create simulation results from configuration and velocity trajectories
+            % For example, use this method to post-process ODE integration
+            % results.
             % The velocity matrix is optional; if no velocities are given,
             % they are computed from the configurations via finite
             % differences.
@@ -52,12 +52,11 @@ classdef SimulationResults
                 % Time vector
                 tout    (:,1) double
 
-                % Matrix of configurations at time steps tout,
-                % dimensions (nDoF, nSteps)
+                % Configurations at the times in tout, (nDoF, nTimes)
                 q       (:,:) double
 
-                % Matrix of velocities at time steps tout
-                % dimensions (nDoF, nSteps)
+                % Generalized velocities at the times in tout,
+                % (nDoF, nTimes)
                 % Optional: if not given, they are computed via finite
                 % differences.
                 q_dot   (:,:) double = nan;

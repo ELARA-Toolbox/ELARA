@@ -69,9 +69,8 @@ classdef RigidLinkVisualization < elara.abstract.LinkVisualization
 
         function obj = drawLink(obj)
             %% Initialize drawing for a rigid link
-            % Note: The link is initialized for its configuration being
-            % g = eye(4); the current configuration is set afterwards with
-            % the transform property
+            % Initialize the link at g = eye(4); the transform property is
+            % updated with the current configuration afterwards.
             obj.configurationTransform = hgtransform();
 
             %% Draw Joint and TCP frame

@@ -8,7 +8,7 @@ function DEL_res_k = DELResidual_noKinematics(system, simPars, ...
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF) at steps k0, k and k+1
+        % Generalized coordinates at steps k-1, k, and k+1 (nDoF, 1)
         q_k0    (:,1)
         q_k     (:,1)
         q_k1    (:,1)
@@ -19,7 +19,7 @@ function DEL_res_k = DELResidual_noKinematics(system, simPars, ...
         eta_k   (:,2) cell
         eta_k0  (:,2) cell
 
-        % Vector of inputs (1,nInputs)
+        % Control input at step k (nInputs, 1)
         u_k     (:,1)
 
         % Matrix of external wrenches

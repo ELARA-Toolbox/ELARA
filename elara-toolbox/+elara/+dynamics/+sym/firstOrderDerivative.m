@@ -4,7 +4,7 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
         % Integration time (from ode solver)
         t       (1,1)
 
-        % State vector [q; q_dot] (2*nDof,1)
+        % State vector x = [q; q_dot] (2*nDoF, 1)
         x       (:,1)
 
         % Input vector

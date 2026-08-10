@@ -1,6 +1,5 @@
 function x_TCP_traj = computeLinearReferenceTCPTrajectory(OCP, opts)
-    %% Generate desired TCP trajectory: Linear Trajectory in R3 from x0 to xF
-    % as a jerk-minimal, high-order polynomial
+    %% Generate a jerk-minimal TCP trajectory in R^3 from x0 to xF
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -9,8 +8,8 @@ function x_TCP_traj = computeLinearReferenceTCPTrajectory(OCP, opts)
     arguments (Input)
         OCP     (1,1) elara.ocp.Problem
 
-        % Pre- and post-actuation times
-        % (where the trajectory is kept constant)
+        % Pre- and post-actuation durations during which the trajectory is
+        % held constant
         opts.tPreAct    (1,1) double = 0;
         opts.tPostAct   (1,1) double = 0;
     end

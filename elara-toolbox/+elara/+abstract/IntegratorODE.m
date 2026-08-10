@@ -1,5 +1,5 @@
 classdef (Abstract) IntegratorODE < elara.abstract.Integrator
-    %% Abstract class defining an ODE integrator for a ELARA Simulation
+    %% Abstract class defining an ODE integrator for an ELARA simulation
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -8,10 +8,10 @@ classdef (Abstract) IntegratorODE < elara.abstract.Integrator
     properties
         % If true, solve the ODE in the mass matrix form
         %    M(x) x-dot = f(x);
-        % the mass matrix function is passed to the ode solver.
+        % the mass-matrix function is passed to the ODE solver.
         % If false, solve the ODE in the form
         %    x-dot = f(x),
-        % where the mass matrix is included (as inverse in f(x). No
+        % where f(x) includes the inverse mass matrix. No
         % additional options are passed to the solver.
         useMassMatrixForm (1,1) logical = false;
     end

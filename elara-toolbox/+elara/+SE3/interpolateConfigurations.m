@@ -1,7 +1,7 @@
 function gQuery = interpolateConfigurations(gInput, sInput, sQuery)
-    %% Geometrically correct interpolation of SE3 configurations
+    %% Geometrically correct interpolation of SE(3) configurations
     %
-    % The input g is an array of SE3 matrices with dimensions
+    % The input gInput is an array of SE(3) matrices with dimensions
     % (4,4,nNodes,nSteps) that describes a chain of 3D frames in space
     % (e.g., nodes in a discrete geometrically exact beam).
     % 
@@ -16,7 +16,7 @@ function gQuery = interpolateConfigurations(gInput, sInput, sQuery)
     % Technical University of Munich
 
     arguments
-        % Array of SE3 configuration matrices with dimensions (4,4,nNodes,nSteps)
+        % Array of SE(3) configuration matrices, (4,4,nNodes,nSteps)
         gInput  (4,4,:,:) double
 
         % Vector of frame positions s along the chain (for input
@@ -68,14 +68,11 @@ function gQuery = interpolateConfigurations(gInput, sInput, sQuery)
 end
 
 function xi = computeDiscreteDeformations(g, l)
-    % Compute the discrete relative "deformations" xi that
-    % correspond to the given array of SE3 matrices.
-    %  Important: The computed xi values correspond to discrete *updates*,
-    %  not discrete *gradients*! I.e., tau(xi) = g_a^{-1}*g_{a+1} holds!
-    %  If the discrete "gradients" are required, the result must be divided
-    %  by l in the parent function.
+    % Compute the discrete deformation gradients xi corresponding to the
+    % given array of SE(3) matrices. They satisfy
+    % tau(l_i*xi_i) = g_i^(-1)*g_(i+1).
     arguments
-        % Array of SE3 configuration matrices with dimension (4, 4, nNodes)
+        % Array of SE(3) configuration matrices, (4, 4, nNodes)
         g (4,4,:) double
 
         % Vector of segment lengths (can vary over the length)

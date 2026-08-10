@@ -5,7 +5,7 @@ function xi = expInv( g )
     %
     % Source: [SCB14, p.471], eq. A.15
     %
-    % Input g:   Element of SE3 in matrix form
+    % Input g: Element of SE(3) in matrix form
     % Output xi: Corresponding se(3) element in *vector* form
     %
     % Maximilian Herrmann

@@ -50,7 +50,7 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
 
     nameStr = opts.name;
 
-    % Get nr. of nodes and segments
+    % Get the number of nodes and segments
     nNodes = size(simData.R, 3);
     nSegments = size(simData.xi,2);
 
@@ -70,7 +70,6 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
         plotNodes    = round(linspace(1, nNodes, nPlots));
 
         % Plot 2nd instead of first node since 1st node is always zero
-        %plotNodes(1) = 2;
     else
         plotSegments = 1:nSegments;
         plotNodes = 1:nNodes;
@@ -261,7 +260,6 @@ function figHandles = plotBeamNodeData(simData, xiRef, opts)
 
     ax6 = gobjects(2, length(plotSegments));
 
-    %l = params.L / nSegments;
 
     for iTile = 1:length(plotSegments)
 

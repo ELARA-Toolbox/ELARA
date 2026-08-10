@@ -1,23 +1,23 @@
 function res = residual(system, simPars, q, u)
-    %% Compute Residual of Static Equilbrium Equation
+    %% Compute the static-equilibrium residual
     arguments
         % Multibody system
         system  (1,1) elara.SystemNum
 
         simPars (1,1) elara.SimulationParameters
 
-        % Vector of generalized coordinates (1,nDoF)
+        % Generalized coordinates (nDoF, 1)
         q       (:,1) double
 
-        % Vector of inputs (1,nInputs)
+        % System inputs (nInputs, 1)
         u       (:,1) double
     end
 
     % Check argument sizes
     assert( size(q,1) == system.nDoF, ...
-        "Vector of generalized coordinates has wrong dimensions.");
+        "The generalized-coordinate vector must contain nDoF elements.");
     assert( size(u,1) == system.nInputs, ...
-        "Vector of inputs has wrong dimensions.");
+        "The input vector must contain nInputs elements.");
 
     % Forward Kinematics and Jacobians
     [g, g_rel] = system.computeFwdKin(q);

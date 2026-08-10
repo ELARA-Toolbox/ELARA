@@ -5,7 +5,7 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
         % Not needed for the function, but "~" is not allowed for codegen
         t           (1,1)
 
-        % State vector [q; q_dot] (2*nDof,1)
+        % State vector x = [q; q_dot] (2*nDoF, 1)
         x           (:,1)
 
         system      (1,1) elara.abstract.System

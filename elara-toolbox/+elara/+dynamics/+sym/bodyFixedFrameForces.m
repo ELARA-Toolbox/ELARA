@@ -1,5 +1,5 @@
 function f_frame_b = bodyFixedFrameForces(system, g, f_frame_s, g_grav)
-    %% Compute the body-fixed forces for all frames: Gravity and Ext. Forces
+    %% Compute gravity and external forces in body-fixed coordinates for all frames
     arguments
         system      (1,1) elara.SystemSym
 
