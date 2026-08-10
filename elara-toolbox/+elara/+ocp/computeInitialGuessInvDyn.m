@@ -11,7 +11,11 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
         OCP     (1,1) elara.ocp.Problem
 
         opts.doIDForwardSim (1,1) logical = false;
-        opts.h              (1,1) double  = OCP.h;
+
+        % Sample time used for trajectory generation, inverse dynamics,
+        % and the optional forward simulation. It must divide the OCP time
+        % horizon into an integer number of intervals.
+        opts.h              (1,1) double {mustBePositive} = OCP.h;
 
         % Method to compute inverse dynamics
         % DEL: With DEL/variational integrator (discrete-time)
@@ -108,24 +112,27 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
 
         tpts = [OCP.tout(1) + OCP.tPreAct; OCP.tout(end)-OCP.tPostAct];
 
+        assert(tpts(1) < tpts(2), ...
+            "The pre- and post-actuation durations must leave a positive trajectory interval.");
+
         [q_init_dyn, q_dot_init_dyn, q_ddot_init_dyn] = minjerkpolytraj( ...
-            qpts, tpts, round((tpts(2)-tpts(1))/OCP.h) + 1, ...
+            qpts, tpts, round((tpts(2)-tpts(1))/h_ID) + 1, ...
             "VelocityBoundaryCondition", qdpts);
 
         q_init = [
-            repmat(OCP.q0, [1, round((tpts(1)-OCP.tout(1))/OCP.h)]), ...
+            repmat(OCP.q0, [1, round((tpts(1)-OCP.tout(1))/h_ID)]), ...
             q_init_dyn, ...
-            repmat(qF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
+            repmat(qF, [1, round((OCP.tout(end)-tpts(2))/h_ID)]), ...
             ];
         q_dot_init = [
-            repmat(qDot0, [1, round((tpts(1)-OCP.tout(1))/OCP.h)]), ...
+            repmat(qDot0, [1, round((tpts(1)-OCP.tout(1))/h_ID)]), ...
             q_dot_init_dyn, ...
-            repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/OCP.h)]), ...
+            repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/h_ID)]), ...
             ];
         q_ddot_init = [
-            zeros(systemNum.nDoF, round((tpts(1)-OCP.tout(1))/OCP.h)), ...
+            zeros(systemNum.nDoF, round((tpts(1)-OCP.tout(1))/h_ID)), ...
             q_ddot_init_dyn, ...
-            zeros(systemNum.nDoF, round((OCP.tout(end)-tpts(2))/OCP.h)), ...
+            zeros(systemNum.nDoF, round((OCP.tout(end)-tpts(2))/h_ID)), ...
             ];
     else
         [q_init, q_dot_init, q_ddot_init] = minjerkpolytraj(qStat, ...
@@ -209,21 +216,25 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
     MBSim = MBSim.simulateSystem;
 
     if opts.doIDForwardSim
-        q_init_HF = MBSim.results.q;
-        tout_HF   = MBSim.results.tout;
+        q_init_HF     = MBSim.results.q;
+        q_dot_init_HF = MBSim.results.q_dot;
+        tout_HF       = MBSim.results.tout;
     else
-        q_init_HF = q_init;
-        tout_HF   = tout_ID;
+        q_init_HF     = q_init;
+        q_dot_init_HF = q_dot_init;
+        tout_HF       = tout_ID;
     end
 
     %% Downsample results to OCP time step
 
     if OCP.h ~= h_ID
-        u_init = interp1(tout_ID, uInit_ID.', OCP.tout, 'pchip').';
-        q_init = interp1(tout_HF, q_init_HF.', OCP.tout, 'pchip').';
+        u_init     = interp1(tout_ID, uInit_ID.', OCP.tout, 'pchip').';
+        q_init     = interp1(tout_HF, q_init_HF.', OCP.tout, 'pchip').';
+        q_dot_init = interp1(tout_HF, q_dot_init_HF.', OCP.tout, 'pchip').';
     else
-        u_init = uInit_ID;
-        q_init = q_init_HF;
+        u_init     = uInit_ID;
+        q_init     = q_init_HF;
+        q_dot_init = q_dot_init_HF;
     end
 
     fprintf("\nOverall computation time initial guess: %f s.\n\n", toc(tIGStart));
