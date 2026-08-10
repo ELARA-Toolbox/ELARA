@@ -1,8 +1,8 @@
-# build folder
-elara-toolbox/build/**
+# Generated MEX package contents
+elara-toolbox/+elara/+mex/**
 
 # Exclude directory placeholders
-!elara-toolbox/build/.gitkeep
+!elara-toolbox/+elara/+mex/.gitkeep
 
 # Autosave files
 *.asv

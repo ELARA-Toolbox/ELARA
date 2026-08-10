@@ -16,7 +16,7 @@ cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = true;
 
 % Get target path (build folder)
-targetDir = fullfile(elara.internal.getToolboxRootFolder, "build");
+targetDir = fullfile(elara.internal.getToolboxRootFolder, "+elara", "+mex");
 
 %% Compile functions
 

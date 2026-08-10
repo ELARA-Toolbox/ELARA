@@ -272,8 +272,8 @@ classdef Simulation
             isVarInt = obj.integrator.type ==  "varint";
 
             % Check if compiled mex files are available
-            if exist("computeEnergies_mex", "file") == 3
-                [T,U,V,H] = computeEnergies_mex( ...
+            if elara.internal.isMexAvailable("elara.mex.computeEnergies_mex")
+                [T,U,V,H] = elara.mex.computeEnergies_mex( ...
                     obj.system, obj.parameters, obj.results, isVarInt, opts.useFiniteDifferences);
             else
                 [T,U,V,H] = elara.internal.simulation.computeEnergies( ...

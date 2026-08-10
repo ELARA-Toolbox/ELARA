@@ -45,7 +45,7 @@ classdef VIBroyden < elara.abstract.Integrator
             end
 
             % Check if compiled mex files are available
-            useMex = exist("integrateVIBroyden_mex", "file") == 3;
+            useMex = elara.internal.isMexAvailable("elara.mex.integrateVIBroyden_mex");
 
             if obj.showConsoleOutput
                 fprintf('Starting integration (varint-broyden)...\n');
@@ -68,7 +68,7 @@ classdef VIBroyden < elara.abstract.Integrator
 
             tic;
             if useMex
-                simRes = integrateVIBroyden_mex( ...
+                simRes = elara.mex.integrateVIBroyden_mex( ...
                     MBSim.system, MBSim.parameters, solverOptionsVI);
             else
                 simRes = elara.internal.integration.integrateVIBroyden( ...
@@ -79,7 +79,7 @@ classdef VIBroyden < elara.abstract.Integrator
             % Run simulation again with timeit (if desired) for more accurate times
             if obj.accurateTiming
                 if useMex
-                    timingFun = @() integrateVIBroyden_mex( ...
+                    timingFun = @() elara.mex.integrateVIBroyden_mex( ...
                         MBSim.system, MBSim.parameters, solverOptionsVI);
                 else
                     timingFun = @() elara.internal.integration.integrateVIBroyden( ...
