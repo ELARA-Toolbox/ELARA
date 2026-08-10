@@ -4,26 +4,48 @@ function links = systemDef_cantilever_system
     %% Link 1: Flexible cantilever link
     links(1) = elara.FlexibleLink;
 
+    % Define as a cantilever beam that is fixed to the base
     links(1).parentLink = 0;
     links(1).isCantilever = true;
+
+    % Discretize with 5 segments
     links(1).nSegments      = 5;
+
+    % Specify beam length
     links(1).L         = 0.5;
+
+    % Transformation from the joint frame to the first beam node (unit
+    % transformation)
     links(1).g_J_B     = eye(4);
+
+    % Model as inextensible Kirchhoff beam: Only include the two bending
+    % and the torsion deformation modes
     links(1).Ba = [ eye(3); zeros(3)];
     links(1).Bc = [ zeros(3); eye(3)];
+
+    % Specify straight reference configuration
     links(1).xiRef = repmat([0;0;0;0;0;1], [1,links(1).nSegments]);
+
+    % Define beam material and geometry parameters
     links(1).beamParameters = beamParams_ASA_round("radius",0.006);
+
+    % Define material/Kelvin-Voigt dissipation
     links(1).beamParameters.d = ones(6,1)*1e-3;
 
 
     %% Link 2: Rigid link
     links(2) = elara.RigidLink;
 
+    % Link is attached to the cantilever beam (link #1)
     links(2).parentLink = 1;
+
+    % Define joint kinematics and properties
     links(2).jointIsActuated = 1;
     links(2).jointAxis  = [0 1 0 0 0 0].';
     links(2).g_J_B      = elara.SE3.matrix(eye(3), [0,0,0.3]);
     links(2).g_ref      = elara.SE3.matrix(eye(3), [0,0,0.3]);
+
+    % Link mass and inertia
     links(2).m          = 0.5;
     links(2).J          = diag([1,1,1e-3])*1e-4;
 
@@ -59,7 +81,8 @@ function links = systemDef_cantilever_system
         -0.08, -0.02, -0.3
         ];
 
-    links(1).d = 1e-1;
+    % Define joint dissipation for all links
+    links(1).d = 1e-1; % Unused, since the first link (the beam) is fixed
     links(2).d = 1e-1;
     links(3).d = 1e-1;
 end
