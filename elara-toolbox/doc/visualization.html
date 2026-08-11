@@ -1,0 +1,135 @@
+<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Visualizing Systems and Results</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Visualizing Systems and Results</h1></div>
+<p>ELARA comes with extensive tools for visualizing systems, simulation results, and plotting simulation data.</p>
+<p>ELARA separates visualizations of specific system configurations from visualizations or plots of simulation results. High-level methods on <code>elara.Simulation</code> cover the common workflow; classes in <code>elara.visualization</code>, <code>elara.plot</code>, and <code>elara.ocp.plot</code> provide finer control.</p>
+<div class="markdown-heading"><h2 class="heading-element">Configuring Link Geometry</h2></div>
+<p>To obtain insightful system visualizations, the corresponding properties of the system's links must be set; these are purely for visualization and do not affect the dynamics.
+These properties are directly set for the individual links:</p>
+<ul>
+<li>A rigid link is drawn as a simple box, which is constructed according to the transformation <code>g_bbox</code> and the positive/negative extents in <code>bBoxSize</code>.</li>
+<li>A flexible link uses <code>beamParameters.height</code> and <code>beamParameters.width</code> for its cross-sections.</li>
+<li>Joint markers, body and beam frames, tendon paths, and the TCP are generated from the model definition.</li>
+</ul>
+<p>These values are best set while the links are being defined, so that early configuration checks already show meaningful geometry.</p>
+<div class="markdown-heading"><h2 class="heading-element">Visualizing a System Configuration</h2></div>
+<p>It is straightforward to visualize the system in the reference configuration (where $q=0$), or at a specific configuration given by a generalized coordinate vector $q$:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-c"><span class="pl-c">%</span> Visualize reference configuration (q = 0)</span>
+<span class="pl-smi">simulation</span>.visualizeSystemRefConf;
+
+<span class="pl-c"><span class="pl-c">%</span> Visualize a specific configuration, e.g., the stress-free configuration</span>
+q <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.system.qRef;
+[<span class="pl-smi">fig</span>, <span class="pl-smi">vis</span>] <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.visualizeSystemConfig(<span class="pl-smi">q</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>figureName<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Stress-free configuration<span class="pl-pds">"</span></span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>ShowInertialFrame<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>linkColorMap<span class="pl-pds">"</span></span>, @<span class="pl-smi">lines</span>);</pre></div>
+<p>This can be used to check the model geometry and reference shape.
+<code>visualizeSystemRefConf</code> uses $q=0$. For a precurved beam whose allowed reference deformation is nonzero, the stress-free shape is obtained by displaying <code>system.qRef</code> instead.</p>
+<p>The returned object <code>vis</code> is an <code>elara.visualization.SystemVisualization</code> object. It can update an existing drawing or add a planar projection:</p>
+<div class="highlight highlight-source-matlab"><pre>g <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.system.computeFwdKin(<span class="pl-smi">q</span>);
+<span class="pl-smi">vis</span>.updateConfiguration(<span class="pl-smi">g</span>);
+<span class="pl-smi">vis</span>.plotProjection(<span class="pl-s"><span class="pl-pds">"</span>xz<span class="pl-pds">"</span></span>, <span class="pl-smi">fig</span>.CurrentAxes.YLim(<span class="pl-c1">2</span>));</pre></div>
+<p>For direct control of visible elements, the graphics object can be initialized explicitly:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-smi">elara</span>.visualization.initializeAxes(<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Model<span class="pl-pds">"</span></span>);
+g <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.system.computeFwdKin(<span class="pl-smi">q</span>);
+vis <span class="pl-k">=</span> <span class="pl-smi">elara</span>.visualization.SystemVisualization( ...
+    <span class="pl-smi">simulation</span>.system, <span class="pl-smi">simulation</span>.links, <span class="pl-smi">g</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>showInertialFrame<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>showLinkFrames<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>showBeamFrames<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>showJoints<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>showTendons<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>);</pre></div>
+<p>A target pose can be marked with <code>elara.visualization.CoordinateFrame(gTarget)</code>. <code>initializeAxes("createFigure", false)</code> applies ELARA's grid, equal-axis, view, and labels to the current axes, which is useful for tiled layouts and overlays.</p>
+<div class="markdown-heading"><h2 class="heading-element">Drawing Snapshots and Animations</h2></div>
+<p>After a simulation or OCP trajectory has been stored in <code>simulation.results</code>, it can be easily visualized and animated:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-smi">simulation</span>.drawSnapshots( ...
+    <span class="pl-s"><span class="pl-pds">"</span>nSnapShots<span class="pl-pds">"</span></span>, <span class="pl-c1">15</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>includeColorbar<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>snapShotColormap<span class="pl-pds">"</span></span>, @<span class="pl-smi">winter</span>);
+
+<span class="pl-smi">simulation</span>.animateSimResults( ...
+    <span class="pl-s"><span class="pl-pds">"</span>frameRate<span class="pl-pds">"</span></span>, <span class="pl-c1">30</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>saveMovie<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>);</pre></div>
+<p>Both methods interpolate the generalized coordinates to evenly spaced display times and recompute forward kinematics. This changes only the visualization sampling, not the numerical result.</p>
+<p>To combine an animation with a target or workspace, the figure can be prepared beforehand:</p>
+<div class="highlight highlight-source-matlab"><pre>fig <span class="pl-k">=</span> <span class="pl-smi">elara</span>.visualization.initializeAxes( ...
+    <span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Optimized motion<span class="pl-pds">"</span></span>);
+<span class="pl-smi">elara</span>.visualization.CoordinateFrame(<span class="pl-smi">gTarget</span>);
+<span class="pl-smi">workspace</span>.visualize(<span class="pl-s"><span class="pl-pds">"</span>createFigure<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>);
+
+<span class="pl-smi">simulation</span>.animateSimResults(<span class="pl-s"><span class="pl-pds">"</span>figure<span class="pl-pds">"</span></span>, <span class="pl-smi">fig</span>);</pre></div>
+<p>Movie export is enabled with <code>saveMovie = true</code> and a full <code>fileName</code>. MATLAB <code>VideoWriter</code> is used with the MPEG-4 profile, and the figure size should remain fixed during capture. MPEG-4 support depends on the MATLAB platform.</p>
+<div class="markdown-heading"><h2 class="heading-element">Plotting Simulation Data</h2></div>
+<p>Once a trajectory has been simulated, <code>plotAll</code> provides a quick overview of the available coordinate, frame, beam, and solver data:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-smi">simulation</span>.plotAll;</pre></div>
+<p>It does not calculate or plot energies, which require separate post-processing.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plotJointAngles</code></td>
+<td>Revolute-joint angles and angular velocities, in degrees.</td>
+</tr>
+<tr>
+<td><code>plotFramePositions</code></td>
+<td>Rigid-link frames and the first/last nodes of flexible links.</td>
+</tr>
+<tr>
+<td><code>plotFrameVelocities</code></td>
+<td>Body-fixed angular and translational frame velocities.</td>
+</tr>
+<tr>
+<td><code>plotBeamData</code></td>
+<td>Beam-node configurations and velocities and selected segment strains.</td>
+</tr>
+<tr>
+<td><code>plotSolverStats</code></td>
+<td>Integrator-specific step or implicit-solver statistics.</td>
+</tr>
+</tbody>
+</table>
+<p>Energy plots require a separate computation:</p>
+<div class="highlight highlight-source-matlab"><pre>simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.computeEnergies;
+<span class="pl-smi">elara</span>.plot.energies(<span class="pl-smi">simulation</span>.results, ...
+    <span class="pl-s"><span class="pl-pds">"</span>nameString<span class="pl-pds">"</span></span>, <span class="pl-smi">simulation</span>.Name);</pre></div>
+<p>For large beams, <code>plotBeamData</code> samples a limited set of nodes and segments to keep the figure set manageable. Custom plots can be created from <code>simulation.results</code> and <code>system.getLinkDeformations</code>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Plotting Optimal-Control Data</h2></div>
+<p>For a variational transcription, the configuration trajectory returned by <code>solve</code> can be plotted directly:</p>
+<div class="highlight highlight-source-matlab"><pre>[<span class="pl-smi">qSol</span>, <span class="pl-smi">uSol</span>, <span class="pl-smi">uDecision</span>] <span class="pl-k">=</span> <span class="pl-smi">problem</span>.solve(<span class="pl-smi">qInit</span>, <span class="pl-smi">uInit</span>);
+
+<span class="pl-smi">elara</span>.ocp.plot.coordinatesInputs(<span class="pl-smi">problem</span>, <span class="pl-smi">qSol</span>, <span class="pl-smi">uSol</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>plotDerivatives<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>FDOrder<span class="pl-pds">"</span></span>, <span class="pl-c1">4</span>);
+
+<span class="pl-smi">problem</span>.plotConstraintResiduals(<span class="pl-smi">qSol</span>, <span class="pl-smi">uDecision</span>);
+<span class="pl-smi">elara</span>.ocp.plot.TCPTrajectory(<span class="pl-smi">problem</span>, <span class="pl-smi">qSol</span>);</pre></div>
+<p>The optimized control decision variables <code>uDecision</code> are used for constraint residuals. With B-spline controls these are control points, whereas <code>uSol</code> contains values evaluated at the OCP nodes. <code>TCPTrajectory</code> is intended for problems with a configured reference <code>x_TCP_traj</code>.</p>
+<p>For an ODE transcription, the returned state is split before plotting:</p>
+<div class="highlight highlight-source-matlab"><pre>[<span class="pl-smi">xSol</span>, <span class="pl-smi">uSol</span>, <span class="pl-smi">uDecision</span>] <span class="pl-k">=</span> <span class="pl-smi">problem</span>.solve(<span class="pl-smi">xInit</span>, <span class="pl-smi">uInit</span>);
+n <span class="pl-k">=</span> <span class="pl-smi">problem</span>.systemNum.nDoF;
+qSol <span class="pl-k">=</span> xSol(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-smi">n</span>,<span class="pl-k">:</span>);
+qDotSol <span class="pl-k">=</span> xSol(<span class="pl-smi">n</span><span class="pl-k">+</span><span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-smi">end</span>,<span class="pl-k">:</span>);
+
+<span class="pl-smi">elara</span>.ocp.plot.coordinatesInputs(<span class="pl-smi">problem</span>, <span class="pl-smi">qSol</span>, <span class="pl-smi">uSol</span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>q_dot<span class="pl-pds">"</span></span>, <span class="pl-smi">qDotSol</span>);
+<span class="pl-smi">problem</span>.plotConstraintResiduals(<span class="pl-smi">xSol</span>, <span class="pl-smi">uDecision</span>);</pre></div>
+<p>An OCP configuration trajectory can be converted so that all simulation visualizations can be reused:</p>
+<div class="highlight highlight-source-matlab"><pre>simulation <span class="pl-k">=</span> <span class="pl-smi">problem</span>.getSimulationObject;
+simulation.Name <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Optimization<span class="pl-pds">"</span></span>;
+simulation.results <span class="pl-k">=</span> <span class="pl-smi">elara</span>.SimulationResults.fromStateTrajectory( ...
+    <span class="pl-smi">problem</span>.systemNum, <span class="pl-smi">problem</span>.tout, <span class="pl-smi">qSol</span>);
+
+<span class="pl-smi">simulation</span>.plotAll;
+<span class="pl-smi">simulation</span>.drawSnapshots;
+<span class="pl-smi">simulation</span>.animateSimResults;</pre></div>
+<p>If velocities are omitted, <code>fromStateTrajectory</code> estimates them using second- or fourth-order finite differences. For an ODE transcription, <code>qDotSol</code> can be passed as the fourth argument in the call above.</p>
+<div class="markdown-heading"><h2 class="heading-element">Workspace Graphics</h2></div>
+<p>Workspace geometry is often useful as a visual reference when an optimized motion is inspected. <code>problem.workspace.visualize</code> draws the configured interiors and obstacles as translucent polytopes and can either create a new figure or overlay the current axes:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-smi">problem</span>.workspace.visualize( ...
+    <span class="pl-s"><span class="pl-pds">"</span>figureName<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Workspace<span class="pl-pds">"</span></span>, ...
+    <span class="pl-s"><span class="pl-pds">"</span>createFigure<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>);</pre></div>
+<p>The drawing is a diagnostic representation. OCP collision constraints operate on frame origins and the TCP, not on the rendered volume of each link.</p>
+<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="optimal_control.html">Solving Optimal-Control Problems</a>, and the plotting sections of the supplied examples.</p></div></main><script src="resources/copycode.js">//</script></body></html>

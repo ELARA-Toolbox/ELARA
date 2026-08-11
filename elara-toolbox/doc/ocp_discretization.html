@@ -1,0 +1,109 @@
+<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Choosing an OCP Discretization</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Choosing an OCP Discretization</h1></div>
+<p>The discretization determines how the continuous-time optimal control problem is transcribed into the finite-dimensional NLP.
+More precisely, it determines how the system dynamics, running costs, and constraints are discretized in time.
+Hence, the discretization influences which state variables appear in the NLP, and how the dynamics and running costs are enforced between time nodes.</p>
+<p>The used discretization is determined by the discretization object assigned to <code>problem.discretization</code>.
+It must be assigned and configured before <code>problem.initSolver</code> is called.</p>
+<div class="markdown-heading"><h2 class="heading-element">Available Methods</h2></div>
+<p>ELARA provides one variational transcription and three ODE-based alternatives. Their main differences are the node variables, the discrete dynamics constraints, and the formal integration order.</p>
+<table>
+<thead>
+<tr>
+<th>Discretization</th>
+<th>Node variable</th>
+<th>Dynamics constraint</th>
+<th align="right">Order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>elara.ocp.DiscretizationVI</code></td>
+<td>Configuration <code>q_k</code>
+</td>
+<td>Forced discrete Euler-Lagrange equations</td>
+<td align="right">2 with trapezoidal dissipation</td>
+</tr>
+<tr>
+<td><code>elara.ocp.DiscretizationRK("RK2")</code></td>
+<td>State <code>[q_k; qDot_k]</code>
+</td>
+<td>Explicit two-stage Heun step</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td><code>elara.ocp.DiscretizationRK("RK4")</code></td>
+<td>State <code>[q_k; qDot_k]</code>
+</td>
+<td>Classical explicit four-stage RK step</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td><code>elara.ocp.DiscretizationImplicitMidpoint</code></td>
+<td>State <code>[q_k; qDot_k]</code>
+</td>
+<td>Implicit midpoint step</td>
+<td align="right">2</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight highlight-source-matlab"><pre>problem.discretization <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.DiscretizationVI;
+
+<span class="pl-c"><span class="pl-c">%</span> Alternatives</span>
+problem.discretization <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.DiscretizationRK(<span class="pl-s"><span class="pl-pds">"</span>RK2<span class="pl-pds">"</span></span>);
+problem.discretization <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.DiscretizationRK(<span class="pl-s"><span class="pl-pds">"</span>RK4<span class="pl-pds">"</span></span>);
+problem.discretization <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.DiscretizationImplicitMidpoint;</pre></div>
+<p>Changing the discretization changes the NLP structure. <code>initSolver</code> must therefore be called again, and an initial guess with the corresponding dimensions must be provided.</p>
+<div class="markdown-heading"><h2 class="heading-element">Variational/DMOC Discretization</h2></div>
+<p>The variational formulation stays closest to the underlying mechanical principles and uses configurations as its only node states. <code>DiscretizationVI</code> discretizes the Lagrange-d'Alembert principle before the equations of motion are formed. Consecutive configurations are the discrete state, and the forced discrete Euler-Lagrange equations become equality constraints in the NLP. In simplified notation, these constraints have the form</p>
+<p>$$
+D_2L_d(q_{k-1},q_k)
++D_1L_d(q_k,q_{k+1})
++F_k=0,
+$$</p>
+<p>where $L_d$ approximates the mechanical action over one interval, $D_1$ and $D_2$ denote derivatives with respect to its two configurations, and $F_k$ collects discrete actuation and dissipation. Initial and optional final velocity conditions are imposed through the corresponding discrete momentum relations.</p>
+<p>This formulation preserves the Lie-group configuration geometry and the variational structure of the mechanical model. In practical terms, rotations remain valid rotations throughout the transcription, while the discrete dynamics retain important properties of the original mechanical system. Approximately half as many state variables are used as in an ODE transcription because velocities are not independent node variables. It is the default and usually provides a suitable starting point for rigid-flexible systems.</p>
+<p>The dissipation quadrature, which determines how the damping contribution is approximated over each interval, is configurable:</p>
+<div class="highlight highlight-source-matlab"><pre>d <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.DiscretizationVI;
+d.aTrapez <span class="pl-k">=</span> <span class="pl-c1">0.5</span>;  <span class="pl-c"><span class="pl-c">%</span> trapezoidal dissipation, always second order</span>
+problem.discretization <span class="pl-k">=</span> <span class="pl-smi">d</span>;</pre></div>
+<p><code>aTrapez = 0</code> uses the simpler rectangle-rule dissipation term, and <code>aTrapez = 0.5</code> the full trapezoidal term.
+With <code>aTrapez = 0</code>, the discretization is first order when dissipation is present and remains second order for conservative systems.
+With <code>aTrapez = 0.5</code>, it is always second order.
+Note that this property corresponds to the <code>useFirstOrderDissipation</code> property of the variational integrator for numerical simulations.</p>
+<p>The running cost is integrated with the trapezoidal rule.</p>
+<p>For the derivation, see Chapter 5 of the dissertation and the variational-model references under <a href="index.html#further-reading">Further Reading</a>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Runge-Kutta Discretizations</h2></div>
+<p>Runge-Kutta methods provide a familiar alternative when the system is to be transcribed in conventional first-order ODE form. <code>DiscretizationRK</code> applies one explicit Runge-Kutta (RK) step to the state equation in each NLP interval. Each step defines a map</p>
+<p>$$
+x_{k+1}=\Phi_h(x_k,u_k,u_{k+1}),
+$$</p>
+<p>where $\Phi_h$ denotes the selected RK approximation over a time interval of length $h$. <code>RK2</code> is cheaper per interval; <code>RK4</code> is the constructor default and gives higher integration order for sufficiently smooth problems.</p>
+<p>For direct node-based controls, stage inputs are interpolated linearly between $u_k$ and $u_{k+1}$. With B-spline controls, the spline is evaluated at the actual RK stage times. The running-cost quadrature uses the corresponding RK weights.</p>
+<p>ODE initial guesses must contain both coordinates and velocities:</p>
+<div class="highlight highlight-source-matlab"><pre>xInit <span class="pl-k">=</span> [<span class="pl-smi">qInit</span>; <span class="pl-smi">qDotInit</span>];
+[<span class="pl-smi">xSol</span>, <span class="pl-smi">uSol</span>] <span class="pl-k">=</span> <span class="pl-smi">problem</span>.solve(<span class="pl-smi">xInit</span>, <span class="pl-smi">uInit</span>);</pre></div>
+<div class="markdown-heading"><h2 class="heading-element">Implicit-Midpoint Discretization</h2></div>
+<p>The implicit-midpoint method provides a second-order ODE transcription with one midpoint evaluation per interval. <code>DiscretizationImplicitMidpoint</code> enforces the first-order dynamics according to:</p>
+<p>$$
+x_{k+1}=x_k+h,f!\left(
+\frac{x_k+x_{k+1}}{2},u_{k+\frac12}
+\right).
+$$</p>
+<p>Both state and direct input midpoints are averages of their endpoint values; a B-spline control is evaluated at the midpoint. The running cost uses midpoint quadrature.</p>
+<p>Although the step relation is implicit, it is imposed directly as part of the NLP and does not require configuring a separate time-step solver.</p>
+<div class="markdown-heading"><h2 class="heading-element">Selecting a Step Size</h2></div>
+<p>The temporal resolution controls the usual compromise between transcription accuracy and NLP size. All methods use the uniform step <code>problem.h</code>, and the dependent properties satisfy</p>
+<p>$$
+N=\operatorname{round}!\left(\frac{t_{\mathrm{End}}}{h}\right),
+\qquad
+\boldsymbol{t}=\begin{bmatrix}0&amp;h&amp;\cdots&amp;Nh\end{bmatrix}^{\mathsf T},
+$$</p>
+<p>and can be read directly with:</p>
+<div class="highlight highlight-source-matlab"><pre>nSteps <span class="pl-k">=</span> <span class="pl-smi">problem</span>.nSteps;
+tout <span class="pl-k">=</span> <span class="pl-smi">problem</span>.tout;</pre></div>
+<p><code>nSteps</code> and <code>tout</code> are read-only dependent properties; only <code>tEnd</code> and <code>h</code> are set. A step that divides the horizon exactly is recommended.</p>
+<p>A smaller <code>h</code> usually improves the transcription accuracy but increases the number of variables and constraints. When accuracy matters, solutions can be compared on successively refined grids. A higher-order method does not guarantee a better optimized trajectory on a coarse grid when bounds or nonsmooth active constraints dominate.</p>
+<div class="markdown-heading"><h2 class="heading-element">Controls and Bounds</h2></div>
+<p>The selected state discretization can be combined with either direct or spline-based control variables. With <code>useSplineInputs = false</code>, every method uses control variables at the state nodes. With splines, the optimization variables are control points and ELARA evaluates the resulting trajectory wherever the selected dynamics and cost need it.</p>
+<p>Input limits for spline controls are enforced at the OCP nodes. A spline can overshoot between nodes, including between RK stage evaluations. When strict continuous-time limits are required, the node density may be increased, the reconstructed control inspected, or an application-specific margin added.</p>
+<p>See also <a href="optimal_control.html">Solving Optimal-Control Problems</a> and the three optimal-control scripts in the <code>examples</code> folder.</p></div></main><script src="resources/copycode.js">//</script></body></html>

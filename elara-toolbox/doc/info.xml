@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<productinfo>
+  <matlabrelease>R2025b</matlabrelease>
+  <name>ELARA</name>
+  <type>toolbox</type>
+  <icon>$toolbox/matlab/icons/bookicon.gif</icon>
+  <help_location>.</help_location>
+</productinfo>

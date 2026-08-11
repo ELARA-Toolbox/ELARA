@@ -1,0 +1,211 @@
+<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Choosing an Integration Method</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Choosing an Integration Method</h1></div>
+<p>The numerical forward simlations can be performed with various integrators.
+The used integrator is stored in the <code>simulation.integrator</code> field in the simulation object and must be assigned and correctly configured before <code>simulation.simulateSystem</code> is called.
+By default, ELARA provides a fixed-step Lie-group variational integrator and two interfaces to standard ODE solvers.</p>
+<div class="markdown-heading"><h2 class="heading-element">Available Integrators</h2></div>
+<p>The integration method can be selected according to the system stiffness, the preferred MATLAB solver interface, and whether structure-preserving time stepping is desired. The available classes are summarized below.</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Formulation</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>elara.integration.VIBroyden</code></td>
+<td>Implicit, fixed-step variational integrator</td>
+<td>Default; rigid-flexible and numerically stiff systems, structure-preserving simulation</td>
+</tr>
+<tr>
+<td><code>elara.integration.ODEDirect</code></td>
+<td>ODE solver for the system in first-order form through a MATLAB <code>ode</code> object</td>
+<td>Current object-based MATLAB ODE workflow</td>
+</tr>
+<tr>
+<td><code>elara.integration.ODEDirectFunctionBased</code></td>
+<td>ODE solver for the system in first-order form through functions such as <code>ode45</code> or <code>ode15s</code>
+</td>
+<td>Classic function-based MATLAB ODE workflow</td>
+</tr>
+</tbody>
+</table>
+<p>All integrators inherit two common settings:</p>
+<ul>
+<li>
+<code>showConsoleOutput</code> controls timing and solver information printed during a run; default <code>true</code>.</li>
+<li>
+<code>accurateTiming</code> repeats the integration with <code>timeit</code>; default <code>false</code>. Enable it only for benchmarking because it increases total runtime.</li>
+</ul>
+<div class="markdown-heading"><h2 class="heading-element">Lie-Group Variational Integrator</h2></div>
+<p>With <code>elara.integration.VIBroyden</code>, an implementation of an implicit, fixed-step, first/second-order Lie-group variational integrator is available that can be highly efficient both for numerically non-stiff and stiff systems.
+It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle, meaning that the mechanical balance laws are formulated directly in discrete time rather than discretizing an ODE a-posteriori. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form</p>
+<p>$$
+F_{\mathrm{DEL}}!\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
+$$</p>
+<p>which is solved with Broyden's good method, a quasi-Newton method which updates an approximation of the residual Jacobian instead of recomputing it in every iteration. In the conservative case, the integrator is second order and preserves the variational structure of the system, which generally gives good long-term momentum and energy behavior.</p>
+<p>The formulation operates on consecutive configurations rather than a doubled first-order state containing both position and velocity. Together with the relative-coordinate model, this keeps the implicit solve practical for many stiff flexible systems. An adequately small time step is nevertheless still required.</p>
+<p>For the full derivation and numerical studies, see Chapters 3 and 4 and the 2024 paper listed under <a href="index.html#further-reading">Further Reading</a>.</p>
+<div class="markdown-heading"><h3 class="heading-element">Configuration</h3></div>
+<p>For most applications, only the step size and the treatment of dissipation need to be selected initially. A representative configuration is:</p>
+<div class="highlight highlight-source-matlab"><pre>simulation.integrator <span class="pl-k">=</span> <span class="pl-smi">elara</span>.integration.VIBroyden;
+simulation.integrator.h <span class="pl-k">=</span> <span class="pl-c1">2</span>^-<span class="pl-c1">9</span>;
+simulation.integrator.tolerance <span class="pl-k">=</span> 1e<span class="pl-k">-</span><span class="pl-c1">10</span>;
+simulation.integrator.useFirstOrderDissipation <span class="pl-k">=</span> <span class="pl-c1">false</span>;
+
+simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.simulateSystem;</pre></div>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Typical Values</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h</code></td>
+<td><code>2^-8</code></td>
+<td>Fixed time step in seconds.</td>
+</tr>
+<tr>
+<td><code>tolerance</code></td>
+<td>
+<code>1e-7</code> to <code>1e-12</code>
+</td>
+<td>Target norm of the implicit residual.</td>
+</tr>
+<tr>
+<td><code>toleranceLimit</code></td>
+<td>
+<code>1e-6</code> to <code>1e-10</code>
+</td>
+<td>Largest residual accepted after the iteration limit.</td>
+</tr>
+<tr>
+<td><code>maxIterations</code></td>
+<td><code>100</code></td>
+<td>Maximum Broyden iterations per step.</td>
+</tr>
+<tr>
+<td><code>JacobianIterationThreshold</code></td>
+<td>3 to 5</td>
+<td>Recompute the Jacobian after a step whose iteration count exceeds this value.</td>
+</tr>
+<tr>
+<td><code>useFirstOrderDissipation</code></td>
+<td><code>true</code></td>
+<td>Use the more robust, but less accurate rectangle-rule approximation for dissipation.</td>
+</tr>
+</tbody>
+</table>
+<p><code>useFirstOrderDissipation = false</code> uses a trapezoidal dissipation term and is second order also when damping is present. <code>true</code> is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.</p>
+<p>The generated time grid is</p>
+<p>$$
+t_k=kh,\qquad
+k=0,\ldots,\operatorname{round}!\left(\frac{t_{\mathrm{End}}}{h}\right).
+$$</p>
+<p>When the exact endpoint matters, <code>h</code> should be chosen so that it divides <code>tEnd</code>.</p>
+<div class="markdown-heading"><h3 class="heading-element">Implementation Details</h3></div>
+<ul>
+<li>
+<p>The primary solver setting is the time step <code>h</code>, which determines both the accuracy (integration error) and the computation time of the integrator.</p>
+<p><strong>Important:</strong> For numerically stiff systems, there is usually a <em>maximum time step</em> $h_{max}$, which can not be exceeded for the solver to run successfully. For larger time steps $h &gt; h_{max}$, the implicit solver will not converge, and the simulation will fail.</p>
+<ul>
+<li>
+<p>Hence, if the variational integrator does not run for a specific system, the first thing to try is usually decreasing the time step, e.g., by factors of 2 or 10.</p>
+</li>
+<li>
+<p>The maximum time step strongly depends on the dissipation in the system; with increased dissipation, larger time steps can be used.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>For systems with dissipation, the property <code>useFirstOrderDissipation</code> determines the integrator's order: For <code>useFirstOrderDissipation =  false</code>, it is second-order, for <code>useFirstOrderDissipation = true</code>, it is first-order.
+For conservative systems (without dissipation), this value has no effect, since it only affects the dissipation terms.</p>
+<p>For increased accuracy, one usually wants to use <code>useFirstOrderDissipation = false</code> for second-order accuracy. However, in cases where computational efficiency is the primary concern, <code>useFirstOrderDissipation = true</code> may be useful,
+since it usually results in a much higher maximum time step $h_{max}$.
+This means that much larger time steps can be used, which can significantly decrease computation time.</p>
+</li>
+<li>
+<p>The setting <code>tolerance</code> determines the residual threshold for the solution of the implicit system of equations.
+Adjusting this value is often advantageous for either increased numerical efficiency (since higher tolerances usually mean less solver iterations and thus less computation time), or increased robustness.
+In some cases, adjusting this value may allow the solver to run successfully when it failed for the default settings.
+However, it depends on the specific system, which values result in the highest stability.</p>
+</li>
+<li>
+<p>For the highest performance and stability, one can additionally tune the parameters <code>toleranceLimit</code>, <code>maxIterations</code> and <code>JacobianIterationThreshold</code>.</p>
+<ul>
+<li>
+<p>If <code>toleranceLimit</code> is set to a larger value than <code>tolerance</code>, the integrator does not abort the simulation if the implicit solver does not converge to the default tolerance specified by <code>tolerance</code> within <code>maxIterations</code>, as long as the residual remains below <code>toleranceLimit</code>.</p>
+<p>This setting can be useful to successfully integrate systems with difficult numerical properties, but usually results in much larger run times since the solver executes a large number of additional iterations.</p>
+</li>
+<li>
+<p>Correspondingly, <code>maxIterations</code> sets the maximum number of iterations of the implicit solver. If the residual does not converge to <code>toleranceLimit</code> within this number, the integration fails.</p>
+</li>
+<li>
+<p><code>JacobianIterationThreshold</code> defines how often the Jacobian of the implicit system of equations (i.e., the DEL Jacobian) is recomputed during integration.
+To increase performance, the Jacobian is not computed in each time step; it is only recomputed if the number of iterations in the last time step exceeds <code>JacobianIterationThreshold</code>.
+Otherwise, the Jacobian of the last time step is reused.
+Reusing the old Jacobian is a compromise between the computational cost of recomputing the exact Jacobian (which is expensive) and a few additional solver iterations caused by a slightly inaccarute Jacobian.
+There is usually an optimal value to achieve the highest perfomance, which often lies between 3 and 5.
+In some cases, this mechanism can impact the stability of the integrator, and using a smaller number (or even 0 to disable the feature) may help.</p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="markdown-heading"><h3 class="heading-element">Practical Quick-Start Guide for the Variational integrator</h3></div>
+<ol>
+<li>
+<p>If the system is dissipative, decide whether the focus is on accuracy (low integration error), or on computational time. For accuracy, set <code>useFirstOrderDissipation</code> to <code>false</code>, otherwise to <code>true</code>.
+For conservative (non-dissipative) systems, skip this step, as this setting only influences the dissipation term.</p>
+</li>
+<li>
+<p>Start with a fairly large time step <code>h</code>, e.g., the default value. If the integration does not succeed or the results show signs of instability (which may be the case for numerically stiff systems), decrease <code>h</code> until the integration completes successfully.
+Otherwise, choose <code>h</code> according to the requirements on integration error and run time.</p>
+</li>
+<li>
+<p>For highest performance, adjust <code>tolerance</code>, which may allow to run the simulation with a larger time step or a smaller number of iterations, resulting in faster run times.</p>
+</li>
+<li>
+<p>For complex cases, you can further adjust <code>toleranceLimit</code> and the other settings mentioned above.</p>
+</li>
+</ol>
+<p>The result can be assessed through <code>simulation.plotSolverStats</code> or the fields <code>solverIterations</code>, <code>solverResidual</code>, and <code>solverExitFlag</code>. <code>VIBroyden</code> stores <code>NaN</code> in the final <code>q_dot</code> and <code>eta</code> samples because its discrete velocities belong to time intervals. <code>computeEnergies</code> uses finite-difference velocities by default; in custom post-processing, the final sample should be handled or reconstructed explicitly.</p>
+<div class="markdown-heading"><h2 class="heading-element">Object-Based ODE Interface</h2></div>
+<p>MATLAB's newer object-based ODE interface keeps the solver choice and its options together in one object. ELARA exposes this workflow through <code>elara.integration.ODEDirect</code>, whose solver and tolerances are configured before the simulation is started:</p>
+<div class="highlight highlight-source-matlab"><pre>simulation.integrator <span class="pl-k">=</span> <span class="pl-smi">elara</span>.integration.ODEDirect;
+simulation.integrator.odeObject.Solver <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>ode15s<span class="pl-pds">"</span></span>;
+simulation.integrator.odeObject.AbsoluteTolerance <span class="pl-k">=</span> <span class="pl-c1">1e-6</span>;
+simulation.integrator.odeObject.RelativeTolerance <span class="pl-k">=</span> <span class="pl-c1">1e-6</span>;
+
+simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.simulateSystem;</pre></div>
+<p><code>ode45</code> is a useful starting point for nonstiff rigid systems. Flexible systems commonly require a stiff solver such as <code>ode15s</code>. Solver selection, tolerances, and other supported options follow the MATLAB <code>ode</code> object interface. Integration is performed over <code>[0,tEnd]</code>, and the adaptive points selected by the solver are stored; the current simulation wrapper does not expose a custom output grid.</p>
+<div class="markdown-heading"><h2 class="heading-element">Function-Based ODE Interface</h2></div>
+<p>For existing code based on solver functions such as <code>ode45</code> and <code>ode15s</code>, the classic MATLAB interface remains available. It is exposed through <code>elara.integration.ODEDirectFunctionBased</code>:</p>
+<div class="highlight highlight-source-matlab"><pre>simulation.integrator <span class="pl-k">=</span> ...
+    <span class="pl-smi">elara</span>.integration.ODEDirectFunctionBased;
+simulation.integrator.solverFunction <span class="pl-k">=</span> @<span class="pl-smi">ode15s</span>;
+simulation.integrator.solverOptions <span class="pl-k">=</span> odeset( ...
+    <span class="pl-s"><span class="pl-pds">"</span>AbsTol<span class="pl-pds">"</span></span>, <span class="pl-c1">1e-6</span>, <span class="pl-s"><span class="pl-pds">"</span>RelTol<span class="pl-pds">"</span></span>, <span class="pl-c1">1e-6</span>);
+
+simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.simulateSystem;</pre></div>
+<p>The defaults are <code>@ode45</code> and <code>odeset()</code>.</p>
+<div class="markdown-heading"><h3 class="heading-element">Derivative and Mass-Matrix Forms</h3></div>
+<p>Both ODE classes use the first-order state</p>
+<p>$$
+x=\begin{bmatrix}q\\dot q\end{bmatrix}.
+$$</p>
+<p>They also inherit <code>useMassMatrixForm</code>, which is <code>false</code> by default. The two available representations are</p>
+<p>$$
+\dot x=f(t,x,u)
+\qquad\text{or}\qquad
+M(x)\dot x=f(t,x,u).
+$$</p>
+<p>In the derivative form, the acceleration is solved inside each model evaluation. In the mass-matrix form, $M$ and the right-hand side are passed separately to the selected MATLAB solver. A solver supporting a state-dependent mass matrix is required for the latter form.</p>
+<div class="markdown-heading"><h2 class="heading-element">MEX Acceleration</h2></div>
+<p>The numerical workload of an integration can optionally be reduced through compiled MEX functions. Each integrator checks whether its required functions are available in the <code>elara.mex</code> namespace and otherwise uses the MATLAB implementation. The optional MEX functions can be compiled once with <code>elara.build</code>; solver configuration and result formats remain unchanged.</p>
+<div class="markdown-heading"><h2 class="heading-element">Implementing a Custom Integrator</h2></div>
+<p>A custom integrator can be added by deriving a class from <code>elara.abstract.Integrator</code> and implementing the constant <code>type</code> and the methods <code>simulateSystem</code> and <code>plotSolverStats</code>. ODE-style implementations may instead derive from <code>elara.abstract.IntegratorODE</code> so that the mass-matrix option and ODE statistics plot are reused. The resulting object can then be assigned directly to <code>simulation.integrator</code>.</p>
+<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="visualization.html">Visualizing Systems and Results</a>, and the simulation scripts in the <code>examples</code> folder.</p></div></main><script src="resources/copycode.js">//</script></body></html>

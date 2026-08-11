@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toc version="1.0">
+    <tocitem target="index.html">Getting Started</tocitem>
+    <tocitem target="system_definition.html">Defining Multibody Systems</tocitem>
+    <tocitem target="simulation.html">Running Numerical Simulations<tocitem target="integration.html">Choosing an Integration Method</tocitem>
+    </tocitem>
+    <tocitem target="optimal_control.html">Solving Optimal-Control Problems<tocitem target="ocp_discretization.html">Choosing an OCP Discretization</tocitem>
+    </tocitem>
+    <tocitem target="visualization.html">Visualizing Systems and Results</tocitem>
+</toc>
