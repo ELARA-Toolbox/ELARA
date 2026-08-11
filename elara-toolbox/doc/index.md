@@ -14,7 +14,7 @@ The documentation is intentionally task-oriented. Complete argument lists and im
 
 ## Requirements and Setup
 
-ELARA requires MATLAB R2025b or later. Additional components are needed only for the workflows in which they are used:
+ELARA requires MATLAB R2025b or later. Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:
 
 * CasADi is required for optimal control and other symbolic optimization workflows; version 3.7.2 is tested for this release.
 * MATLAB Coder and a supported C++ compiler enable faster MEX implementations of performance-critical simulation functions.
@@ -22,7 +22,7 @@ ELARA requires MATLAB R2025b or later. Additional components are needed only for
 * Robotics System Toolbox is used for minimum-jerk TCP trajectories and rotated workspace boxes.
 * Optimization Toolbox, Mapping Toolbox, and Robotics System Toolbox are used by the inverse-dynamics initial-guess helpers.
 
-None of these additional products is required for the basic MATLAB simulation workflow.
+These other products are not required for the basic MATLAB simulation workflow.
 
 After installation, the active setup can be checked with:
 

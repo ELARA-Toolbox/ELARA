@@ -11,6 +11,8 @@ function T = dexp( eta )
     % Input eta: se(3) element in *vector* form
     % Output T: 6x6 matrix
     %
+    % Requires Signal Processing Toolbox for the sinc function.
+    %
     % Maximilian Herrmann
     % Chair of Automatic Control
     % TUM School of Engineering and Design

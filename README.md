@@ -26,7 +26,8 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 
 ## Requirements
 
-- MATLAB `R2025b` or later; no add-on product is required for the core MATLAB simulation workflow
+- MATLAB `R2025b` or later
+- Signal Processing Toolbox: required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow
 
 Optional dependencies:
 

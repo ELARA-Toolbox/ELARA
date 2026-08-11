@@ -8,6 +8,8 @@ function g = exp( xi )
     % Input xi: se(3) element in *vector* form
     % Output g: Corresponding element of SE(3) in matrix form
     %
+    % Requires Signal Processing Toolbox for the sinc function.
+    %
     % Maximilian Herrmann
     % Chair of Automatic Control
     % TUM School of Engineering and Design

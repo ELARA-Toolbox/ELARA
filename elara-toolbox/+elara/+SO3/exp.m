@@ -7,6 +7,8 @@ function Lambda = exp( om )
     % Input om:   so(3) element in *vector* form (omega)
     % Output Lambda: Corresponding rotation matrix
     %
+    % Requires Signal Processing Toolbox for the sinc function.
+    %
     % Maximilian Herrmann
     % Chair of Automatic Control
     % TUM School of Engineering and Design
