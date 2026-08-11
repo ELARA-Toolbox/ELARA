@@ -274,9 +274,6 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     optsGlobal = struct();
     optsGlobal.expand = true;
 
-    % solver: e.g., sqpmethod, ipopt, worhp, scpgen
-    solver = 'ipopt';
-
     % Assemble solver options: Fields from OCP object overwrite standard
     % options
     opts = OCP.nlpOptions;
@@ -287,7 +284,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
         end
     end
 
-    NLPSolver = casadi.nlpsol('solver', solver, NLprob, opts);
+    NLPSolver = casadi.nlpsol('solver', char(OCP.solver), NLprob, opts);
 
     tMeas = toc;
     fprintf('took %.3f s.\n', tMeas);

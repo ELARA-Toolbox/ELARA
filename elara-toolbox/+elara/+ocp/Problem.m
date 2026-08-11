@@ -36,7 +36,12 @@ classdef Problem
         % Workspace definition
         workspace    (1,1) elara.Workspace
 
-        % Struct with CasADi NLP options (given to the NLP object)
+        %% NLP Solver Settings
+        
+        % Name of the CasADi NLP solver plugin, e.g., "ipopt" or "sqpmethod"
+        solver             (1,1) string {mustBeNonzeroLengthText} = "ipopt";
+
+        % Options passed to the selected CasADi NLP solver plugin
         nlpOptions         (1,1) struct
 
         %% System Definition
