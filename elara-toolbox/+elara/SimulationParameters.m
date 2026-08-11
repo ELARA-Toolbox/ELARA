@@ -15,7 +15,7 @@ classdef SimulationParameters
         qDot0   (:,1)   double
 
         % Simulation end time (= length of the simulation)
-        tEnd    (1,1)   double
+        tEnd    (1,1)   double = 1;
 
         % Gravity constant
         g       (1,1)   double  = 9.81;
