@@ -12,6 +12,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
         h       (1,1) double
 
         % Upper and lower bounds for u
+        % Only considered for underactuated systems
         lbu      (:,1) double
         ubu      (:,1) double
     end

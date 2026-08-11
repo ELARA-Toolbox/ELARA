@@ -11,6 +11,7 @@ function [u, solInfo] = inverseDynamicsODE(system, simPars, q, qd, qdd, lbu, ubu
         qdd     (:,:) double
 
         % Upper and lower bounds for u
+        % Only considered for underactuated systems
         lbu      (:,1) double
         ubu      (:,1) double
     end
