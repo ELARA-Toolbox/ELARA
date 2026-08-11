@@ -25,7 +25,7 @@ opts.SupportedPlatforms.Mac     = true;
 opts.SupportedPlatforms.Glnxa64 = true;
 opts.SupportedPlatforms.MatlabOnline = true;
 
-opts.MinimumMatlabRelease = "R2025a";
+opts.MinimumMatlabRelease = "R2025b";
 opts.MaximumMatlabRelease = "";
 
 opts.OutputFile = "elara-toolbox.mltbx";
