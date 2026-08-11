@@ -29,11 +29,12 @@ MBSim.parameters.q0    = zeros(MBSim.system.nDoF,1);
 MBSim.parameters.qDot0 = zeros(MBSim.system.nDoF,1);
 
 % Visualize the initial configuration
-MBSim.visualizeSystemConfig(MBSim.parameters.q0, "figureName", "visInitConf");
+MBSim.visualizeSystemConfig(MBSim.parameters.q0, ...
+    "figureName", "Visualization Initial Config");
 title("Initial Configuration")
 
 % System inputs
-uConst = [0,25,0,0].';
+uConst = [0,15,15,20].';
 MBSim.parameters.uSampleTimes  = linspace(0, MBSim.parameters.tEnd, 100);
 MBSim.parameters.uSampleValues = repmat(((1-cos(pi*MBSim.parameters.uSampleTimes ./ MBSim.parameters.tEnd ))/2).', [4,1]) .* uConst;
 
@@ -50,7 +51,7 @@ MBSimVI = MBSim;
 
 % Solver settings
 MBSimVI.integrator = elara.integration.VIBroyden;
-MBSimVI.integrator.h = 2^-9;
+MBSimVI.integrator.h = 2^-12;
 MBSimVI.integrator.JacobianIterationThreshold = 3;
 MBSimVI.integrator.tolerance = 1e-9;
 MBSimVI.integrator.useFirstOrderDissipation = false;

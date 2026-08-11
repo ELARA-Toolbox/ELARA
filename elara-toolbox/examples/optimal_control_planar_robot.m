@@ -35,7 +35,8 @@ MBSimFwd.parameters.q0 = q0;
 MBSimFwd.parameters.qDot0 = zeros(2,1);
 
 % Visualize the initial configuration
-MBSimFwd.visualizeSystemConfig(q0, "figureName", "visInitConf");
+MBSimFwd.visualizeSystemConfig(q0, ...
+    "figureName", "Visualization Initial Config Fwd Sim");
 title("Initial Configuration")
 
 % Solver settings
@@ -51,7 +52,7 @@ MBSimFwd = MBSimFwd.simulateSystem;
 MBSimFwd.plotAll;
 
 % Animate results
-MBSimFwd.animateSimResults("figureName", "AnimVI");
+MBSimFwd.animateSimResults("figureName", "Animation Fwd Sim");
 
 %% Define OCP
 

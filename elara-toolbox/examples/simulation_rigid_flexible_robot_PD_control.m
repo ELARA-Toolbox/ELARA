@@ -20,11 +20,18 @@ MBSim = elara.Simulation(links, "displayInfo", true);
 
 % Visualize reference configuration
 MBSim.visualizeSystemRefConf;
+xlim([-0.5,0.5]);
+ylim([-0.5,0.5]);
+zlim([0,1.75]);
 
 % Visualize desired configuration
 qDes = deg2rad([45,-45, 90,-80]);
-MBSim.visualizeSystemConfig([qDes, zeros(1,2*links(end).nSegments+1)]);
-
+MBSim.visualizeSystemConfig([qDes, zeros(1,2*links(end).nSegments+1)], ...
+    "figureName", "Visualization desired config");
+xlim([-0.5,0.5]);
+ylim([-0.5,0.5]);
+zlim([0,1.75]);
+title("Desired Configuration");
 
 %% Specify Simulation Parameters
 
@@ -64,7 +71,7 @@ MBSimVI = MBSimVI.simulateSystem;
 MBSimVI.plotAll;
 
 % Animate results
-MBSimVI.animateSimResults("figureName", "AnimVI");
+MBSimVI.animateSimResults("figureName", "Animation VI");
 
 
 %% Integration with ODE solver
@@ -86,7 +93,7 @@ MBSimODE = MBSimODE.computeEnergies;
 elara.plot.energies(MBSimODE.results);
 
 % Animate results
-MBSimODE.animateSimResults("figureName", "AnimODE");
+MBSimODE.animateSimResults("figureName", "Animation ODE");
 
 %% End script
 disp("Finished.")
