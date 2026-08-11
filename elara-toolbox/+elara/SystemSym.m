@@ -559,9 +559,11 @@ classdef SystemSym < elara.abstract.System
 
             % Recursive computation for all frames
             for iFrm = 1:system.nFrames
-                if iFrm > 1
+                iParent = system.frames.parent(iFrm);
+                if iParent > 0
                     g_eta = elara.SE3.Element;
-                    [g_eta.R, g_eta.x] = f.SE3.cay(h*eta_k{iFrm-1, 1}, h*eta_k{iFrm-1, 2});
+                    [g_eta.R, g_eta.x] = f.SE3.cay( ...
+                        h*eta_k{iParent, 1}, h*eta_k{iParent, 2});
                     g_rel = g_rel_k(iFrm) \ g_eta * g_rel_k1(iFrm);
                 else
                     g_rel = g_rel_k(iFrm) \ g_rel_k1(iFrm);
