@@ -86,9 +86,5 @@ classdef (Abstract) FrameProperties
             % last index
             indices = obj.uIndices(1,iFrm):obj.uIndices(2,iFrm);
         end
-        function xi = getXi(obj,q)
-            %% Get full discrete deformation vector xi from coordinates
-            xi = obj.Ba * q(obj.getQIndices) + obj.xiC;
-        end
     end
 end
