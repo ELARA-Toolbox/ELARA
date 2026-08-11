@@ -18,6 +18,12 @@ cfg.ResponsivenessChecks = true;
 % Get target path (build folder)
 targetDir = fullfile(elara.internal.getToolboxRootFolder, "+elara", "+mex");
 
+%% Create output folder if not existing
+
+if ~isfolder(targetDir)
+    mkdir(targetDir);
+end
+
 %% Compile functions
 
 fprintf("Compiling MEX functions...\n\n");

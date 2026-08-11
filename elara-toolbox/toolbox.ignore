@@ -37,3 +37,7 @@
 % Local MATLAB/Simulink tool caches
 **/slprj
 **/.buildtool/
+
+% Generated MEX and code-generation output
++elara/+mex/**
+!+elara/+mex/.gitkeep
