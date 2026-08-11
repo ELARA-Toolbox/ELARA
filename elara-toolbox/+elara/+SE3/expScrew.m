@@ -1,16 +1,20 @@
 function g = expScrew( X, theta )
     %% Exponential map for SE(3) with constant screw axis
     % Implements the Exponential map for SE(3): exp : se(3) -> SE(3)
-    % with a constant screw axis (twist) X and magnetude ("angle") theta.
-    % 
+    % with a constant screw axis (twist) X and magnitude ("angle") theta.
+    %
     % We use the standard formulas for the SE(3) exponential map, e.g.,
     % from [MLS94].
+    %
+    % Important: This function only implements the case where the
+    % rotational component is nonzero (i.e., omega ~= 0), which corresponds
+    % to pure rotations or screw motions (rotation and translation). The
+    % case of pure translation (with omega = 0) is not implemented.
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
     % TUM School of Engineering and Design
     % Technical University of Munich
-
     arguments
         % Screw axis / twist
         X       (6,1)
