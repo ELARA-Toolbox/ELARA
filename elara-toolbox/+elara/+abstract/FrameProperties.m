@@ -56,6 +56,10 @@ classdef (Abstract) FrameProperties
 
         % Segment length
         l           (:,1) double
+
+        % Whether a tendon is active on a flexible beam segment
+        % Dimensions: (nFrames, nTendonsMax)
+        tendonIsActive (:,:) logical
     end
 
     methods

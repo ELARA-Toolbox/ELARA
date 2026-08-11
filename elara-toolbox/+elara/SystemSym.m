@@ -435,6 +435,10 @@ classdef SystemSym < elara.abstract.System
                             l = system.frames.l(iFrm);
 
                             for iC = 1:length(uIndices)
+                                if ~system.frames.tendonIsActive(iFrm,iC)
+                                    continue;
+                                end
+
                                 % Cable configurations at adjacent nodes
                                 g_cm_i1 = system.frames.g_cm(1,iFrm,iC);
                                 g_cm_i2 = system.frames.g_cm(2,iFrm,iC);

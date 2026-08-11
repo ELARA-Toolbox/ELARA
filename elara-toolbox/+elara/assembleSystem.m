@@ -345,7 +345,7 @@ function sys = assembleSystem(links, sys)
             lastIndexU = lastIndexU + 1;
         end
 
-        % Check if current link has cable actuation (for flexible links)
+        % Check if current link has tendon actuation (for flexible links)
         if ~links(iLink).isRigid && ~isempty(links(iLink).tendonActuation.x_td_funs)
 
             nCables = length(links(iLink).tendonActuation.x_td_funs);
@@ -361,7 +361,7 @@ function sys = assembleSystem(links, sys)
 
             sys.frames.uIndices(1,actuatedFrames) = lastIndexU;
             sys.frames.uIndices(2,actuatedFrames) = lastIndexU + nCables - 1;
-            lastIndexU = lastIndexU + nCables - 1;
+            lastIndexU = lastIndexU + nCables;
 
             nCablesMax = max([nCables, nCablesMax]);
         end
@@ -371,9 +371,10 @@ function sys = assembleSystem(links, sys)
     sys.nInputs =  max(sys.frames.uIndices(2,:));
 
 
-    %% Compute data for cable actuation
+    %% Compute data for tendon actuation
 
-    g_cm = zeros(4,4,2,sys.nFrames, nCablesMax);
+    g_cm = repmat(eye(4), [1,1,2,sys.nFrames,nCablesMax]);
+    sys.frames.tendonIsActive = false(sys.nFrames, nCablesMax);
 
     for iFrm = 1:sys.nFrames
         % Check whether the joint is a beam joint and if it's actuated
@@ -383,7 +384,8 @@ function sys = assembleSystem(links, sys)
 
             % Get arc lengths of the beam nodes of the current link
             linkFrameIndices = sys.linkFrameIndices(1,iCurLink):sys.linkFrameIndices(2,iCurLink);
-            sLinkFrames = [0; cumsum(sys.frames.l(linkFrameIndices))];
+            beamFrameIndices = linkFrameIndices(sys.frames.jointType(linkFrameIndices) == 2);
+            sLinkFrames = [0; cumsum(sys.frames.l(beamFrameIndices))];
 
             % Get cable actuation data for current link
             [g_m, termNodes] = links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
@@ -395,10 +397,11 @@ function sys = assembleSystem(links, sys)
                 nodeIndexLocal = iFrm - sys.linkFrameIndices(1,iCurLink) + 1;
             end
             % Assign cable positions to frames
-            for iC = 1:length(links(iLink).tendonActuation.x_td_funs)
-                if segNrLocal < termNodes(iC)
+            for iC = 1:length(links(iCurLink).tendonActuation.x_td_funs)
+                if nodeIndexLocal <= termNodes(iC)
                     g_cm(:,:,1,iFrm,iC) = g_m(:,:,nodeIndexLocal-1,iC);
                     g_cm(:,:,2,iFrm,iC) = g_m(:,:,nodeIndexLocal,iC);
+                    sys.frames.tendonIsActive(iFrm,iC) = true;
                 end
             end
         end
