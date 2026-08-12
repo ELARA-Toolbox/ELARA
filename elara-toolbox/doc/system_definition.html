@@ -1,0 +1,310 @@
+<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Defining Multibody Systems</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Defining Multibody Systems</h1></div>
+<p>An ELARA model is an ordered array of rigid and flexible links connected in a fixed-base, open-tree topology. Branches are allowed, but closed kinematic loops are not.
+Each link is attached to its parent by a one-degree-of-freedom screw joint. Alternatively, a flexible root link can represent a cantilever beam fixed directly to the base.</p>
+<div class="markdown-heading"><h2 class="heading-element">Modeling Concept</h2></div>
+<p>ELARA uses minimal relative coordinates. The pose of every body or beam cross-section is recovered by forward kinematics along the tree and represented by an element of $\mathrm{SE}(3)$, the group of three-dimensional rigid-body poses. In compact form,</p>
+<p>$$
+g_i(q) \in \mathrm{SE}(3),
+\qquad
+\boldsymbol{\eta}_i = J_i(q)\dot q.
+$$</p>
+<p>Here, $g_i$ contains the absolute orientation and position of frame $i$, while the body-fixed twist $\boldsymbol{\eta}_i$ combines its angular and translational velocities expressed in that moving frame. The geometric Jacobian $J_i$ maps the generalized velocity $\dot q$ to this physical frame velocity. The generalized-coordinate vector $q = [q_1, \dots, q_n]$ comprises the screw-joint coordinates and the allowed deformations of all flexible segments. Thus, no redundant absolute poses or loop-closure constraints are introduced.</p>
+<div class="markdown-heading"><h3 class="heading-element">Rigid Links</h3></div>
+<p>A rigid link contributes one body frame. For a screw joint with axis $X_i$ and coordinate $q_i$, its pose relative to the parent frame is</p>
+<p>$$
+g_{p(i),i}(q_i)
+= g_{\mathrm{ref},i}\exp!\left(\hat{X}_i q_i\right),
+$$</p>
+<p>where $g_{\mathrm{ref},i}$ is the joint transformation in the reference configuration for $q_i = 0$.
+The screw axis $X_i$ defines whether the joint is a revolute, prismatic, or screw joint.</p>
+<div class="markdown-heading"><h3 class="heading-element">Flexible Links</h3></div>
+<p>A flexible link is a spatially discretized, geometrically exact (Cosserat) beam: its cross-section frames form a serial chain, and each beam segment acts as a generalized joint. The coordinates of each segment are the allowed discrete deformations $q_i = \psi_i$.
+These coordinates define the segment's overall discrete deformation $\xi_i$, from which the transformation of a discrete cross-section relative to its predecessor is computed. For a segment of length $l$ and discrete deformation $\xi_i$, the corresponding update is</p>
+<p>$$
+g_{i,i+1}=\operatorname{cay}!\left(l\hat{\xi}_i\right).
+$$</p>
+<p>The hat operator denotes the matrix representation of a six-dimensional motion vector. These operations are handled internally; their practical benefit is that large three-dimensional rotations and deformations can be represented without linearizing the kinematics.</p>
+<p>For derivations, see Chapters 3 and 4 of the dissertation and the 2024 beam-model paper listed under <a href="index.html#further-reading">Further Reading</a>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Link Array and Topology</h2></div>
+<p>Complete multibody systems are defined by an array of link objects.
+This ordered, heterogeneous array of <code>elara.RigidLink</code> and <code>elara.FlexibleLink</code> objects defines both the bodies and their parent-child relationships.</p>
+<p>The following rules apply during assembly:</p>
+<ul>
+<li>Exactly one link must have <code>parentLink = 0</code>.</li>
+<li>A parent must appear before its children in the link array.</li>
+<li>The topology must be acyclic; closed kinematic loops are not supported.</li>
+<li>One link can define a tool center point (TCP), which can be used, for example, in optimal-control applications. For simulations, this is optional.</li>
+<li>If the root is a flexible link, it can be defined as a cantilever beam (<code>isCantilever = true</code>), which fixes the beam's first cross-section to the base instead of adding a screw joint.</li>
+</ul>
+<p>This minimal rigid-link definition illustrates the frame and joint conventions:</p>
+<div class="highlight highlight-source-matlab"><pre>link <span class="pl-k">=</span> <span class="pl-smi">elara</span>.RigidLink;
+link.parentLink <span class="pl-k">=</span> <span class="pl-c1">0</span>;
+
+<span class="pl-c"><span class="pl-c">%</span> Revolute joint about the joint-frame z-axis: [angular; linear]</span>
+link.jointAxis <span class="pl-k">=</span> [<span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">1</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>];
+link.g_J_B <span class="pl-k">=</span> <span class="pl-smi">elara</span>.SE3.matrix(eye(<span class="pl-c1">3</span>), [<span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0.25</span>]);
+link.g_ref <span class="pl-k">=</span> <span class="pl-smi">link</span>.g_J_B;
+link.jointIsActuated <span class="pl-k">=</span> <span class="pl-c1">true</span>;
+link.c <span class="pl-k">=</span> <span class="pl-c1">0</span>;
+link.d <span class="pl-k">=</span> <span class="pl-c1">1e-2</span>;
+
+link.m <span class="pl-k">=</span> <span class="pl-c1">1</span>;
+link.J <span class="pl-k">=</span> diag([<span class="pl-c1">0.01</span>, <span class="pl-c1">0.01</span>, <span class="pl-c1">0.005</span>]);</pre></div>
+<p>A complete serial-chain definition is available in <code>examples/example-systems/systemDef_rigid_robot.m</code>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Common Link Properties</h2></div>
+<p>Rigid and flexible links use the same properties for topology, screw-joint data, and the optional TCP. These common properties are inherited from <code>elara.abstract.Link</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parentLink</code></td>
+<td>Parent link index; <code>0</code> selects the single root.</td>
+</tr>
+<tr>
+<td><code>jointAxis</code></td>
+<td>Six-component screw vector in the joint frame, ordered <code>[angular; linear]</code>.</td>
+</tr>
+<tr>
+<td><code>g_ref</code></td>
+<td>Transform from the parent link reference frame to the current body reference frame when the joint coordinate is zero.</td>
+</tr>
+<tr>
+<td><code>g_J_B</code></td>
+<td>Transform from the joint frame to the rigid-body frame or first beam-node frame.</td>
+</tr>
+<tr>
+<td><code>jointIsActuated</code></td>
+<td>Assign a scalar system input to the screw joint. It does not remove the joint when <code>false</code>.</td>
+</tr>
+<tr>
+<td>
+<code>c</code>, <code>d</code>
+</td>
+<td>Scalar screw-joint stiffness and linear dissipation.</td>
+</tr>
+<tr>
+<td>
+<code>hasTCP</code>, <code>g_B_TCP</code>
+</td>
+<td>Enable the single system TCP and place it relative to the link frame; a flexible link uses its final node.</td>
+</tr>
+</tbody>
+</table>
+<p>For a unit axis <code>e</code>, a revolute joint is specified by <code>[e; zeros(3,1)]</code>, while <code>[e; pitch*e]</code> describes a finite-pitch screw joint.</p>
+<blockquote>
+<p>[!NOTE]
+The current screw-exponential implementation assumes a nonzero unit angular axis; a pure prismatic axis <code>[zeros(3,1); e]</code> is currently not supported.</p>
+</blockquote>
+<p>The common base class also stores attached-body arrays, but complete attached-inertia assembly is currently implemented for flexible links only. Additional rigid-body mass and inertia should therefore be included directly in the rigid link's <code>m</code> and <code>J</code>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Rigid Links</h2></div>
+<p>A rigid link contributes one body frame whose mass properties remain constant in that frame. <code>elara.RigidLink</code> therefore defines the mass <code>m</code> and the inertia tensor <code>J</code>. The inertia tensor is expressed about the body's center of mass and resolved in the body-fixed frame. For visualization, a bounding box is placed relative to that frame through <code>g_bbox</code>, while its positive and negative extents are stored in <code>bBoxSize</code>:</p>
+<div class="highlight highlight-source-matlab"><pre>link.g_bbox <span class="pl-k">=</span> eye(<span class="pl-c1">4</span>);
+link.bBoxSize <span class="pl-k">=</span> [
+     <span class="pl-c1">0.30</span>,  <span class="pl-c1">0.04</span>,  <span class="pl-c1">0.04</span>
+    <span class="pl-k">-</span><span class="pl-c1">0.30</span>, <span class="pl-k">-</span><span class="pl-c1">0.04</span>, <span class="pl-k">-</span><span class="pl-c1">0.04</span>
+];</pre></div>
+<p>The bounding box affects graphics only, not mass or collision calculations.</p>
+<div class="markdown-heading"><h2 class="heading-element">Flexible Links</h2></div>
+<p>A flexible link replaces a single rigid-body frame with a chain of beam cross-sections whose relative deformations become part of the generalized coordinates. In <code>elara.FlexibleLink</code>, the beam is divided into <code>nSegments</code> equal-length segments; at least two segments are required. Its main properties are:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>isCantilever</code></td>
+<td>Clamp the first node when this is the root link.</td>
+</tr>
+<tr>
+<td>
+<code>L</code>, <code>nSegments</code>
+</td>
+<td>Beam length and spatial discretization.</td>
+</tr>
+<tr>
+<td>
+<code>Ba</code>, <code>Bc</code>
+</td>
+<td>Orthonormal, complementary bases for allowed and constrained deformation modes.</td>
+</tr>
+<tr>
+<td><code>xiRef</code></td>
+<td>Reference deformation gradient, size <code>6</code>-by-<code>nSegments</code>.</td>
+</tr>
+<tr>
+<td><code>beamParameters</code></td>
+<td>Material, cross-section, inertia, stiffness, and damping data.</td>
+</tr>
+<tr>
+<td><code>tendonActuation</code></td>
+<td>Optional tendon paths and termination locations.</td>
+</tr>
+</tbody>
+</table>
+<p>The six deformation components are ordered as two bending components, torsion, two shear components, and extension. The deformation of segment $i$ is decomposed as</p>
+<p>$$
+\boldsymbol{\xi}_i
+= B_a\boldsymbol{\psi}_i</p>
+<ul>
+<li>B_c B_c^{\mathsf T}\boldsymbol{\xi}<em>{\mathrm{ref},i},
+\qquad
+\boldsymbol{q}</em>{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
+$$</li>
+</ul>
+<p>The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Both bases must have orthonormal columns, be mutually orthogonal, and together span all six deformation directions. Current validation uses exact matrix comparisons, so exact selection matrices such as the examples below are recommended instead of numerically approximated bases.</p>
+<p>Common choices are:</p>
+<table>
+<thead>
+<tr>
+<th>Beam model</th>
+<th>Allowed basis <code>Ba</code>
+</th>
+<th>Constrained basis <code>Bc</code>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simo-Reissner, all six modes</td>
+<td><code>eye(6)</code></td>
+<td><code>zeros(6,0)</code></td>
+</tr>
+<tr>
+<td>Inextensible Kirchhoff, bending and torsion</td>
+<td><code>[eye(3); zeros(3)]</code></td>
+<td><code>[zeros(3); eye(3)]</code></td>
+</tr>
+<tr>
+<td>Inextensible Euler-Bernoulli, bending only</td>
+<td><code>[eye(2); zeros(4,2)]</code></td>
+<td><code>[zeros(2,4); eye(4)]</code></td>
+</tr>
+</tbody>
+</table>
+<p>A straight inextensible Kirchhoff beam can be defined as follows:</p>
+<div class="highlight highlight-source-matlab"><pre>systemsFolder <span class="pl-k">=</span> fullfile(<span class="pl-smi">elara</span>.internal.getToolboxRootFolder, ...
+    <span class="pl-s"><span class="pl-pds">"</span>examples<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>example-systems<span class="pl-pds">"</span></span>);
+addpath(<span class="pl-smi">systemsFolder</span>)
+
+beam <span class="pl-k">=</span> <span class="pl-smi">elara</span>.FlexibleLink;
+beam.parentLink <span class="pl-k">=</span> <span class="pl-c1">0</span>;
+beam.isCantilever <span class="pl-k">=</span> <span class="pl-c1">true</span>;
+beam.jointIsActuated <span class="pl-k">=</span> <span class="pl-c1">false</span>;
+beam.nSegments <span class="pl-k">=</span> <span class="pl-c1">5</span>;
+beam.L <span class="pl-k">=</span> <span class="pl-c1">0.7</span>;
+
+beam.Ba <span class="pl-k">=</span> [eye(<span class="pl-c1">3</span>); zeros(<span class="pl-c1">3</span>)];
+beam.Bc <span class="pl-k">=</span> [zeros(<span class="pl-c1">3</span>); eye(<span class="pl-c1">3</span>)];
+beam.xiRef <span class="pl-k">=</span> repmat([<span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">1</span>], ...
+    <span class="pl-c1">1</span>, <span class="pl-smi">beam</span>.nSegments);
+beam.beamParameters <span class="pl-k">=</span> beamParams_spring_steel_round( ...
+    <span class="pl-s"><span class="pl-pds">"</span>radius<span class="pl-pds">"</span></span>, <span class="pl-c1">2e-3</span>);</pre></div>
+<p>The assembled stress-free coordinate vector is available as <code>system.qRef</code>. The convenience methods <code>setJointAngles</code> and <code>setLinkDeformations</code> each return a full coordinate vector with all other entries set to zero. When combining joint angles with nonzero reference deformations, initialize from <code>qRef</code> or explicitly combine the nonoverlapping entries.</p>
+<blockquote>
+<p>[!NOTE]
+<strong>Reference-configuration note:</strong> <code>simulation.visualizeSystemRefConf</code> displays $q=0$. If a precurved beam has nonzero allowed components in <code>xiRef</code>, display its stress-free shape by calling <code>simulation.visualizeSystemConfig(simulation.system.qRef)</code>.</p>
+</blockquote>
+<div class="markdown-heading"><h3 class="heading-element">Beam Material and Cross-Section</h3></div>
+<p>Once the allowed beam deformations have been selected, the physical response is determined by the material and cross-section data. <code>elara.BeamParameters.computeParameters</code> builds the generalized stiffness and inertia matrices from the following quantities:</p>
+<ul>
+<li>the elastic constants <code>E</code> and <code>nu</code>,</li>
+<li>the density <code>rho</code>,</li>
+<li>the area <code>A</code>, and</li>
+<li>the second moments of area <code>I_x</code> and <code>I_y</code>, and the polar second moment <code>J_P</code>.</li>
+</ul>
+<p>The dimensions <code>height</code> and <code>width</code> are set separately for visualization. The vector <code>d</code> specifies Kelvin-Voigt damping coefficients for the six deformation modes; the resulting dissipative stress is proportional to the strain rate.</p>
+<p>The geometry and material parameters can be defined using a struct and the <code>computeParameters</code> method:</p>
+<div class="highlight highlight-source-matlab"><pre>radius <span class="pl-k">=</span> <span class="pl-c1">2e-3</span>;
+p <span class="pl-k">=</span> <span class="pl-smi">elara</span>.BeamParameters;
+p.height <span class="pl-k">=</span> <span class="pl-c1">2</span><span class="pl-k">*</span><span class="pl-smi">radius</span>;
+p.width <span class="pl-k">=</span> <span class="pl-c1">2</span><span class="pl-k">*</span><span class="pl-smi">radius</span>;
+
+base.E <span class="pl-k">=</span> <span class="pl-c1">185e9</span>;
+base.nu <span class="pl-k">=</span> <span class="pl-c1">0.3</span>;
+base.rho <span class="pl-k">=</span> <span class="pl-c1">7900</span>;
+base.A <span class="pl-k">=</span> <span class="pl-c1">pi</span><span class="pl-k">*</span><span class="pl-smi">radius</span><span class="pl-k">^</span><span class="pl-c1">2</span>;
+base.I_x <span class="pl-k">=</span> <span class="pl-c1">pi</span><span class="pl-k">*</span><span class="pl-smi">radius</span><span class="pl-k">^</span><span class="pl-c1">4</span><span class="pl-k">/</span><span class="pl-c1">4</span>;
+base.I_y <span class="pl-k">=</span> <span class="pl-smi">base</span>.I_x;
+base.J_P <span class="pl-k">=</span> <span class="pl-c1">pi</span><span class="pl-k">*</span><span class="pl-smi">radius</span><span class="pl-k">^</span><span class="pl-c1">4</span><span class="pl-k">/</span><span class="pl-c1">2</span>;
+
+p <span class="pl-k">=</span> <span class="pl-smi">p</span>.computeParameters(<span class="pl-smi">base</span>);
+p.d <span class="pl-k">=</span> <span class="pl-c1">1e-3</span><span class="pl-k">*</span>ones(<span class="pl-c1">6</span>,<span class="pl-c1">1</span>);</pre></div>
+<p>The supplied <code>beamParams_ASA_round.m</code> and <code>beamParams_spring_steel_round.m</code> functions are useful templates.</p>
+<div class="markdown-heading"><h3 class="heading-element">Attached Masses</h3></div>
+<p>For a flexible link, attached bodies are specified at the <code>nSegments + 1</code> beam nodes. A payload can, for example, be added at the tip as follows:</p>
+<div class="highlight highlight-source-matlab"><pre>payloadMass <span class="pl-k">=</span> <span class="pl-c1">0.1</span>;
+payloadInertia <span class="pl-k">=</span> <span class="pl-c1">1e-5</span><span class="pl-k">*</span>eye(<span class="pl-c1">3</span>);  <span class="pl-c"><span class="pl-c">%</span> expressed about the beam-tip node</span>
+
+beam.g_a <span class="pl-k">=</span> repmat(eye(<span class="pl-c1">4</span>), <span class="pl-c1">1</span>, <span class="pl-c1">1</span>, <span class="pl-smi">beam</span>.nSegments <span class="pl-k">+</span> <span class="pl-c1">1</span>);
+beam.m_a <span class="pl-k">=</span> zeros(<span class="pl-c1">1</span>, <span class="pl-smi">beam</span>.nSegments <span class="pl-k">+</span> <span class="pl-c1">1</span>);
+beam.M_a <span class="pl-k">=</span> zeros(<span class="pl-c1">6</span>, <span class="pl-c1">6</span>, <span class="pl-smi">beam</span>.nSegments <span class="pl-k">+</span> <span class="pl-c1">1</span>);
+
+<span class="pl-smi">beam</span>.m_a(<span class="pl-smi">end</span>) <span class="pl-k">=</span> <span class="pl-smi">payloadMass</span>;
+<span class="pl-smi">beam</span>.M_a(<span class="pl-k">:</span>,<span class="pl-k">:</span>,<span class="pl-smi">end</span>) <span class="pl-k">=</span> blkdiag(<span class="pl-smi">payloadInertia</span>, <span class="pl-smi">payloadMass</span><span class="pl-k">*</span>eye(<span class="pl-c1">3</span>));</pre></div>
+<p><code>M_a(:,:,i)</code> must be the generalized inertia expressed about beam node <code>i</code>; include the required rotation, parallel-axis, and coupling terms for an offset body. <code>g_a(:,:,i)</code> records the center-of-mass transform used for gravity but does not transform <code>M_a</code> during assembly.</p>
+<div class="markdown-heading"><h3 class="heading-element">Tendon Actuation</h3></div>
+<p>The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators.
+Any number of tendons with arbitrary paths along the backbone can be specified.</p>
+<p>A tendon path is a function of arc length <code>s</code> that returns the tendon position relative to the beam backbone. The model stores one path and one termination length for each tendon. The required derivatives may be provided directly or generated with the symbolic helper:</p>
+<div class="highlight highlight-source-matlab"><pre>r <span class="pl-k">=</span> <span class="pl-c1">0.02</span>;
+beam.tendonActuation.x_td_funs <span class="pl-k">=</span> {
+    @(<span class="pl-smi">s</span>) [ <span class="pl-smi">r</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>]
+    @(<span class="pl-smi">s</span>) [-<span class="pl-smi">r</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>]
+};
+beam.tendonActuation.LTermination <span class="pl-k">=</span> [<span class="pl-smi">beam</span>.L; <span class="pl-smi">beam</span>.L];
+beam.tendonActuation <span class="pl-k">=</span> ...
+    <span class="pl-smi">beam</span>.tendonActuation.getSymbolicPathDerivatives;</pre></div>
+<p>Each tendon-actuated flexible link uses one input per tendon. A specified termination length is snapped to the nearest beam node, so the beam discretization should contain a node sufficiently close to each intended termination point. Straight and helical full-length paths are illustrated in <code>systemDef_continuum_manipulator.m</code>. The continuum-robot reference listed under <a href="index.html#further-reading">Further Reading</a> provides additional modeling context.</p>
+<div class="markdown-heading"><h2 class="heading-element">Assembling a System</h2></div>
+<p>Once the link array is complete, it is converted into the compact system representation used by the numerical algorithms. Construction performs four main tasks:</p>
+<ul>
+<li>validating the link definitions,</li>
+<li>building the link and frame graphs,</li>
+<li>assigning generalized coordinates and inputs, and</li>
+<li>assembling the inertial, stiffness, damping, actuation, and TCP data.</li>
+</ul>
+<p>Numeric and symbolic systems are then constructed with:</p>
+<div class="highlight highlight-source-matlab"><pre>systemNum <span class="pl-k">=</span> <span class="pl-smi">elara</span>.SystemNum(<span class="pl-smi">links</span>);
+systemSym <span class="pl-k">=</span> <span class="pl-smi">elara</span>.SystemSym(<span class="pl-smi">links</span>);</pre></div>
+<p><code>elara.Simulation(links)</code> constructs <code>SystemNum</code> automatically. <code>elara.ocp.Problem(links)</code> constructs both representations and uses CasADi when building symbolic optimization functions.</p>
+<p>The most useful assembled properties fall into three groups:</p>
+<ul>
+<li>system dimensions: <code>nLinks</code>, <code>nJoints</code>, <code>nFrames</code>, <code>nDoF</code>, and <code>nInputs</code>;</li>
+<li>topology mapping: <code>linkFrameIndices</code>; and</li>
+<li>reference and constitutive data: <code>qRef</code>, <code>cSys</code>, and <code>dSys</code>.</li>
+</ul>
+<p>The main high-level operations are:</p>
+<div class="highlight highlight-source-matlab"><pre>g <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeFwdKin(<span class="pl-smi">q</span>);
+J <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeGeomJacobian(<span class="pl-smi">q</span>);
+M <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeMassMatrix(<span class="pl-smi">q</span>);
+B <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeInputMatrix(<span class="pl-smi">q</span>);
+
+theta <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.getJointAngles(<span class="pl-smi">q</span>);
+xi <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.getLinkDeformations(<span class="pl-smi">q</span>, <span class="pl-smi">iLink</span>);</pre></div>
+<p>Many of these methods have variants with the suffix <code>Fast</code>.
+These variants accept precomputed intermediate kinematicsfor example, the relative joint transformations returned by <code>g_rel = systemNum.computeJointTransformations(q)</code>and are intended for performance-sensitive internal or advanced use.
+They can avoid repeated computation of relative joint transformations in complex calculations, such as the equations of motion, where several kinematic quantities depend on the same intermediate variables.</p>
+<p><code>SystemNum</code> and <code>SystemSym</code> share the core system interface but use different internal representations. In particular, the numeric and symbolic systems stored by an <code>elara.ocp.Problem</code> are independent copies: modifying the original links or either assembled system after construction does not update the others. Reconstruct the problem after changing model parameters.</p>
+<p>The assembled link and frame topology can be inspected with <code>elara.plot.systemGraphs(systemNum)</code>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Related Examples</h2></div>
+<p>The example-system definitions illustrate the most common link combinations:</p>
+<ul>
+<li>
+<code>systemDef_rigid_robot.m</code>  three rigid screw-joint links and a TCP.</li>
+<li>
+<code>systemDef_cantilever_system.m</code>  a cantilever beam followed by two rigid links.</li>
+<li>
+<code>systemDef_rigid_flexible_robot.m</code>  mixed rigid-flexible serial robot.</li>
+<li>
+<code>systemDef_continuum_manipulator.m</code>  attached payload and tendon actuation.</li>
+</ul>
+<p>These functions are designed to be copied and adapted when a new model is started.</p>
+<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="optimal_control.html">Solving Optimal-Control Problems</a>, and <a href="visualization.html">Visualizing Systems and Results</a>.</p></div></main><script src="resources/copycode.js">//</script></body></html>

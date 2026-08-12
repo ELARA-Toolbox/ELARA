@@ -1,0 +1,69 @@
+function [res, g, g_rel] = residual(system, simPars, q, u)
+    %% Compute the static-equilibrium residual
+    arguments
+        % Multibody system
+        system   (1,1) elara.SystemSym
+
+        simPars (1,1) elara.SimulationParameters
+
+        % Generalized coordinates (nDoF, 1)
+        q       (:,1)
+
+        % System inputs (nInputs, 1)
+        u       (:,1)
+    end
+
+    % Check argument sizes
+    assert( size(q,1) == system.nDoF, ...
+        "The generalized-coordinate vector must contain nDoF elements.");
+    assert( size(u,1) == system.nInputs, ...
+        "The input vector must contain nInputs elements.");
+
+    % Forward Kinematics and Jacobians
+    [g, g_rel] = system.computeFwdKin(q);
+    J = system.computeGeomJacobianFast(q, g_rel);
+
+    % Input matrix
+    B = system.computeInputMatrixFast(g_rel);
+
+    % Generalized forces (stress)
+    f_gen = system.cSys .* (q - system.qRef);
+
+    % Placeholder values for external forces
+    f_frame_b = zeros(6, system.nFrames);
+    f_frame_s = zeros(6, system.nFrames);
+
+    % Get gravity and external spatial forces transformed to the body-fixed
+    % frames
+    f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(system, g, f_frame_s, simPars.g);
+
+    % Compute sum of generalized forces
+    resC = cell(system.nFrames, 1);
+    for iFrm = 1:system.nFrames
+        % Overall frame forces
+        f_frame_b_i = - f_frame_b(:, iFrm) + f_frame_b_C{iFrm};
+
+        % Distribute node terms to coordinates
+        for iB = 1:system.nFrames
+            if ~isempty(J{iFrm,iB})
+                if isempty(resC{iB})
+                    resC{iB} = J{iFrm,iB}.' * f_frame_b_i;
+                else
+                    resC{iB} = resC{iB} + J{iFrm,iB}.' * f_frame_b_i;
+                end
+            end
+        end
+    end
+
+    % Add input terms to coordinates
+    for iFrm = 1:system.nFrames
+        for iInput = 1:system.nInputs
+            if ~isempty(B{iFrm, iInput})
+                resC{iFrm} = resC{iFrm} - B{iFrm, iInput} * u(iInput);
+            end
+        end
+    end
+
+    res = vertcat(resC{:}) + f_gen;
+
+end

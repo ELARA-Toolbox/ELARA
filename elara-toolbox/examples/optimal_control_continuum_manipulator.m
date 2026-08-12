@@ -8,8 +8,8 @@
 clear
 close all
 
-% Add example system folder if it's not on the path
-% addpath("exampleSystems");
+% Make sure example system folder is on the path
+addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-systems"));
 
 %% Script settings
 
@@ -18,51 +18,45 @@ COMPUTE_IG = 1;
 
 %% Define System
 
-links = systemDef_continuum_manipulator("nSeg", 4);
-
-MBSim = MBSimulation(links, "displayInfo", false);
+links = systemDef_continuum_manipulator("nSegments", 4);
 
 
 %% Define OCP
 
-OCP = OCPDefinition;
-OCP.MBSys = MBSystemSym(links);
+OCP = elara.ocp.Problem(links);
 
-OCP.q0    = zeros(MBSim.MBSys.nDoF,1);
-OCP.qDot0 = zeros(MBSim.MBSys.nDoF,1); % Initial velocity
-OCP.qDotF = zeros(MBSim.MBSys.nDoF,1); % Final velocity
+OCP.q0    = zeros(OCP.systemNum.nDoF,1);
+OCP.qDot0 = zeros(OCP.systemNum.nDoF,1); % Initial velocity
+OCP.qDotF = zeros(OCP.systemNum.nDoF,1); % Final velocity
 
 OCP.u0 = [];
-OCP.uMin = ones(MBSim.MBSys.nInputs,1)*-1e-3; % Add small slack for improved convergence
-OCP.uMax = ones(MBSim.MBSys.nInputs,1)*100;
+OCP.uMin = ones(OCP.systemNum.nInputs,1)*-1e-3; % Add small slack for improved convergence
+OCP.uMax = ones(OCP.systemNum.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 2^-6;
-OCP.tF = 2;
+OCP.tEnd = 2;
 
-% Desired TCP pose
+% Desired TCP position
 OCP.x_TCP_F = [0.55; 0.3; 0.05];
-OCP.R_TCP_F = []; % Rotation arbitrary
-
-OCP.simPars = MBSim.simPars;
 
 % Running cost
-OCP.wRC = [ % Weights
+OCP.runningCostWeights = [ % Weights
     1e-3  % Norm u
     1e-2  % Norm u_dot
     5e-2  % Norm u_ddot
     1e-0  % Norm q_ddot
     0     % TCP error
     ];
-OCP.iRC = logical(OCP.wRC);  % Defines which cost terms are active
+OCP.runningCostActive = logical(OCP.runningCostWeights);  % Defines which cost terms are active
 
 % Final time cost term
-OCP.wFC = [ % Weights
+OCP.finalCostWeights = [ % Weights
     0     % Norm u
     0     % Norm q
     1e5   % TCP Error
     ];
-OCP.iFC = logical(OCP.iFC);  % Defines which cost terms are active
+OCP.finalCostActive = logical(OCP.finalCostWeights);  % Defines which cost terms are active
 
 OCP.addTCPFinalTimeConstraint = false;
 
@@ -71,13 +65,19 @@ OCP.inputSplineOrder = 3;
 OCP.nInputSplinePoints = 30;
 
 % NLP object / solver options
-OCP.nlpOpts.expand = false;
+OCP.nlpOptions.expand = false;
 
 %% Visualize reference configuration and target position
 
-[~, vis] = MBSim.visualizeSystemRefConf();
-coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
-drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+% Get Simulation object from OCP
+MBSim = OCP.getSimulationObject;
+
+MBSim.visualizeSystemRefConf();
+elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+OCP.workspace.visualize("createFigure", false);
+xlim([-0.1,0.7]);
+ylim([-0.1,0.5]);
+zlim([0,0.8]);
 
 %% Compute Initial Guess
 
@@ -85,26 +85,22 @@ OCP.tPreAct  = 0;
 OCP.tPostAct = 0;
 
 if COMPUTE_IG
-    [q_init, qd_init, u_init, MBSimIG, qOptStatic, uOptStatic] = OCPComputeInitialGuess_InvDyn( ...
-        MBSim, OCP, "invDynMethod", "ODE", "createDebugPlots", true);
+    [q_init, ~, u_init, MBSimIG, qOptStatic] = elara.ocp.computeInitialGuessInvDyn( ...
+        OCP, "invDynMethod", "ODE", "createDebugPlots", true);
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
 
     % Animate results
-    fig = init3Dplot('Name', "Animation Initial Guess");
-    coordSysSE3(SE3Matrix(eye(3), OCP.x_TCP_F));
-    drawWorkspace(OCP.workSpaceDef, "createFigure", false);
+    fig = elara.visualization.initializeAxes('Name', "Animation Initial Guess");
+    elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
+    OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
 else
     q_init = repmat(OCP.q0, [1, OCP.nSteps+1]);
-    u_init = repmat(OCP.u0, [1, OCP.nSteps+1]);
+    u_init = zeros(OCP.systemNum.nInputs, OCP.nSteps+1);
 end
 
-plotOCPqu(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
-
-gOptStatic = MBSim.MBSys.computeFwdKin(qOptStatic);
-g_TCP = gOptStatic(:,:,MBSim.MBSys.indexTCPFrame)*MBSim.MBSys.g_B_TCP;
-x_TCP_des = g_TCP(1:3, 4);
+elara.ocp.plot.coordinatesInputs(OCP, q_init, u_init, "figureName", "Initial Guess", "plotDerivatives", true);
 
 if OCP.useSplineInputs
     % Compute control points for initial guess
@@ -112,14 +108,14 @@ if OCP.useSplineInputs
     u_init_z =  (B \ u_init.').';
 
     % Plot initial guess fit
-    figure("Name", "Initial Guess B-Spline Fit");
+    figure("Name", "Initial Guess B-spline Fit");
     tiledlayout("vertical");
     nexttile;
     plot(OCP.tout, u_init, "-.x", "DisplayName", "Original Data");
     hold on;
     plot(OCP.tout, B*u_init_z.', "--o", "DisplayName", "Fitted Spline");
     grid on;
-    colororder(lines(MBSim.MBSys.nInputs));
+    colororder(lines(OCP.systemNum.nInputs));
     legend;
     title("Spline Fit");
 
@@ -135,64 +131,60 @@ end
 %% Define DEL OCP Solver
 
 OCP.Name = "VI";
-OCP.discretization = OCPIntegratorVI;
+OCP.discretization = elara.ocp.DiscretizationVI;
 
 OCP = OCP.initSolver("useCasadiStepFunctions", true);
 
 % Plot constraint residuals of the initial guess
 OCP.plotConstraintResiduals(q_init, u_init_z, "figureName", "Constr. Res. IG");
 
-% Initial guess objective components
-if ~OCP.useSplineInputs
-    disp("Objective function components initial guess:")
-    disp(cellfun( @(x) full(x), OCP.constrDef.Fun_fComp.call({quMat2XVec(q_init, u_init), OCP.x_TCP_F, OCP.w}) ))
-end
+% Display cost values for the initial guess trajectory
+[J_init, cR_init, cF_init] = OCP.evaluateObjectiveComponents(q_init, u_init_z);
+disp("Objective DEL initial guess:")
+disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 % Solve OCP
 % with weights and x_TCP specified in OCP object
-[q_sol, u_sol_z, sol] = OCP.solve(q_init, u_init_z);
+[q_sol, u_sol, u_sol_z] = OCP.solve(q_init, u_init_z);
 
 % Plot solution data
 OCP.plotConstraintResiduals(q_sol, u_sol_z, "figureName", "Constr. Res. Solution");
+elara.ocp.plot.coordinatesInputs(OCP, q_sol, u_sol, "plotDerivatives", true, "FDOrder", 2);
 
-if OCP.useSplineInputs
-    u_sol = (B*u_sol_z.').';
-else
-    u_sol = u_sol_z;
-end
-
-plotOCPqu(OCP, q_sol, u_sol, "plotDerivatives", true, "FDOrder", 2);
-
-if ~OCP.useSplineInputs
-    disp("Objective function components solution:")
-    disp(cellfun( @(x) full(x), OCP.constrDef.Fun_fComp.call({quMat2XVec(q_sol, u_sol), OCP.x_TCP_F, OCP.w}) ))
-end
+% Display cost values for the solution trajectory
+[J_sol, cR_sol, cF_sol] = OCP.evaluateObjectiveComponents(q_sol, u_sol_z);
+disp("Objective DEL solution:")
+disp(table(J_sol, cR_sol, cF_sol, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 
-%% Post-process etc.
+
+%% Post-process and visualize the solution
 
 disp('Post processing...')
-gTCPDes = SE3Matrix(eye(3), OCP.x_TCP_F);
+gTCPDes = elara.SE3.matrix(eye(3), OCP.x_TCP_F);
 
-q_dot_Sol = diff(q_sol, 1, 2) / OCP.h;
-q_dot_Sol_full = [q_dot_Sol, nan(OCP.MBSys.nDoF,1)];
+q_dot_sol = diff(q_sol, 1, 2) / OCP.h;
+q_dot_sol_full = [q_dot_sol, nan(OCP.systemNum.nDoF,1)];
 
-MBSimCasadi = MBSim;
-MBSimCasadi.Name = "Optimization";
-MBSimCasadi.simRes = getSimResFromStateTrajectory(MBSim.MBSys, OCP.tout, q_sol, q_dot_Sol_full);
-MBSimCasadi.plotAll;
+MBSimOCP = OCP.getSimulationObject;
+MBSimOCP.Name = "Optimization";
+MBSimOCP.results = elara.SimulationResults.fromStateTrajectory( ...
+    OCP.systemNum, OCP.tout, q_sol, q_dot_sol_full);
+MBSimOCP.plotAll;
 
 % Draw snapshots
-fig = init3Dplot('Name', "Snapshots Solution", "NumberTitle", "off");
-coordSysSE3(gTCPDes);
-MBSimCasadi.drawSnapshots("figure", fig, "nSnapShots", 20);
-TCPTraj = squeeze(MBSimCasadi.simRes.g(1:3,4,end,:));
+fig = elara.visualization.initializeAxes( ...
+    'Name', "Snapshots Solution", "NumberTitle", "off");
+elara.visualization.CoordinateFrame(gTCPDes);
+MBSimOCP.drawSnapshots("figure", fig, "nSnapShots", 20);
+TCPTraj = squeeze(MBSimOCP.results.g(1:3,4,end,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
 
 % Animate results
-fig = init3Dplot('Name', "Animation Solution");
-coordSysSE3(gTCPDes);
-MBSimCasadi.animateSimResults("figure", fig, "saveMovie", false, "fileName","example_optControl_contManip");
+fig = elara.visualization.initializeAxes('Name', "Animation Solution");
+elara.visualization.CoordinateFrame(gTCPDes);
+MBSimOCP.animateSimResults("figure", fig, "saveMovie", false, ...
+    "fileName", "example_optControl_contManip");
 
 %% End script
 disp("Finished.")

@@ -1,0 +1,33 @@
+function u = evaluateSystemInputs(system, simPars, tout)
+    %% Prepare system inputs at integration time steps for variational integrators
+    %
+    % Maximilian Herrmann
+    % Chair of Automatic Control
+    % TUM School of Engineering and Design
+    % Technical University of Munich
+    arguments
+        system      (1,1) elara.abstract.System
+        simPars     (1,1) elara.SimulationParameters
+        tout        (:,1) double
+    end
+
+    nSteps = length(tout) - 1;
+
+    % Time-varying system inputs
+    if ~isempty(simPars.uSampleValues) && ~isempty(simPars.uSampleTimes)
+        % Check dimensions
+        assert( size(simPars.uSampleValues,2) == size(simPars.uSampleTimes,1), ...
+            ['The number of sample times must match the number of samples ', ...
+            'in uSampleValues.']);
+
+        % Interpolate input values
+        u = interp1(simPars.uSampleTimes, simPars.uSampleValues.', tout, 'linear', 0).';
+    else
+        u = zeros(system.nInputs, nSteps+1);
+    end
+
+    % Constant system inputs
+    if ~isempty(simPars.uConst)
+        u = u + repmat(simPars.uConst, [1, nSteps+1]);
+    end
+end

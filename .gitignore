@@ -1,3 +1,9 @@
+# Generated MEX package contents
+elara-toolbox/+elara/+mex/**
+
+# Exclude directory placeholders
+!elara-toolbox/+elara/+mex/.gitkeep
+
 # Autosave files
 *.asv
 *.m~

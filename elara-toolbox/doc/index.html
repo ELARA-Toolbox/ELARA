@@ -1,0 +1,99 @@
+<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>The ELARA Toolbox</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">The ELARA Toolbox</h1></div>
+<p>ELARA (Efficient Lie-group Algorithms for Flexible Robotic Analysis and Control) is a MATLAB toolbox for modeling, simulation, and optimal control of fixed-base rigid-flexible multibody systems. Its main capabilities include:</p>
+<ul>
+<li>open-tree robot kinematics on $\mathrm{SE}(3)$ and flexible links modeled as geometrically exact beams,</li>
+<li>simulation through standard ODE solvers or a Lie-group variational integrator, and</li>
+<li>CasADi-based direct optimal control.</li>
+</ul>
+<p>These components share the same link-based model definition, allowing the same system model to be used for simulation and trajectory optimization with little additional setup.</p>
+<p>The toolbox also supports modeling and optimal control of soft robots and continuum manipulators with tendon actuation.</p>
+<p>The documentation is intentionally task-oriented. Complete argument lists and implementation details are available through <code>help</code>, in the well-commented class and function files, and in the scripts in the <code>examples</code> folder.</p>
+<div class="markdown-heading"><h2 class="heading-element">Requirements and Setup</h2></div>
+<p>ELARA requires MATLAB R2025b or later. Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:</p>
+<ul>
+<li>CasADi is required for optimal control and other symbolic optimization workflows; version 3.7.2 is tested for this release.</li>
+<li>MATLAB Coder and a supported C++ compiler enable faster MEX implementations of performance-critical simulation functions.</li>
+<li>Symbolic Math Toolbox is used by the tendon-path derivative helper.</li>
+<li>Robotics System Toolbox is used for minimum-jerk TCP trajectories and rotated workspace boxes.</li>
+<li>Optimization Toolbox, Mapping Toolbox, and Robotics System Toolbox are used by the inverse-dynamics initial-guess helpers.</li>
+</ul>
+<p>These other products are not required for the basic MATLAB simulation workflow.</p>
+<p>After installation, the active configuration can be checked with:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-smi">elara</span>.setup</pre></div>
+<p>Missing MEX files or CasADi do not prevent use of the core MATLAB simulation implementation. The optional MEX functions can be built after configuring a C++ compiler:</p>
+<div class="highlight highlight-source-matlab"><pre><span class="pl-smi">mex</span> <span class="pl-k">-</span><span class="pl-smi">setup</span> <span class="pl-smi">C</span>++
+<span class="pl-smi">elara</span>.build
+<span class="pl-smi">elara</span>.setup</pre></div>
+<p>The toolbox automatically selects an available MEX implementation without requiring changes to simulation code.</p>
+<div class="markdown-heading"><h2 class="heading-element">First Simulation</h2></div>
+<p>In the standard workflow, the links are defined first. A simulation is then constructed and configured with initial conditions and an integration method. The example below uses one of the included system definitions:</p>
+<div class="highlight highlight-source-matlab"><pre>systemsFolder <span class="pl-k">=</span> fullfile(<span class="pl-smi">elara</span>.internal.getToolboxRootFolder, ...
+    <span class="pl-s"><span class="pl-pds">"</span>examples<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>example-systems<span class="pl-pds">"</span></span>);
+addpath(<span class="pl-smi">systemsFolder</span>)
+
+links <span class="pl-k">=</span> <span class="pl-smi">systemDef_rigid_robot</span>;
+sim <span class="pl-k">=</span> <span class="pl-smi">elara</span>.Simulation(<span class="pl-smi">links</span>, <span class="pl-s"><span class="pl-pds">"</span>displayInfo<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>, <span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Rigid robot<span class="pl-pds">"</span></span>);
+
+sim.parameters.tEnd <span class="pl-k">=</span> <span class="pl-c1">5</span>;
+sim.parameters.q0 <span class="pl-k">=</span> deg2rad([<span class="pl-c1">30</span>; <span class="pl-k">-</span><span class="pl-c1">30</span>; <span class="pl-k">-</span><span class="pl-c1">60</span>]);
+sim.parameters.qDot0 <span class="pl-k">=</span> zeros(<span class="pl-smi">sim</span>.system.nDoF, <span class="pl-c1">1</span>);
+sim.parameters.uConst <span class="pl-k">=</span> zeros(<span class="pl-smi">sim</span>.system.nInputs, <span class="pl-c1">1</span>);
+
+sim.integrator <span class="pl-k">=</span> <span class="pl-smi">elara</span>.integration.VIBroyden;
+sim.integrator.h <span class="pl-k">=</span> <span class="pl-c1">2</span>^-<span class="pl-c1">8</span>;
+
+sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
+<span class="pl-smi">sim</span>.plotJointAngles;
+<span class="pl-smi">sim</span>.animateSimResults;</pre></div>
+<p><code>elara.Simulation</code> and most configuration classes have value semantics. Therefore, the returned object must be retained when it is modified by a method, as in <code>sim = sim.simulateSystem</code> and <code>sim = sim.computeEnergies</code>.</p>
+<div class="markdown-heading"><h2 class="heading-element">Documentation Topics</h2></div>
+<p>The main workflows are described in the following topic pages:</p>
+<ul>
+<li>
+<a href="system_definition.html">Defining Multibody Systems</a> explains rigid and flexible links, relative coordinates, beam deformation modes, actuation, and assembled system objects.</li>
+<li>
+<a href="simulation.html">Running Numerical Simulations</a> covers initial conditions, inputs, external wrenches, result data, and post-processing.</li>
+<li>
+<a href="integration.html">Choosing an Integration Method</a> compares the variational and ODE interfaces and summarizes their key settings.</li>
+<li>
+<a href="optimal_control.html">Solving Optimal-Control Problems</a> describes the <code>elara.ocp.Problem</code> workflow, costs, constraints, initial guesses, and solution processing.</li>
+<li>
+<a href="ocp_discretization.html">Choosing an OCP Discretization</a> compares variational, Runge-Kutta, and implicit-midpoint transcription.</li>
+<li>
+<a href="visualization.html">Visualizing Systems and Results</a> lists the high-level plotting, snapshot, and animation tools.</li>
+</ul>
+<p>Together, these pages follow the usual progression from a model definition to simulation or optimal control and, finally, result analysis.</p>
+<div class="markdown-heading"><h2 class="heading-element">Conventions</h2></div>
+<p>ELARA uses SI units. Each homogeneous matrix combines a three-dimensional orientation and a position to represent a pose in $\mathrm{SE}(3)$. Six-dimensional twists, strains, screw axes, and wrenches store the rotational component first and the translational component second. For example,</p>
+<p>$$
+\boldsymbol{\eta} =
+\begin{bmatrix}\boldsymbol{\omega}\\boldsymbol{v}\end{bmatrix},
+\qquad
+\boldsymbol{w} =
+\begin{bmatrix}\boldsymbol{m}\\boldsymbol{f}\end{bmatrix},
+$$</p>
+<p>where $\boldsymbol{\omega}$ and $\boldsymbol{v}$ are angular and translational velocities, while $\boldsymbol{m}$ and $\boldsymbol{f}$ represent a moment and a force. Generalized coordinates and inputs are column vectors, while trajectory arrays store one time sample per column.</p>
+<p>In ELARA, there are two representations of multibody systems:</p>
+<ul>
+<li>
+<code>elara.SystemNum</code> contains numeric arrays optimized for simulation and optional code generation.</li>
+<li>
+<code>elara.SystemSym</code> contains a CasADi-compatible representation used to construct optimization graphs.</li>
+</ul>
+<p>Both representations have the same properties and methods but use different implementations optimized for their intended purposes.</p>
+<div class="markdown-heading"><h2 class="heading-element">Examples</h2></div>
+<p>The <code>examples</code> folder contains complete, executable workflows for:</p>
+<ul>
+<li>rigid robots and rigid-flexible systems,</li>
+<li>a tendon-actuated continuum manipulator, and</li>
+<li>three optimal-control problems.</li>
+</ul>
+<p><code>simulation_rigid_robot.m</code> and <code>optimal_control_planar_robot.m</code> provide accessible starting points; the more specialized scripts can then be used as templates.</p>
+<div class="markdown-heading"><h2 class="heading-element">Further Reading</h2></div>
+<p>The documentation gives only the mathematical context needed to use the software. Detailed derivations and numerical studies are available in:</p>
+<ul>
+<li>M. Herrmann, <em>Discrete Geometric Modeling and Optimal Control of Flexible Robot Manipulators</em>, PhD thesis, publication details forthcoming.</li>
+<li>M. Herrmann and P. Kotyczka, "Relative-kinematic formulation of geometrically exact beam dynamics based on Lie group variational integrators," <em>Computer Methods in Applied Mechanics and Engineering</em>, vol. 432, 117367, 2024. <a href="https://doi.org/10.1016/j.cma.2024.117367" rel="nofollow">doi:10.1016/j.cma.2024.117367</a>
+</li>
+<li>M. Herrmann, L. Pfeiffer, and P. Kotyczka, "Discrete Geometric Modeling and Extended State Estimation of Continuum Robots," publication details forthcoming.</li>
+</ul></div></main><script src="resources/copycode.js">//</script></body></html>

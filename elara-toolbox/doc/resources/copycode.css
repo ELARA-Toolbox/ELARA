@@ -1,0 +1,26 @@
+pre {
+    position: relative;
+}
+
+.copy-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    transition: opacity 0.3s;
+    font-size: 16px;
+}
+
+.copy-button:hover {
+    opacity: 0.7;
+}
+
+.copy-button-icon {
+    width: 16px;
+    height: 16px;
+}

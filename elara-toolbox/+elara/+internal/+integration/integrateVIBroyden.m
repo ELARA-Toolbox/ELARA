@@ -1,0 +1,216 @@
+function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codegen
+    %% Variational Integrator for a rigid-flexible multibody system
+    %
+    % Maximilian Herrmann
+    % Chair of Automatic Control
+    % TUM School of Engineering and Design
+    % Technical University of Munich
+
+    arguments
+        % multibody system
+        system          (1,1) elara.SystemNum
+
+        % simulation parameters
+        simPars         (1,1) elara.SimulationParameters
+
+        % solver configuration
+        solverConfig    (1,1) elara.internal.integration.VIBroydenConfig
+    end
+
+    %% Validate Simulation Input Data
+
+    assert( numel(simPars.q0) == system.nDoF, ...
+        "The initial-coordinate vector must contain nDoF elements.");
+    assert( solverConfig.h > 0, ...
+        "Time step h must be non-zero and positive.");
+    assert( simPars.tEnd > 0, ...
+        "Simulation end time tEnd must be non-zero and positive.");
+    assert( isempty(simPars.uConst) || numel(simPars.uConst) == system.nInputs, ...
+        "The constant-input vector must contain nInputs elements.");
+    assert( isempty(simPars.uSampleValues) || size(simPars.uSampleValues,1) == system.nInputs, ...
+        "The time-varying input matrix must have one row per system input.");
+    assert( isempty(simPars.externalWrench_b.maximumWrench) || size(simPars.externalWrench_b.maximumWrench,2) == system.nFrames, ...
+        "The body-fixed wrench matrix must have one column per frame.");
+    assert( isempty(simPars.externalWrench_s.maximumWrench) || size(simPars.externalWrench_s.maximumWrench,2) == system.nFrames, ...
+        "The spatial-wrench matrix must have one column per frame.");
+
+
+    %% Initialize output arrays
+    % Note: time dimension (outer loop) should be last index,
+    % node dimension (inner loop) should be first;
+    % Also put data dimensions first, which makes squeeze/reshape
+    % unnecessary
+
+    % Time step / Sample time
+    h = solverConfig.h;
+
+    % Number of integration steps
+    nSteps = round( simPars.tEnd / h );
+
+    % Time vector (has length nSteps + 1)
+    tout = (0:h:h*nSteps)';
+
+    g     = zeros(4,4, system.nFrames, nSteps+1);   % Configuration
+    eta   = zeros(6,   system.nFrames, nSteps+1);   % Discrete velocity
+    q     = zeros(system.nDoF, nSteps+1);           % Relative coordinates
+    q_dot = zeros(system.nDoF, nSteps+1);           % Relative coordinate velocities
+
+    % Metadata vectors/matrices
+    ImplicitError       = nan(1,nSteps+1);
+    ImplicitIterations  = nan(1,nSteps+1);
+    ExitFlag            = nan(1,nSteps+1);
+
+    % Prepare System Inputs
+    u = elara.internal.simulation.evaluateSystemInputs(system, simPars, tout);
+
+
+    %% Compute initial step k=1 -> k=2
+    % Initial step is computed using the (left) Legendre transform FL- to
+    % properly include initial velocities.
+
+    % Weighting factor for the generalized trapezoidal rule:
+    % Use full second-order trapezoidal rule for first step for
+    % second-order accuracy
+    a = 1/2;
+
+    % Initial configuration at k = 1
+    q_k = simPars.q0;
+
+    % Initial (continuous-time) momentum
+    p_0 = system.computeMassMatrix(q_k) * simPars.qDot0;
+
+    % Forward kinematics for the first step (k = 1)
+    [g_0, g_rel_0] = system.computeFwdKin(simPars.q0);
+
+    % Frame forces at first step
+    f_frame_0_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, 0);
+    f_frame_0_s = simPars.externalWrench_s.getCurrentWrench(system.nFrames, 0);
+    
+    f_frame_0_b = -h*(1-a)*f_frame_0_b + h*(1-a)*elara.dynamics.num.bodyFixedFrameForces(g_0, f_frame_0_s, system, simPars);
+
+    % Generalized Forces (stresses, actuation and initial momentum)
+    f_gen_0 = h*(1-a)*system.cSys .* (q_k - system.qRef) ...
+        - h*(1-a)*system.computeInputMatrixFast(g_rel_0) * u(:,1) ...
+        - p_0;
+
+    %%% Solve initial step
+
+    % Force iteration to avoid convergence problems when starting from the
+    % equilibrium
+    forceSolverIteration = true;
+    % Update DEL Jacobian so it can be re-used directly in the loop
+    updateInvJacobian    = true;
+
+    q_k0 = q_k; % Only for the initial value of the implicit solver
+    [q_k1, eta_k, g_rel_k1, H_k, solData_k] = elara.internal.integration.solveImplicitDELBroyden( ...
+        system, q_k, q_k0, g_rel_0, zeros(system.nDoF), updateInvJacobian, forceSolverIteration, f_frame_0_b, f_gen_0, ...
+        solverConfig, a  ...
+        );
+
+    % Forward Kinematics for the second time step (k = 2)
+    g_k1 = system.computeFwdKinFast(g_rel_k1);
+
+    % Assign to output arrays
+    q(:,1)     = q_k;
+    q(:,2)     = q_k1;
+    g(:,:,:,1) = g_0;
+    g(:,:,:,2) = g_k1;
+    eta(:,:,1) = eta_k;
+    q_dot(:,1) = (q_k1 - q_k)/h;
+    ImplicitError(1)      = solData_k.ImplicitError;
+    ImplicitIterations(1) = solData_k.ImplicitIterations;
+    ExitFlag(1)           = solData_k.ExitFlag;
+
+
+    %% Integration loop
+
+    nStepsDone = nSteps;
+    forceSolverIteration = false;
+
+    % Use rectangle rule in integration loop for better performance and
+    % faster convergences
+    aLoop = solverConfig.aTrapez;
+
+    for k = 2:nSteps
+        % Check the iteration count from the previous time step and recompute
+        % Jacobian if necessary
+        updateInvJacobian = ImplicitIterations(k-1) > solverConfig.JacobianIterationThreshold;
+
+        % Manage values from last time step
+        q_k0 = q_k;
+        q_k  = q_k1;
+        g_k  = g_k1;
+        eta_k0 = eta_k;
+        g_rel_k = g_rel_k1;
+
+        % External frame forces from the environment
+        f_frame_k_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, tout(k));
+        f_frame_k_s = simPars.externalWrench_s.getCurrentWrench(system.nFrames, tout(k));
+
+        % Compute Frame Forces
+        % * External frame forces
+        % * Gravity and external spatial forces transformed to the body-fixed frames
+        % * Inertia term
+        f_frame_k_b = ...
+            - h*f_frame_k_b ...
+            + h*elara.dynamics.num.bodyFixedFrameForces(g_k, f_frame_k_s, system, simPars) ...
+            - computeInertiaTerm(system, eta_k0, h);
+
+        % Compute Generalized Forces (stresses and actuation)
+        f_gen_k = h*system.cSys .* (q_k - system.qRef) ...
+            - h*system.computeInputMatrixFast(g_rel_k) * u(:,k)...
+            + aLoop*system.dSys .* (q_k-q_k0);
+
+        % Solve implicit DEL equation
+        [q_k1, eta_k, g_rel_k1, H_k, solData_k] = elara.internal.integration.solveImplicitDELBroyden( ...
+            system, q_k, q_k0, g_rel_k, H_k, updateInvJacobian, forceSolverIteration, ...
+            f_frame_k_b, f_gen_k, solverConfig, aLoop );
+
+        % Forward Kinematics for the next time step
+        g_k1 = system.computeFwdKinFast(g_rel_k1);
+
+        % Assign to outputs
+        q(:,k+1)     = q_k1;
+        g(:,:,:,k+1) = g_k1;
+        eta(:,:,k)   = eta_k;
+        q_dot(:,k)   = (q_k1 - q_k)/h;
+        ImplicitError(k)      = solData_k.ImplicitError;
+        ImplicitIterations(k) = solData_k.ImplicitIterations;
+        ExitFlag(k)           = solData_k.ExitFlag;
+
+        % Check if solver was successful; cancel simulation if residual is
+        % above residual limit
+        if ( solData_k.ExitFlag && solData_k.ImplicitError > solverConfig.toleranceLimit ) ...
+                || isnan(solData_k.ImplicitError)
+            nStepsDone = k;
+            break;
+        end
+    end
+
+    % Discrete velocities at the final step:
+    % Not defined since there is no future time step anymore
+    % (velocity at k is the velocity in interval k, k+1)
+    eta(:,:,end) = nan(6, system.nFrames);
+    q_dot(:,end) = nan(system.nDoF, 1);
+
+
+    %% Assign to output object
+    simResults = elara.SimulationResults;
+    simResults.g     = g(:,:,:,1:nStepsDone+1);
+    simResults.q     = q(:,1:nStepsDone+1);
+    simResults.q_dot = q_dot(:,1:nStepsDone+1);
+    simResults.eta   = eta(:,:,1:nStepsDone+1);
+    simResults.tout  = tout(1:nStepsDone+1, 1);
+
+    simResults.solverResidual      = ImplicitError(1:nStepsDone+1);
+    simResults.solverIterations = ImplicitIterations(1:nStepsDone+1);
+    simResults.solverExitFlag   = ExitFlag(1:nStepsDone+1);
+end
+
+function f_inertia_k = computeInertiaTerm(system, eta_k0, h)
+    % Compute the inertial term of the DEL equations
+    f_inertia_k = zeros(6, system.nFrames);
+    for iFrm = 1:system.nFrames
+        f_inertia_k(:, iFrm) = elara.SE3.dcayInv(-eta_k0(:,iFrm)*h).' * system.frames.MGen(:,:,iFrm) * eta_k0(:,iFrm);
+    end
+end

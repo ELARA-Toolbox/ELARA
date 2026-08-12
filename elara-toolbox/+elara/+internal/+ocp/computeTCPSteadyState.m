@@ -1,0 +1,96 @@
+function [qOpt, uOpt] = computeTCPSteadyState(OCP)
+    %% Compute a static configuration and controls for a specified TCP position
+    arguments
+        OCP (1,1) elara.ocp.Problem
+    end
+
+    %% Get variables
+    systemSym = OCP.systemSym;
+    simPars = OCP.simPars;
+
+    % Verify that the TCP is defined for the system
+    if ~systemSym.indexTCPFrame
+        warning("No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
+        indexTCPFrame = systemSym.nFrames;
+    else
+        indexTCPFrame = systemSym.indexTCPFrame;
+    end
+
+    % CasADi functions for signed workspace distances
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(systemSym.nFrames);
+
+
+    %% Define and solve optimization problem
+
+    opti = casadi.Opti();
+    q = opti.variable(systemSym.nDoF,1);
+    u = opti.variable(systemSym.nInputs,1);
+
+
+    % Statics/force balance constraint
+    [res_statics, g] = elara.statics.sym.residual(systemSym, simPars, q, u);
+    opti.subject_to( res_statics == 0 );
+
+    % Workspace constraint
+    safetyMargin = 0.02;
+
+    c_WSInt = dIntFun(horzcat(g.x));
+    c_WSExt = dExtFun(horzcat(g.x));
+    if length(c_WSInt) %#ok<ISMT>
+        opti.subject_to(c_WSInt > safetyMargin);
+    end
+    if length(c_WSExt) %#ok<ISMT>
+        opti.subject_to(c_WSExt < safetyMargin);
+    end
+
+    % Control limits
+    if ~isempty(OCP.uMin)
+        opti.subject_to(u > OCP.uMin );
+    end
+    if ~isempty(OCP.uMax)
+        opti.subject_to(u < OCP.uMax);
+    end
+    % TCP constraint
+    g_TCP = g(indexTCPFrame) * elara.SE3.Element(systemSym.g_B_TCP(1:3,1:3), systemSym.g_B_TCP(1:3,4));
+    if OCP.addTCPFinalTimeConstraint
+        opti.subject_to( (g_TCP.x ) ==  OCP.x_TCP_F);
+    end
+
+    % Objective function
+    a1 = 1e8;
+    a2 = 1;
+    a3 = 100000;
+    
+    J = a2 * 1/2*sumsqr(u) ...
+        + a3 * 1/2 * sumsqr(q);
+
+    if OCP.finalCostActive(end) || OCP.runningCostActive(end)
+        J = J + a1 * 1/2*sumsqr((OCP.x_TCP_F - g_TCP.x));
+    end
+
+    opti.minimize(J);
+
+    opti.set_initial([q;u], zeros(systemSym.nDoF+systemSym.nInputs,1));
+
+    p_opts = struct();
+    s_opts = struct();
+    p_opts.expand = true;
+    opti.solver('ipopt', p_opts, s_opts);
+
+    q0 = zeros(systemSym.nDoF,1);
+    u0 = zeros(systemSym.nInputs,1);
+
+    FOpti = opti.to_function('FOpti', {q,u}, {q,u});
+    [qOpt, uOpt] = FOpti(q0, u0);
+
+    qOpt = full(qOpt);
+    uOpt = full(uOpt);
+
+    % Make sure initial guess satisfies constraints exactly
+    if ~isempty(OCP.uMin)
+        uOpt = max(uOpt, OCP.uMin);
+    end
+    if ~isempty(OCP.uMax)
+        uOpt = min(uOpt, OCP.uMax);
+    end
+end

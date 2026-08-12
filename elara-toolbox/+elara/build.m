@@ -15,29 +15,44 @@ cfg.InlineBetweenUserFunctions = 'Always';
 cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = true;
 
-%% Compile functions
-
 % Get target path (build folder)
-thisFile = mfilename("fullpath");
-buildFolder = fileparts(thisFile);
-toolboxRoot = fileparts(buildFolder);
-targetDir = fullfile(toolboxRoot, "build");
+targetDir = fullfile(elara.internal.getToolboxRootFolder, "+elara", "+mex");
+
+%% Create output folder if not existing
+
+if ~isfolder(targetDir)
+    mkdir(targetDir);
+end
+
+%% Compile functions
 
 fprintf("Compiling MEX functions...\n\n");
 
 functionNames = [
-    "integrateMBSDynamics_Broyden"
-    "computeFirstOrderSystemRHS"
-    "computeFirstOrderMassMatrix"
-    "computeFirstOrderSystemRHS_MInv"
-    "getSimResFromStateTrajectory"
-    "computeStaticResiduum"
-    "computeSimResEnergies"
+    "elara.internal.integration.integrateVIBroyden"
+    "elara.dynamics.num.firstOrderRHS"
+    "elara.dynamics.num.firstOrderMassMatrix"
+    "elara.dynamics.num.firstOrderDerivative"
+    "elara.internal.simulation.getResultsFromStateTrajectory"
+    "elara.statics.num.residual"
+    "elara.internal.simulation.computeEnergies"
     ];
 
-parfor iFun = 1:numel(functionNames)
+outputNames = [
+    "integrateVIBroyden"
+    "firstOrderRHS"
+    "firstOrderMassMatrix"
+    "firstOrderDerivative"
+    "getResultsFromStateTrajectory"
+    "staticResidual"
+    "computeEnergies"
+    ];
+
+for iFun = 1:numel(functionNames)
+    fprintf("Compiling function %d/%d (%s)...\n", ...
+        iFun, numel(functionNames), functionNames(iFun));
     codegen("-d", targetDir, "-o", ...
-        fullfile(targetDir, functionNames(iFun) + "_mex"), ...
+        fullfile(targetDir, outputNames(iFun) + "_mex"), ...
         "-config", cfg, functionNames(iFun));
 end
 

@@ -1,0 +1,20 @@
+function gNum = element2Matrix(gSE3)
+    %% Convert an array of SE(3) elements to an array of 4x4 matrices
+    %
+    % Maximilian Herrmann
+    % Chair of Automatic Control
+    % TUM School of Engineering and Design
+    % Technical University of Munich
+    arguments (Input)
+        gSE3  elara.SE3.Element
+    end
+    arguments (Output)
+        gNum  double {elara.internal.validation.mustBeSE3Matrix}
+    end
+    gNum = zeros(4,4,numel(gSE3));
+    for iG = 1:numel(gSE3)
+        gNum(:,:,iG) = gSE3(iG).mat;
+    end
+    gNum = reshape(gNum, [4,4,size(gSE3)]);
+end
+
