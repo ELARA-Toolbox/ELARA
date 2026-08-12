@@ -1,20 +1,20 @@
 # Solving Optimal-Control Problems
 
-ELARA can be used to efficiently solve optimal control and trajectory tracking problems for rigid-flexible systems and soft robots.
-The full optimal control workflow is handled with the `elara.ocp.Problem` class, which defines a fixed-horizon trajectory-optimization problem for an ELARA system. It brings together:
+ELARA can efficiently solve optimal-control and trajectory-tracking problems for rigid-flexible systems and soft robots.
+The full optimal-control workflow is handled by the `elara.ocp.Problem` class, which defines a fixed-horizon trajectory-optimization problem for an ELARA system. It brings together:
 
 * the discretized dynamics and boundary conditions,
 * the running and final costs,
 * coordinate and input bounds, and
 * optional workspace constraints.
 
-These components are transcribed into a nonlinear program (NLP), from which the configured solver is constructed through CasADi.
+These components are transcribed into a nonlinear program (NLP), and the configured solver is constructed through CasADi.
 
-To use the optimal control functionalities, CasADi must be installed and on the MATLAB path. Its availability can be checked with `elara.setup`.
+To use the optimal-control features, CasADi must be installed and available on the MATLAB path. Its availability can be checked with `elara.setup`.
 
 ## Problem Formulation
 
-ELARA uses direct transcription: the continuous trajectory is represented by a finite number of values, allowing the complete control problem to be handled by a standard nonlinear-programming solver. Configurations or states are optimization variables at a set of time nodes, while controls are represented either by node variables or by B-spline control points. Schematically, the resulting problem is
+ELARA uses direct transcription: the continuous trajectory is represented by a finite number of decision variables, allowing the complete control problem to be handled by a standard nonlinear programming solver. Configurations or states are optimization variables at a set of time nodes, while controls are represented either by node variables or by B-spline control points. Schematically, the resulting problem is
 
 $$
 \begin{aligned}
@@ -25,7 +25,7 @@ $$
 \end{aligned}
 $$
 
-where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running and final costs, and $w$ are the numerical quadrature weights that define the costs. The constraints contain the discretized dynamics, boundaries, and bounds.
+where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running and final costs, and $w$ denotes the numerical quadrature weights that define the costs. The constraints contain the discretized dynamics, boundaries, and bounds.
 
 The variational discretization uses only configurations $q_k$ as state variables and imposes discrete Euler-Lagrange equations. ODE discretizations instead use
 
@@ -79,7 +79,7 @@ problem = problem.initSolver;
     problem.solve(qInit, uInit);
 ```
 
-The `Problem` class has value semantics, so the result of `initSolver` needs to be retained. The NLP graph is built during this call; consequently, the system, horizon, discretization, active cost terms, and constraints must be configured beforehand.
+The `Problem` class has value semantics, so the result of `initSolver` must be retained. The NLP graph is built during this call; consequently, the system, horizon, discretization, active cost terms, and constraints must be configured beforehand.
 
 ## Configuring the Horizon and Boundaries
 
@@ -93,6 +93,7 @@ $$
 Ideally, `h` divides `tEnd`; otherwise the final node can differ slightly from the requested horizon.
 
 Further properties are:
+
 | Property | Meaning |
 |---|---|
 | `q0`, `qDot0` | Initial configuration and velocity. |
@@ -104,21 +105,21 @@ Further properties are:
 | `x_TCP_F` | Desired final TCP position. |
 | `addTCPFinalTimeConstraint` | Whether `x_TCP_F` is enforced as a final position equality rather than used only as a cost target. |
 
-A final TCP orientation constraint is not currently implemented. The TCP is defined on one link before the problem is constructed; when no TCP is defined, TCP-related routines use the final system frame where supported.
+A final TCP orientation constraint is not currently implemented. The TCP is defined on one link before the problem is constructed. When no TCP is defined, supported TCP-related routines use the final system frame.
 
 `problem.simPars` is the `elara.SimulationParameters` object used by the dynamics. Gravity is configured through `problem.simPars.g`; sampled inputs and external-wrench profiles are not transcribed into the current optimal-control model.
 
 ## Configuring the Cost
 
-Running and final costs use a weight vector and a separate logical activation vector. Both should be set explicitly, since the default activation masks are not inferred from the weights.
-The activation vector defines which costs are included in the NLP during assembly with the `initSolver` call; it is separated from the actual weight values so one can easily change the weights after assembly.
+Running and final costs use a weight vector and a separate logical activation vector. Both should be set explicitly because the default activation masks are not inferred from the weights.
+The activation vector defines which costs are included in the NLP when `initSolver` assembles it. Separating activation from the numerical weights allows the weights to be changed easily after assembly.
 
 | Running cost index | Quantity integrated over time |
 |---:|---|
-| `1` | Squared input norm `u` |
-| `2` | Squared input-rate norm `u_dot` |
-| `3` | Squared input-acceleration norm `u_ddot` |
-| `4` | Squared coordinate-acceleration norm `q_ddot` |
+| `1` | Squared norm of input `u` |
+| `2` | Squared norm of input rate `u_dot` |
+| `3` | Squared norm of input acceleration `u_ddot` |
+| `4` | Squared norm of coordinate acceleration `q_ddot` |
 | `5` | Squared TCP trajectory error |
 
 | Final cost index | Quantity at `tEnd` |
@@ -127,7 +128,8 @@ The activation vector defines which costs are included in the NLP during assembl
 | `2` | Squared coordinate norm |
 | `3` | Squared TCP position error relative to `x_TCP_F` |
 
-For example, they can be defined with:
+For example, define them as follows:
+
 ```matlab
 problem.runningCostWeights = [1e-3; 1e-2; 0; 1e-4; 0];
 problem.runningCostActive  = logical(problem.runningCostWeights);
@@ -136,7 +138,7 @@ problem.finalCostWeights = [0; 0; 1e5];
 problem.finalCostActive  = logical(problem.finalCostWeights);
 ```
 
-If running TCP tracking (index 5) is active, `x_TCP_traj` needs to contain a 3-by-`nSteps+1` reference array. A point-to-point reference can be generated with:
+If running TCP tracking (index 5) is active, `x_TCP_traj` must contain a reference array with three rows and `nSteps + 1` columns. A point-to-point reference can be generated with:
 
 ```matlab
 problem.x_TCP_F = [0.55; 0.30; 0.05];
@@ -149,7 +151,7 @@ problem.x_TCP_traj = ...
 
 ## Parameterizing the Controls
 
-The control trajectory can either be represented directly at every node or through a smaller set of smooth B-spline control points. With direct parameterization, the input at every time node is an NLP decision variable:
+The control trajectory can be represented either directly at every node or through a smaller set of smooth B-spline control points. With direct parameterization, the input at every time node is an NLP decision variable:
 
 ```matlab
 problem.useSplineInputs = false;
@@ -169,13 +171,13 @@ uNodeGuess = zeros(problem.systemNum.nInputs, ...
 uDecisionInit = (B \ uNodeGuess.').';
 ```
 
-When splines are enabled, `solve` expects an `nInputs`-by-`nInputSplinePoints` matrix of control points. It returns both the evaluated node trajectory `uSol` and the optimized control points `uDecision`. The discretization evaluates the spline at any intermediate dynamics stages that it needs.
+When splines are enabled, `solve` expects an `nInputs`-by-`nInputSplinePoints` matrix of control points. It returns both the evaluated node trajectory `uSol` and the optimized control points `uDecision`. The discretization evaluates the spline at intermediate dynamics stages as required.
 
 Spline input bounds are enforced at the OCP nodes, not continuously between them. When limits are strict, the reconstructed input should therefore be checked for overshoot.
 
 ## Choosing a Discretization and NLP Solver
 
-Once the horizon, costs, and control parameterization have been defined, a transcription method is selected for the dynamics. The available choices are configured as follows:
+Once the horizon, costs, and control parameterization have been configured, a transcription method is selected for the dynamics. The available choices are configured as follows:
 
 ```matlab
 % Variational/DMOC transcription
@@ -196,9 +198,9 @@ problem = problem.initSolver( ...
     "showDebugPlots", false);
 ```
 
-`solver` is the name of an NLP solver plugin available in the installed CasADi build. `nlpOptions` is passed directly to that plugin, so the available options depend on the selected solver. `showDebugPlots` displays the constraint-Jacobian sparsity pattern. `useCasadiStepFunctions` can reduce repeated graph construction for the variational dynamics; its best setting depends on the problem.
+`solver` is the name of an NLP solver plugin available in the installed CasADi build. `nlpOptions` is passed directly to that plugin, so the available options depend on the selected solver. `showDebugPlots` displays the constraint-Jacobian sparsity pattern. `useCasadiStepFunctions` can reduce repeated graph construction for the variational dynamics; the best choice depends on the problem.
 
-Ipopt is used by default. Other CasADi-supported solvers, such as `sqpmethod`, may be selected when available. After changing `solver` or `nlpOptions`, the NLP must be rebuilt with `problem = problem.initSolver`; its graph and solver memory can be released beforehand with `problem = problem.clearSolver`.
+Ipopt is used by default. Other CasADi-supported solvers, such as `sqpmethod`, may be selected when available. After changing `solver` or `nlpOptions`, the NLP must be rebuilt with `problem = problem.initSolver`. Its graph and solver memory can be released beforehand with `problem = problem.clearSolver`.
 
 ## Constructing Initial Guesses and Solving
 
@@ -211,7 +213,7 @@ The state initial guess depends on the discretization:
 
 Control initial guesses contain node values for direct parameterization and B-spline control points for spline parameterization.
 
-For difficult point-to-point problems, `elara.ocp.computeInitialGuessInvDyn` constructs a smooth configuration trajectory and computes approximate controls with continuous or discrete inverse dynamics:
+For difficult point-to-point problems, `elara.ocp.computeInitialGuessInvDyn` constructs a smooth configuration trajectory and computes approximate controls with continuous- or discrete-time inverse dynamics:
 
 ```matlab
 [qInit, qDotInit, uNodeInit, simInitialGuess] = ...
@@ -220,7 +222,7 @@ For difficult point-to-point problems, `elara.ocp.computeInitialGuessInvDyn` con
         "createDebugPlots", false);
 ```
 
-The helper can target `qF`, a final TCP position, or configured TCP waypoints. Its optional higher-rate generation and forward-simulation settings are illustrated in the examples and described in the source comments.
+The helper can target `qF`, a final TCP position, or configured TCP waypoints. Its optional higher-resolution trajectory generation and forward-simulation settings are illustrated in the examples and described in the source comments.
 
 The returned node input can be converted to the active control parameterization as follows:
 
@@ -245,6 +247,7 @@ qDotSol = xSol(n+1:end,:);
 ```
 
 ### Solver Warm-Start
+
 A related problem with compatible NLP variable and constraint dimensions can be warm-started from a previous CasADi solution containing `x`, `lam_x`, and `lam_g`:
 
 ```matlab
@@ -260,7 +263,7 @@ Such geometric point constraints are added when the system frames or TCP need to
 * Type `0` defines an obstacle whose interior must be avoided.
 * Type `1` defines an allowed workspace interior.
 
-The workspace is configured before `initSolver`, because its constraints are built into the NLP graph. After a workspace change, the solver needs to be cleared and rebuilt with `problem = problem.clearSolver` followed by `problem = problem.initSolver`.
+The workspace is configured before `initSolver` because its constraints are built into the NLP graph. After changing the workspace, clear and rebuild the solver with `problem = problem.clearSolver` followed by `problem = problem.initSolver`.
 
 ```matlab
 problem.workspace = elara.Workspace;
@@ -271,7 +274,7 @@ problem.workspace = problem.workspace.addBoxSideLengths( ...
     0);                       % obstacle
 ```
 
-The constraints use smooth signed-distance approximations, which provide the gradient-based solver with a differentiable measure of whether a point lies inside or outside a box. They are imposed on every system-frame origin, plus the TCP when one is defined, at the transcription nodes. They do not represent the volume between frame origins. When these pointwise checks are insufficient, a finer beam discretization or a suitable safety margin may be used. Workspace constraints can substantially increase NLP construction and convergence time.
+The constraints use smooth signed-distance approximations, which provide the gradient-based solver with a differentiable measure of whether a point lies inside or outside a box. They are imposed at the transcription nodes on every system-frame origin and on the TCP when one is defined. They do not represent the volume between frame origins. When these pointwise checks are insufficient, use a finer beam discretization or a suitable safety margin. Workspace constraints can substantially increase NLP construction time and solver convergence time.
 
 The boxes can be inspected before solving with `problem.workspace.visualize`.
 
@@ -289,7 +292,7 @@ elara.ocp.plot.coordinatesInputs(problem, qSol, uSol, ...
     "q_dot", qDotSol);
 ```
 
-For TCP tracking, `elara.ocp.plot.TCPTrajectory(problem, qSol)` is available. Constraint residuals and objective components can be evaluated only after `initSolver` because they use functions generated with the NLP.
+For TCP tracking, `elara.ocp.plot.TCPTrajectory(problem, qSol)` is available. Constraint residuals and objective components can be evaluated only after `initSolver` because they use functions generated during NLP construction.
 
 A configuration trajectory can be converted into standard simulation results so that the plotting and animation tools can be reused:
 
@@ -305,15 +308,15 @@ sim.animateSimResults;
 
 For a variational solution, the first output of `solve` is already `qSol`. When the velocity argument is omitted, it is estimated by `fromStateTrajectory` using finite differences.
 
-> **Note regarding model consistency:** `problem.links`, `problem.systemNum`, and `problem.systemSym` are assembled as separate values and are not synchronized after construction. The `Problem` therefore needs to be reconstructed after link or system parameters have been changed.
+> **Note regarding model consistency:** `problem.links`, `problem.systemNum`, and `problem.systemSym` are assembled as separate values and are not synchronized after construction. The `Problem` must therefore be reconstructed after changing link or system parameters.
 
 ## Related Examples
 
 The supplied examples cover increasingly detailed optimal-control workflows:
 
-* `optimal_control_planar_robot.m` -- final configuration, coordinate bounds, VI and RK4 comparison.
-* `optimal_control_rigid_robot.m` -- TCP tracking, obstacle avoidance, B-spline inputs, VI and RK2 comparison.
-* `optimal_control_continuum_manipulator.m` -- tendon actuation, inverse-dynamics initial guess, and VI transcription.
+* `optimal_control_planar_robot.m` — final configuration, coordinate bounds, and VI/RK4 comparison.
+* `optimal_control_rigid_robot.m` — TCP tracking, obstacle avoidance, B-spline inputs, and VI/RK2 comparison.
+* `optimal_control_continuum_manipulator.m` — tendon actuation, inverse-dynamics initial guess, and VI transcription.
 
 They can be used as templates for combining the settings introduced above.
 

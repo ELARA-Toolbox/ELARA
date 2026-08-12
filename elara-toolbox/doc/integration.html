@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Choosing an Integration Method</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Choosing an Integration Method</h1></div>
-<p>The numerical forward simlations can be performed with various integrators.
-The used integrator is stored in the <code>simulation.integrator</code> field in the simulation object and must be assigned and correctly configured before <code>simulation.simulateSystem</code> is called.
+<p>ELARA supports several numerical integrators for forward simulation.
+The selected integrator is stored in <code>simulation.integrator</code> and must be assigned and configured before <code>simulation.simulateSystem</code> is called.
 By default, ELARA provides a fixed-step Lie-group variational integrator and two interfaces to standard ODE solvers.</p>
 <div class="markdown-heading"><h2 class="heading-element">Available Integrators</h2></div>
 <p>The integration method can be selected according to the system stiffness, the preferred MATLAB solver interface, and whether structure-preserving time stepping is desired. The available classes are summarized below.</p>
@@ -40,11 +40,11 @@ By default, ELARA provides a fixed-step Lie-group variational integrator and two
 </ul>
 <div class="markdown-heading"><h2 class="heading-element">Lie-Group Variational Integrator</h2></div>
 <p>With <code>elara.integration.VIBroyden</code>, an implementation of an implicit, fixed-step, first/second-order Lie-group variational integrator is available that can be highly efficient both for numerically non-stiff and stiff systems.
-It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle, meaning that the mechanical balance laws are formulated directly in discrete time rather than discretizing an ODE a-posteriori. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form</p>
+It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle: the mechanical balance laws are formulated directly in discrete time rather than by discretizing an ODE <em>a posteriori</em>. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form</p>
 <p>$$
 F_{\mathrm{DEL}}!\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
 $$</p>
-<p>which is solved with Broyden's good method, a quasi-Newton method which updates an approximation of the residual Jacobian instead of recomputing it in every iteration. In the conservative case, the integrator is second order and preserves the variational structure of the system, which generally gives good long-term momentum and energy behavior.</p>
+<p>which is solved with Broyden's good method, a quasi-Newton method that updates an approximation of the residual Jacobian instead of recomputing it at every iteration. In the conservative case, the integrator is second order and preserves the system's variational structure, which generally provides good long-term momentum and energy behavior.</p>
 <p>The formulation operates on consecutive configurations rather than a doubled first-order state containing both position and velocity. Together with the relative-coordinate model, this keeps the implicit solve practical for many stiff flexible systems. An adequately small time step is nevertheless still required.</p>
 <p>For the full derivation and numerical studies, see Chapters 3 and 4 and the 2024 paper listed under <a href="index.html#further-reading">Further Reading</a>.</p>
 <div class="markdown-heading"><h3 class="heading-element">Configuration</h3></div>
@@ -96,11 +96,11 @@ simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.si
 <tr>
 <td><code>useFirstOrderDissipation</code></td>
 <td><code>true</code></td>
-<td>Use the more robust, but less accurate rectangle-rule approximation for dissipation.</td>
+<td>Use the more robust but less accurate rectangle-rule approximation for dissipation.</td>
 </tr>
 </tbody>
 </table>
-<p><code>useFirstOrderDissipation = false</code> uses a trapezoidal dissipation term and is second order also when damping is present. <code>true</code> is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.</p>
+<p><code>useFirstOrderDissipation = false</code> uses a trapezoidal dissipation term and is second order even when damping is present. <code>true</code> is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.</p>
 <p>The generated time grid is</p>
 <p>$$
 t_k=kh,\qquad
@@ -174,14 +174,14 @@ Otherwise, choose <code>h</code> according to the requirements on integration er
 </ol>
 <p>The result can be assessed through <code>simulation.plotSolverStats</code> or the fields <code>solverIterations</code>, <code>solverResidual</code>, and <code>solverExitFlag</code>. <code>VIBroyden</code> stores <code>NaN</code> in the final <code>q_dot</code> and <code>eta</code> samples because its discrete velocities belong to time intervals. <code>computeEnergies</code> uses finite-difference velocities by default; in custom post-processing, the final sample should be handled or reconstructed explicitly.</p>
 <div class="markdown-heading"><h2 class="heading-element">Object-Based ODE Interface</h2></div>
-<p>MATLAB's newer object-based ODE interface keeps the solver choice and its options together in one object. ELARA exposes this workflow through <code>elara.integration.ODEDirect</code>, whose solver and tolerances are configured before the simulation is started:</p>
+<p>MATLAB's object-based ODE interface keeps the solver choice and its options together in one object. ELARA exposes this workflow through <code>elara.integration.ODEDirect</code>, whose solver and tolerances are configured before the simulation starts:</p>
 <div class="highlight highlight-source-matlab"><pre>simulation.integrator <span class="pl-k">=</span> <span class="pl-smi">elara</span>.integration.ODEDirect;
 simulation.integrator.odeObject.Solver <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>ode15s<span class="pl-pds">"</span></span>;
 simulation.integrator.odeObject.AbsoluteTolerance <span class="pl-k">=</span> <span class="pl-c1">1e-6</span>;
 simulation.integrator.odeObject.RelativeTolerance <span class="pl-k">=</span> <span class="pl-c1">1e-6</span>;
 
 simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.simulateSystem;</pre></div>
-<p><code>ode45</code> is a useful starting point for nonstiff rigid systems. Flexible systems commonly require a stiff solver such as <code>ode15s</code>. Solver selection, tolerances, and other supported options follow the MATLAB <code>ode</code> object interface. Integration is performed over <code>[0,tEnd]</code>, and the adaptive points selected by the solver are stored; the current simulation wrapper does not expose a custom output grid.</p>
+<p><code>ode45</code> is a useful starting point for nonstiff rigid systems. Flexible systems commonly require a stiff solver such as <code>ode15s</code>. Solver selection, tolerances, and other supported options follow the MATLAB <code>ode</code> object interface. Integration is performed over <code>[0, tEnd]</code>, and the adaptive points selected by the solver are stored. The current simulation wrapper does not expose a custom output grid.</p>
 <div class="markdown-heading"><h2 class="heading-element">Function-Based ODE Interface</h2></div>
 <p>For existing code based on solver functions such as <code>ode45</code> and <code>ode15s</code>, the classic MATLAB interface remains available. It is exposed through <code>elara.integration.ODEDirectFunctionBased</code>:</p>
 <div class="highlight highlight-source-matlab"><pre>simulation.integrator <span class="pl-k">=</span> ...
@@ -205,7 +205,7 @@ M(x)\dot x=f(t,x,u).
 $$</p>
 <p>In the derivative form, the acceleration is solved inside each model evaluation. In the mass-matrix form, $M$ and the right-hand side are passed separately to the selected MATLAB solver. A solver supporting a state-dependent mass matrix is required for the latter form.</p>
 <div class="markdown-heading"><h2 class="heading-element">MEX Acceleration</h2></div>
-<p>The numerical workload of an integration can optionally be reduced through compiled MEX functions. Each integrator checks whether its required functions are available in the <code>elara.mex</code> namespace and otherwise uses the MATLAB implementation. The optional MEX functions can be compiled once with <code>elara.build</code>; solver configuration and result formats remain unchanged.</p>
+<p>Compiled MEX functions can reduce integration runtime. Each integrator checks whether its required functions are available in the <code>elara.mex</code> namespace and otherwise uses the MATLAB implementation. The optional MEX functions can be compiled once with <code>elara.build</code>; solver configuration and result formats remain unchanged.</p>
 <div class="markdown-heading"><h2 class="heading-element">Implementing a Custom Integrator</h2></div>
-<p>A custom integrator can be added by deriving a class from <code>elara.abstract.Integrator</code> and implementing the constant <code>type</code> and the methods <code>simulateSystem</code> and <code>plotSolverStats</code>. ODE-style implementations may instead derive from <code>elara.abstract.IntegratorODE</code> so that the mass-matrix option and ODE statistics plot are reused. The resulting object can then be assigned directly to <code>simulation.integrator</code>.</p>
+<p>To add a custom integrator, derive a class from <code>elara.abstract.Integrator</code> and implement the constant <code>type</code> and the methods <code>simulateSystem</code> and <code>plotSolverStats</code>. ODE-style implementations may instead derive from <code>elara.abstract.IntegratorODE</code> to reuse the mass-matrix option and ODE statistics plot. The resulting object can then be assigned directly to <code>simulation.integrator</code>.</p>
 <p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="visualization.html">Visualizing Systems and Results</a>, and the simulation scripts in the <code>examples</code> folder.</p></div></main><script src="resources/copycode.js">//</script></body></html>

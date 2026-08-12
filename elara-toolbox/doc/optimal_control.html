@@ -1,16 +1,16 @@
 <!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Solving Optimal-Control Problems</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Solving Optimal-Control Problems</h1></div>
-<p>ELARA can be used to efficiently solve optimal control and trajectory tracking problems for rigid-flexible systems and soft robots.
-The full optimal control workflow is handled with the <code>elara.ocp.Problem</code> class, which defines a fixed-horizon trajectory-optimization problem for an ELARA system. It brings together:</p>
+<p>ELARA can efficiently solve optimal-control and trajectory-tracking problems for rigid-flexible systems and soft robots.
+The full optimal-control workflow is handled by the <code>elara.ocp.Problem</code> class, which defines a fixed-horizon trajectory-optimization problem for an ELARA system. It brings together:</p>
 <ul>
 <li>the discretized dynamics and boundary conditions,</li>
 <li>the running and final costs,</li>
 <li>coordinate and input bounds, and</li>
 <li>optional workspace constraints.</li>
 </ul>
-<p>These components are transcribed into a nonlinear program (NLP), from which the configured solver is constructed through CasADi.</p>
-<p>To use the optimal control functionalities, CasADi must be installed and on the MATLAB path. Its availability can be checked with <code>elara.setup</code>.</p>
+<p>These components are transcribed into a nonlinear program (NLP), and the configured solver is constructed through CasADi.</p>
+<p>To use the optimal-control features, CasADi must be installed and available on the MATLAB path. Its availability can be checked with <code>elara.setup</code>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Problem Formulation</h2></div>
-<p>ELARA uses direct transcription: the continuous trajectory is represented by a finite number of values, allowing the complete control problem to be handled by a standard nonlinear-programming solver. Configurations or states are optimization variables at a set of time nodes, while controls are represented either by node variables or by B-spline control points. Schematically, the resulting problem is</p>
+<p>ELARA uses direct transcription: the continuous trajectory is represented by a finite number of decision variables, allowing the complete control problem to be handled by a standard nonlinear programming solver. Configurations or states are optimization variables at a set of time nodes, while controls are represented either by node variables or by B-spline control points. Schematically, the resulting problem is</p>
 <p>$$
 \begin{aligned}
 \underset{z}{\operatorname{minimize}}\quad
@@ -19,7 +19,7 @@ The full optimal control workflow is handled with the <code>elara.ocp.Problem</c
 &amp;c(z)=0,\qquad g(z)\leq 0,
 \end{aligned}
 $$</p>
-<p>where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running and final costs, and $w$ are the numerical quadrature weights that define the costs. The constraints contain the discretized dynamics, boundaries, and bounds.</p>
+<p>where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running and final costs, and $w$ denotes the numerical quadrature weights that define the costs. The constraints contain the discretized dynamics, boundaries, and bounds.</p>
 <p>The variational discretization uses only configurations $q_k$ as state variables and imposes discrete Euler-Lagrange equations. ODE discretizations instead use</p>
 <p>$$
 x_k=\begin{bmatrix}q_k\\dot q_k\end{bmatrix}.
@@ -63,7 +63,7 @@ uInit <span class="pl-k">=</span> zeros(<span class="pl-smi">m</span>, <span cla
 problem <span class="pl-k">=</span> <span class="pl-smi">problem</span>.initSolver;
 [<span class="pl-smi">qSol</span>, <span class="pl-smi">uSol</span>, <span class="pl-smi">uDecision</span>, <span class="pl-smi">sol</span>, <span class="pl-smi">stats</span>] <span class="pl-k">=</span> ...
     <span class="pl-smi">problem</span>.solve(<span class="pl-smi">qInit</span>, <span class="pl-smi">uInit</span>);</pre></div>
-<p>The <code>Problem</code> class has value semantics, so the result of <code>initSolver</code> needs to be retained. The NLP graph is built during this call; consequently, the system, horizon, discretization, active cost terms, and constraints must be configured beforehand.</p>
+<p>The <code>Problem</code> class has value semantics, so the result of <code>initSolver</code> must be retained. The NLP graph is built during this call; consequently, the system, horizon, discretization, active cost terms, and constraints must be configured beforehand.</p>
 <div class="markdown-heading"><h2 class="heading-element">Configuring the Horizon and Boundaries</h2></div>
 <p>Every transcription is defined on a uniform temporal mesh and may be supplemented with initial, final, and box constraints. The horizon settings <code>tEnd</code> and <code>h</code> determine the number and location of the transcription nodes:</p>
 <p>$$
@@ -120,11 +120,11 @@ $$</p>
 </tr>
 </tbody>
 </table>
-<p>A final TCP orientation constraint is not currently implemented. The TCP is defined on one link before the problem is constructed; when no TCP is defined, TCP-related routines use the final system frame where supported.</p>
+<p>A final TCP orientation constraint is not currently implemented. The TCP is defined on one link before the problem is constructed. When no TCP is defined, supported TCP-related routines use the final system frame.</p>
 <p><code>problem.simPars</code> is the <code>elara.SimulationParameters</code> object used by the dynamics. Gravity is configured through <code>problem.simPars.g</code>; sampled inputs and external-wrench profiles are not transcribed into the current optimal-control model.</p>
 <div class="markdown-heading"><h2 class="heading-element">Configuring the Cost</h2></div>
-<p>Running and final costs use a weight vector and a separate logical activation vector. Both should be set explicitly, since the default activation masks are not inferred from the weights.
-The activation vector defines which costs are included in the NLP during assembly with the <code>initSolver</code> call; it is separated from the actual weight values so one can easily change the weights after assembly.</p>
+<p>Running and final costs use a weight vector and a separate logical activation vector. Both should be set explicitly because the default activation masks are not inferred from the weights.
+The activation vector defines which costs are included in the NLP when <code>initSolver</code> assembles it. Separating activation from the numerical weights allows the weights to be changed easily after assembly.</p>
 <table>
 <thead>
 <tr>
@@ -135,22 +135,22 @@ The activation vector defines which costs are included in the NLP during assembl
 <tbody>
 <tr>
 <td align="right"><code>1</code></td>
-<td>Squared input norm <code>u</code>
+<td>Squared norm of input <code>u</code>
 </td>
 </tr>
 <tr>
 <td align="right"><code>2</code></td>
-<td>Squared input-rate norm <code>u_dot</code>
+<td>Squared norm of input rate <code>u_dot</code>
 </td>
 </tr>
 <tr>
 <td align="right"><code>3</code></td>
-<td>Squared input-acceleration norm <code>u_ddot</code>
+<td>Squared norm of input acceleration <code>u_ddot</code>
 </td>
 </tr>
 <tr>
 <td align="right"><code>4</code></td>
-<td>Squared coordinate-acceleration norm <code>q_ddot</code>
+<td>Squared norm of coordinate acceleration <code>q_ddot</code>
 </td>
 </tr>
 <tr>
@@ -183,20 +183,20 @@ The activation vector defines which costs are included in the NLP during assembl
 </tr>
 </tbody>
 </table>
-<p>For example, they can be defined with:</p>
+<p>For example, define them as follows:</p>
 <div class="highlight highlight-source-matlab"><pre>problem.runningCostWeights <span class="pl-k">=</span> [<span class="pl-c1">1e-3</span>; <span class="pl-c1">1e-2</span>; <span class="pl-c1">0</span>; <span class="pl-c1">1e-4</span>; <span class="pl-c1">0</span>];
 problem.runningCostActive  <span class="pl-k">=</span> logical(<span class="pl-smi">problem</span>.runningCostWeights);
 
 problem.finalCostWeights <span class="pl-k">=</span> [<span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">1e5</span>];
 problem.finalCostActive  <span class="pl-k">=</span> logical(<span class="pl-smi">problem</span>.finalCostWeights);</pre></div>
-<p>If running TCP tracking (index 5) is active, <code>x_TCP_traj</code> needs to contain a 3-by-<code>nSteps+1</code> reference array. A point-to-point reference can be generated with:</p>
+<p>If running TCP tracking (index 5) is active, <code>x_TCP_traj</code> must contain a reference array with three rows and <code>nSteps + 1</code> columns. A point-to-point reference can be generated with:</p>
 <div class="highlight highlight-source-matlab"><pre>problem.x_TCP_F <span class="pl-k">=</span> [<span class="pl-c1">0.55</span>; <span class="pl-c1">0.30</span>; <span class="pl-c1">0.05</span>];
 problem.x_TCP_traj <span class="pl-k">=</span> ...
     <span class="pl-smi">elara</span>.ocp.computeLinearReferenceTCPTrajectory(<span class="pl-smi">problem</span>, ...
         <span class="pl-s"><span class="pl-pds">"</span>tPreAct<span class="pl-pds">"</span></span>, <span class="pl-c1">0.1</span>, <span class="pl-s"><span class="pl-pds">"</span>tPostAct<span class="pl-pds">"</span></span>, <span class="pl-c1">0.1</span>);</pre></div>
 <p><code>finiteDifferenceOrder</code>, either <code>2</code> or <code>4</code>, controls derivatives used in the cost when they are obtained from node values.</p>
 <div class="markdown-heading"><h2 class="heading-element">Parameterizing the Controls</h2></div>
-<p>The control trajectory can either be represented directly at every node or through a smaller set of smooth B-spline control points. With direct parameterization, the input at every time node is an NLP decision variable:</p>
+<p>The control trajectory can be represented either directly at every node or through a smaller set of smooth B-spline control points. With direct parameterization, the input at every time node is an NLP decision variable:</p>
 <div class="highlight highlight-source-matlab"><pre>problem.useSplineInputs <span class="pl-k">=</span> <span class="pl-c1">false</span>;
 uInit <span class="pl-k">=</span> zeros(<span class="pl-smi">problem</span>.systemNum.nInputs, <span class="pl-smi">problem</span>.nSteps <span class="pl-k">+</span> <span class="pl-c1">1</span>);</pre></div>
 <p>For long horizons, a B-spline can reduce the number of control decision variables and impose a smooth parameterization:</p>
@@ -208,10 +208,10 @@ B <span class="pl-k">=</span> <span class="pl-smi">problem</span>.getInputSpline
 uNodeGuess <span class="pl-k">=</span> zeros(<span class="pl-smi">problem</span>.systemNum.nInputs, ...
     <span class="pl-smi">problem</span>.nSteps <span class="pl-k">+</span> <span class="pl-c1">1</span>);
 uDecisionInit <span class="pl-k">=</span> (<span class="pl-smi">B</span> <span class="pl-k">\</span> <span class="pl-smi">uNodeGuess</span><span class="pl-k">.'</span>)<span class="pl-k">.'</span>;</pre></div>
-<p>When splines are enabled, <code>solve</code> expects an <code>nInputs</code>-by-<code>nInputSplinePoints</code> matrix of control points. It returns both the evaluated node trajectory <code>uSol</code> and the optimized control points <code>uDecision</code>. The discretization evaluates the spline at any intermediate dynamics stages that it needs.</p>
+<p>When splines are enabled, <code>solve</code> expects an <code>nInputs</code>-by-<code>nInputSplinePoints</code> matrix of control points. It returns both the evaluated node trajectory <code>uSol</code> and the optimized control points <code>uDecision</code>. The discretization evaluates the spline at intermediate dynamics stages as required.</p>
 <p>Spline input bounds are enforced at the OCP nodes, not continuously between them. When limits are strict, the reconstructed input should therefore be checked for overshoot.</p>
 <div class="markdown-heading"><h2 class="heading-element">Choosing a Discretization and NLP Solver</h2></div>
-<p>Once the horizon, costs, and control parameterization have been defined, a transcription method is selected for the dynamics. The available choices are configured as follows:</p>
+<p>Once the horizon, costs, and control parameterization have been configured, a transcription method is selected for the dynamics. The available choices are configured as follows:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-c"><span class="pl-c">%</span> Variational/DMOC transcription</span>
 problem.discretization <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.DiscretizationVI;
 
@@ -224,8 +224,8 @@ problem.nlpOptions.expand <span class="pl-k">=</span> <span class="pl-c1">false<
 problem <span class="pl-k">=</span> <span class="pl-smi">problem</span>.initSolver( ...
     <span class="pl-s"><span class="pl-pds">"</span>useCasadiStepFunctions<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
     <span class="pl-s"><span class="pl-pds">"</span>showDebugPlots<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>);</pre></div>
-<p><code>solver</code> is the name of an NLP solver plugin available in the installed CasADi build. <code>nlpOptions</code> is passed directly to that plugin, so the available options depend on the selected solver. <code>showDebugPlots</code> displays the constraint-Jacobian sparsity pattern. <code>useCasadiStepFunctions</code> can reduce repeated graph construction for the variational dynamics; its best setting depends on the problem.</p>
-<p>Ipopt is used by default. Other CasADi-supported solvers, such as <code>sqpmethod</code>, may be selected when available. After changing <code>solver</code> or <code>nlpOptions</code>, the NLP must be rebuilt with <code>problem = problem.initSolver</code>; its graph and solver memory can be released beforehand with <code>problem = problem.clearSolver</code>.</p>
+<p><code>solver</code> is the name of an NLP solver plugin available in the installed CasADi build. <code>nlpOptions</code> is passed directly to that plugin, so the available options depend on the selected solver. <code>showDebugPlots</code> displays the constraint-Jacobian sparsity pattern. <code>useCasadiStepFunctions</code> can reduce repeated graph construction for the variational dynamics; the best choice depends on the problem.</p>
+<p>Ipopt is used by default. Other CasADi-supported solvers, such as <code>sqpmethod</code>, may be selected when available. After changing <code>solver</code> or <code>nlpOptions</code>, the NLP must be rebuilt with <code>problem = problem.initSolver</code>. Its graph and solver memory can be released beforehand with <code>problem = problem.clearSolver</code>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Constructing Initial Guesses and Solving</h2></div>
 <p>The state initial guess depends on the discretization:</p>
 <table>
@@ -252,12 +252,12 @@ problem <span class="pl-k">=</span> <span class="pl-smi">problem</span>.initSolv
 </tbody>
 </table>
 <p>Control initial guesses contain node values for direct parameterization and B-spline control points for spline parameterization.</p>
-<p>For difficult point-to-point problems, <code>elara.ocp.computeInitialGuessInvDyn</code> constructs a smooth configuration trajectory and computes approximate controls with continuous or discrete inverse dynamics:</p>
+<p>For difficult point-to-point problems, <code>elara.ocp.computeInitialGuessInvDyn</code> constructs a smooth configuration trajectory and computes approximate controls with continuous- or discrete-time inverse dynamics:</p>
 <div class="highlight highlight-source-matlab"><pre>[<span class="pl-smi">qInit</span>, <span class="pl-smi">qDotInit</span>, <span class="pl-smi">uNodeInit</span>, <span class="pl-smi">simInitialGuess</span>] <span class="pl-k">=</span> ...
     <span class="pl-smi">elara</span>.ocp.computeInitialGuessInvDyn(<span class="pl-smi">problem</span>, ...
         <span class="pl-s"><span class="pl-pds">"</span>invDynMethod<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>ODE<span class="pl-pds">"</span></span>, ...
         <span class="pl-s"><span class="pl-pds">"</span>createDebugPlots<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>);</pre></div>
-<p>The helper can target <code>qF</code>, a final TCP position, or configured TCP waypoints. Its optional higher-rate generation and forward-simulation settings are illustrated in the examples and described in the source comments.</p>
+<p>The helper can target <code>qF</code>, a final TCP position, or configured TCP waypoints. Its optional higher-resolution trajectory generation and forward-simulation settings are illustrated in the examples and described in the source comments.</p>
 <p>The returned node input can be converted to the active control parameterization as follows:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-k">if</span> <span class="pl-smi">problem</span>.useSplineInputs
     B <span class="pl-k">=</span> <span class="pl-smi">problem</span>.getInputSplineBasisMatrix;
@@ -283,14 +283,14 @@ Such geometric point constraints are added when the system frames or TCP need to
 <li>Type <code>0</code> defines an obstacle whose interior must be avoided.</li>
 <li>Type <code>1</code> defines an allowed workspace interior.</li>
 </ul>
-<p>The workspace is configured before <code>initSolver</code>, because its constraints are built into the NLP graph. After a workspace change, the solver needs to be cleared and rebuilt with <code>problem = problem.clearSolver</code> followed by <code>problem = problem.initSolver</code>.</p>
+<p>The workspace is configured before <code>initSolver</code> because its constraints are built into the NLP graph. After changing the workspace, clear and rebuild the solver with <code>problem = problem.clearSolver</code> followed by <code>problem = problem.initSolver</code>.</p>
 <div class="highlight highlight-source-matlab"><pre>problem.workspace <span class="pl-k">=</span> <span class="pl-smi">elara</span>.Workspace;
 problem.workspace <span class="pl-k">=</span> <span class="pl-smi">problem</span>.workspace.addBoxSideLengths( ...
     [<span class="pl-c1">0.35</span>; <span class="pl-c1">0.10</span>; <span class="pl-c1">1.00</span>], ...<span class="pl-c">   % center</span>
     zeros(<span class="pl-c1">1</span>,<span class="pl-c1">3</span>), ...<span class="pl-c">           % Euler angles</span>
     [<span class="pl-c1">0.25</span>, <span class="pl-c1">0.30</span>, <span class="pl-c1">0.30</span>], ...<span class="pl-c">   % side lengths</span>
     <span class="pl-c1">0</span>);                       <span class="pl-c"><span class="pl-c">%</span> obstacle</span></pre></div>
-<p>The constraints use smooth signed-distance approximations, which provide the gradient-based solver with a differentiable measure of whether a point lies inside or outside a box. They are imposed on every system-frame origin, plus the TCP when one is defined, at the transcription nodes. They do not represent the volume between frame origins. When these pointwise checks are insufficient, a finer beam discretization or a suitable safety margin may be used. Workspace constraints can substantially increase NLP construction and convergence time.</p>
+<p>The constraints use smooth signed-distance approximations, which provide the gradient-based solver with a differentiable measure of whether a point lies inside or outside a box. They are imposed at the transcription nodes on every system-frame origin and on the TCP when one is defined. They do not represent the volume between frame origins. When these pointwise checks are insufficient, use a finer beam discretization or a suitable safety margin. Workspace constraints can substantially increase NLP construction time and solver convergence time.</p>
 <p>The boxes can be inspected before solving with <code>problem.workspace.visualize</code>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Diagnosing and Post-Processing a Solution</h2></div>
 <p>Initial guesses and optimized trajectories can be checked through the same residual and objective functions used to construct the NLP. The following methods are available before and after <code>solve</code>:</p>
@@ -301,7 +301,7 @@ problem.workspace <span class="pl-k">=</span> <span class="pl-smi">problem</span
 <span class="pl-smi">elara</span>.ocp.plot.coordinatesInputs(<span class="pl-smi">problem</span>, <span class="pl-smi">qSol</span>, <span class="pl-smi">uSol</span>, ...
     <span class="pl-s"><span class="pl-pds">"</span>plotDerivatives<span class="pl-pds">"</span></span>, <span class="pl-c1">true</span>, ...
     <span class="pl-s"><span class="pl-pds">"</span>q_dot<span class="pl-pds">"</span></span>, <span class="pl-smi">qDotSol</span>);</pre></div>
-<p>For TCP tracking, <code>elara.ocp.plot.TCPTrajectory(problem, qSol)</code> is available. Constraint residuals and objective components can be evaluated only after <code>initSolver</code> because they use functions generated with the NLP.</p>
+<p>For TCP tracking, <code>elara.ocp.plot.TCPTrajectory(problem, qSol)</code> is available. Constraint residuals and objective components can be evaluated only after <code>initSolver</code> because they use functions generated during NLP construction.</p>
 <p>A configuration trajectory can be converted into standard simulation results so that the plotting and animation tools can be reused:</p>
 <div class="highlight highlight-source-matlab"><pre>sim <span class="pl-k">=</span> <span class="pl-smi">problem</span>.getSimulationObject;
 sim.Name <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Optimization<span class="pl-pds">"</span></span>;
@@ -312,17 +312,17 @@ sim.results <span class="pl-k">=</span> <span class="pl-smi">elara</span>.Simula
 <span class="pl-smi">sim</span>.animateSimResults;</pre></div>
 <p>For a variational solution, the first output of <code>solve</code> is already <code>qSol</code>. When the velocity argument is omitted, it is estimated by <code>fromStateTrajectory</code> using finite differences.</p>
 <blockquote>
-<p><strong>Note regarding model consistency:</strong> <code>problem.links</code>, <code>problem.systemNum</code>, and <code>problem.systemSym</code> are assembled as separate values and are not synchronized after construction. The <code>Problem</code> therefore needs to be reconstructed after link or system parameters have been changed.</p>
+<p><strong>Note regarding model consistency:</strong> <code>problem.links</code>, <code>problem.systemNum</code>, and <code>problem.systemSym</code> are assembled as separate values and are not synchronized after construction. The <code>Problem</code> must therefore be reconstructed after changing link or system parameters.</p>
 </blockquote>
 <div class="markdown-heading"><h2 class="heading-element">Related Examples</h2></div>
 <p>The supplied examples cover increasingly detailed optimal-control workflows:</p>
 <ul>
 <li>
-<code>optimal_control_planar_robot.m</code> -- final configuration, coordinate bounds, VI and RK4 comparison.</li>
+<code>optimal_control_planar_robot.m</code>  final configuration, coordinate bounds, and VI/RK4 comparison.</li>
 <li>
-<code>optimal_control_rigid_robot.m</code> -- TCP tracking, obstacle avoidance, B-spline inputs, VI and RK2 comparison.</li>
+<code>optimal_control_rigid_robot.m</code>  TCP tracking, obstacle avoidance, B-spline inputs, and VI/RK2 comparison.</li>
 <li>
-<code>optimal_control_continuum_manipulator.m</code> -- tendon actuation, inverse-dynamics initial guess, and VI transcription.</li>
+<code>optimal_control_continuum_manipulator.m</code>  tendon actuation, inverse-dynamics initial guess, and VI transcription.</li>
 </ul>
 <p>They can be used as templates for combining the settings introduced above.</p>
 <p>See also <a href="system_definition.html">Defining Multibody Systems</a>, <a href="ocp_discretization.html">Choosing an OCP Discretization</a>, and <a href="visualization.html">Visualizing Systems and Results</a>.</p></div></main><script src="resources/copycode.js">//</script></body></html>

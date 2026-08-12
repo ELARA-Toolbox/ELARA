@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="doc/.assets/banner.png" alt="Elara: Efficient Lie-group Algorithms for Flexible Robot Analysis and Control" style="width:100%;height:auto;max-width:100%;"/>
+  <img src="doc/.assets/banner.png" alt="ELARA: Efficient Lie-group Algorithms for Flexible Robot Analysis and Control" style="width:100%;height:auto;max-width:100%;"/>
 </div>
 
 [![View ELARA - Flexible Robot Simulation and Control Toolbox on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/183990-elara-flexible-robot-simulation-and-control-toolbox)
@@ -18,7 +18,7 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 - Supports rigid-flexible multibody systems with open-tree kinematics consisting of rigid links, flexible beam links, and one-DoF revolute or finite-pitch screw joints
 - Actuation via actuated screw joints or tendon actuation for continuum manipulators
 - Analytic kinematics and differential kinematics on SE(3), including forward kinematics, geometric Jacobians, and derivatives of Jacobians
-- Time integration with highly efficient Lie-group variational integrator or any standard ODE solver via general interface (including all MATLAB ODE solvers)
+- Time integration using a highly efficient Lie-group variational integrator or any standard ODE solver through a general interface (including all MATLAB ODE solvers)
 - CasADi-backed symbolic implementation for direct optimal control
 - Direct optimal control with various time discretizations, including variational DMOC, Runge-Kutta (2nd and 4th order), and implicit-midpoint discretizations
 - Extensive plotting, visualization, and animation functionality
@@ -31,12 +31,12 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 
 Optional dependencies:
 
-- CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with `3.7.2`)
+- CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with version `3.7.2`)
 - MATLAB Coder and a supported C++ compiler for optional MEX generation
 - Symbolic Math Toolbox for tendon-path derivatives
 - Robotics System Toolbox, Optimization Toolbox, and Mapping Toolbox for selected optimal-control helpers; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
 
-### Toolbox installation
+### Toolbox Installation
 
 There are several convenient ways to install ELARA:
 
@@ -44,31 +44,35 @@ There are several convenient ways to install ELARA:
 - Packaged toolbox file: download the toolbox file `elara-toolbox.mltbx` from the release page, then double-click on it or run `matlab.addons.install("elara-toolbox.mltbx")`.
 - Local repository clone: the folder `elara-toolbox`, including its subfolders, can be added to the MATLAB path.
 
-### Optional components
-- For optimal control, install CasADi from <https://web.casadi.org/> and add it to the MATLAB path
-- For code generation (to generate MEX files), install a compatible C++ compiler and setup MATLAB Coder using `mex -setup C++`
+### Optional Components
 
-### Verify installation and compile MEX functions
-1. In the MATLAB console, run `elara.setup` to validate the installation of the toolbox and the optional components.
+- For optimal control, install CasADi from <https://web.casadi.org/> and add it to the MATLAB path
+- For MEX generation, install a compatible C++ compiler and set up MATLAB Coder using `mex -setup C++`
+
+### Verify Installation and Compile MEX Functions
+
+1. In the MATLAB Command Window, run `elara.setup` to validate the toolbox installation and its optional components.
 2. With MATLAB Coder and a compatible C++ compiler available, `elara.build` compiles the performance-critical functions into the `elara.mex` namespace.
 3. Run `elara.setup` again to verify that the MEX functions are available. The toolbox will then automatically use functions such as `elara.mex.integrateVIBroyden_mex` instead of their MATLAB implementations.
 
 ## Getting Started
+
 A [live quick-start guide](elara-toolbox/doc/GettingStarted.mlx) explains the installation steps and core functionality.
 
-The toolbox includes several examples for the simulation and optimal control of mechanical systems available in the `examples` folder.
+The `examples` folder contains several simulation and optimal-control examples for mechanical systems.
 
 #### Simulation Examples
-The simulation examples demonstrate the standard workflow to simulate the dynamical behavior of mechanical systems:
+
+The simulation examples demonstrate the standard workflow for simulating the dynamic behavior of mechanical systems:
 
 1. Define the system's individual links using an array of `elara.RigidLink` and `elara.FlexibleLink` objects.
-2. Define a `elara.Simulation` object that handles the complete simulation workflow.
-The simulation object contains an `elara.SystemNum` object that is assembled from the links and stores the complete multibody system.
-3. Set the simulation parameters in the `parameters` field of the simulation object for parameters such as initial conditions, inputs, gravity, and final time.
+2. Create an `elara.Simulation` object that handles the complete simulation workflow.
+   The simulation object contains an `elara.SystemNum` object assembled from the links that represents the complete multibody system.
+3. Configure initial conditions, inputs, gravity, and the final time in the simulation object's `parameters` field.
 4. Select an integrator such as `elara.integration.VIBroyden` or `elara.integration.ODEDirect`.
-5. Run `simulateSystem`, then use plotting or animation helpers for post-processing.
+5. Run `simulateSystem`, and then use the plotting or animation helpers for post-processing.
 
-#### Optimal Control Examples
+#### Optimal-Control Examples
 
 The optimal-control examples demonstrate:
 
@@ -92,7 +96,7 @@ Details on the toolbox can be found in its documentation:
 * [Visualizing Systems and Results](elara-toolbox/doc/visualization.md)
 
 The documentation is also available in the MATLAB documentation viewer.
-To access it, open the documentation (e.g., by typing `doc`) and click `Supplemental Software`.
+To access it, open the documentation (e.g., by typing `doc`) and select `Supplemental Software`.
 
 
 ## Citation
@@ -130,25 +134,25 @@ Research making use of the ELARA toolbox may cite the following papers:
 
 ## License
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License; see [LICENSE](LICENSE) for details.
 
-Third-party components in `elara-toolbox/third-party/` are redistributed under their respective individual licenses.
-In particular, this concerns the following packages:
+Third-party components in `elara-toolbox/third-party/` are redistributed under their respective licenses.
+This currently includes:
 
- - `vert2lcon.m` from the [N-dimensional Convex Polyhedra](https://www.mathworks.com/matlabcentral/fileexchange/30892-analyze-n-dimensional-convex-polyhedra) package by Matt Jacobson. Available on MATLAB File Exchange. Included version: 1.9.0.2.
+- `vert2lcon.m` from Matt Jacobson's [N-dimensional Convex Polyhedra](https://www.mathworks.com/matlabcentral/fileexchange/30892-analyze-n-dimensional-convex-polyhedra) package on MATLAB File Exchange. Included version: 1.9.0.2.
 
 ## Authors
 
 - Maximilian Herrmann (TUM, Chair of Automatic Control)
 - Leander Pfeiffer (TUM, Chair of Automatic Control)
 
-The core toolbox was developed by Maximilian Herrmann. Leander Pfeiffer provided helpful input and contributions in the final development stages.
-Moreover, Philipp Tarbiat, Tobias Farger, and Akash Cheriath contributed helpful input and code snippets during their student projects at the chair.
+The core toolbox was developed by Maximilian Herrmann. Leander Pfeiffer provided feedback and contributions during the final development stages.
+Philipp Tarbiat, Tobias Farger, and Akash Cheriath also contributed feedback and code snippets during their student projects at the chair.
 These contributions are marked in the comments.
 
-## Developer documentation
+## Developer Documentation
 
-For release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates the corresponding `mltbx` file.
+For a release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates the corresponding `.mltbx` file.
 The version number in the script must be incremented manually.
 
 ## Contact & Support
@@ -156,4 +160,4 @@ The version number in the script must be incremented manually.
 For questions, issues, or feature requests:
 
 - Open an issue on GitHub
-- Contact: [maximilian.herrmann@tum.de, leander.pfeiffer@tum.de]
+- Contact [Maximilian Herrmann](mailto:maximilian.herrmann@tum.de) or [Leander Pfeiffer](mailto:leander.pfeiffer@tum.de)

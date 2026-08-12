@@ -1,13 +1,13 @@
 <!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Running Numerical Simulations</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Running Numerical Simulations</h1></div>
-<p>Dynamic forward simulations are performed using the <code>elara.Simulation</code> class, which serves as the central object for a simulation workflow. It keeps three groups of data together:</p>
+<p>Forward dynamic simulations are performed using the <code>elara.Simulation</code> class, which serves as the central object in the simulation workflow. It keeps three groups of data together:</p>
 <ul>
 <li>the link definition and assembled numeric system,</li>
 <li>the simulation parameters and integration method, and</li>
 <li>the resulting trajectory.</li>
 </ul>
-<p>This makes the same object available for setup, execution, and post-processing.</p>
+<p>The same object is therefore used for setup, execution, and post-processing.</p>
 <div class="markdown-heading"><h2 class="heading-element">Basic Workflow</h2></div>
-<p>The complete workflow from a link definition to an integrated trajectory is collected in the <code>Simulation</code> object. A compact setup is shown below:</p>
+<p>The <code>Simulation</code> object manages the complete workflow from a link definition to an integrated trajectory. A compact setup is shown below:</p>
 <div class="highlight highlight-source-matlab"><pre>systemFolder <span class="pl-k">=</span> fullfile(<span class="pl-smi">elara</span>.internal.getToolboxRootFolder, ...
     <span class="pl-s"><span class="pl-pds">"</span>examples<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>example-systems<span class="pl-pds">"</span></span>);
 addpath(<span class="pl-smi">systemFolder</span>)
@@ -26,10 +26,10 @@ sim.integrator <span class="pl-k">=</span> <span class="pl-smi">elara</span>.int
 sim.integrator.h <span class="pl-k">=</span> <span class="pl-c1">2</span>^-<span class="pl-c1">8</span>;
 
 sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;</pre></div>
-<p>The constructor assembles <code>sim.system</code> as an <code>elara.SystemNum</code>. With <code>displayInfo = true</code> (the default), link, frame, and input data are printed and the link and frame graphs are opened. This output can be disabled for scripts and batch runs.</p>
+<p>The constructor assembles <code>sim.system</code> as an <code>elara.SystemNum</code>. With <code>displayInfo = true</code> (the default), link, frame, and input data are printed, and the link and frame graphs are displayed. This output can be disabled for scripts and batch runs.</p>
 <p>The default integrator is already <code>elara.integration.VIBroyden</code>. The available alternatives and their settings are summarized under <a href="integration.html">Choosing an Integration Method</a>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Simulation Parameters</h2></div>
-<p>Initial conditions, prescribed inputs, gravity, and the simulation horizon are kept together as simulation parameters. They are stored in <code>sim.parameters</code>, an <code>elara.SimulationParameters</code> object.</p>
+<p>Initial conditions, prescribed inputs, gravity, and the simulation horizon are stored in <code>sim.parameters</code>, an <code>elara.SimulationParameters</code> object.</p>
 <table>
 <thead>
 <tr>
@@ -96,13 +96,12 @@ sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;<
 <div class="highlight highlight-source-matlab"><pre>sim.parameters.q0 <span class="pl-k">=</span> zeros(<span class="pl-smi">sim</span>.system.nDoF, <span class="pl-c1">1</span>);
 sim.parameters.qDot0 <span class="pl-k">=</span> zeros(<span class="pl-smi">sim</span>.system.nDoF, <span class="pl-c1">1</span>);
 sim.parameters.uConst <span class="pl-k">=</span> zeros(<span class="pl-smi">sim</span>.system.nInputs, <span class="pl-c1">1</span>);</pre></div>
-<p>For systems with flexible links or nonzero joint stiffness, <code>sim.system.qRef</code> is the stress-free coordinate vector. The helpers <code>setJointAngles</code> and <code>setLinkDeformations</code> set all unrelated entries to zero, so joint and beam initial conditions need to be combined with some care.</p>
+<p>For systems with flexible links or nonzero joint stiffness, <code>sim.system.qRef</code> is the stress-free coordinate vector. The helpers <code>setJointAngles</code> and <code>setLinkDeformations</code> set all unrelated entries to zero, so joint and beam initial conditions must be combined carefully.</p>
 <div class="markdown-heading"><h2 class="heading-element">Actuation and System Inputs</h2></div>
-<p>For systems with control inputs (such as actuated joints or tendon actuation for flexible links), it is possible to simulate scenarios with prescribed actuation.
-It is possible to specify:</p>
+<p>Systems with control inputs, such as actuated joints or tendon-actuated flexible links, can be simulated with prescribed actuation. Two types of inputs can be specified:</p>
 <ul>
-<li>constant input values $u_{\mathrm{const}}$ (that remain constant over the complete simulation), and</li>
-<li>time-varying trajectories $\widetilde{u}_{\mathrm{sample}}(t)$ in the form of sampled input values.</li>
+<li>constant input values $u_{\mathrm{const}}$ that remain constant throughout the simulation, and</li>
+<li>time-varying trajectories $\widetilde{u}_{\mathrm{sample}}(t)$ represented by sampled input values.</li>
 </ul>
 <p>Constant and sampled inputs can be used together. Their combined value is</p>
 <p>$$
@@ -117,17 +116,17 @@ targetInput(<span class="pl-c1">1</span>) <span class="pl-k">=</span> <span clas
 
 sim.parameters.uSampleTimes <span class="pl-k">=</span> <span class="pl-smi">tInput</span>;
 sim.parameters.uSampleValues <span class="pl-k">=</span> <span class="pl-smi">targetInput</span> <span class="pl-k">.*</span> <span class="pl-smi">ramp</span><span class="pl-k">.'</span>;</pre></div>
-<p>Input indices of the global system inputs are assigned in the order of the supplied links when the system is assembled. Each actuated screw joint contributes one input, and a single tendon-actuated link contributes one input per tendon.
+<p>Global input indices are assigned in the order of the supplied links when the system is assembled. Each actuated screw joint contributes one input, and each tendon-actuated link contributes one input per tendon.
 For a newly defined model, the resulting order can be checked through <code>sim.system.nInputs</code> and the constructor output.</p>
 <div class="markdown-heading"><h2 class="heading-element">External Wrenches</h2></div>
-<p>Apart from the generalized actuator inputs, one can also simulate the effect of external forces (and moments) that directly act on the system's frames.
-These wrenches are applied and stored in <code>elara.ExternalWrench</code> objects, each of which combines a moment $m$ and a force $f$ acting on a frame according to
-$$
+<p>In addition to generalized actuator inputs, external forces and moments can act directly on the system's frames.
+These wrenches are defined and stored in <code>elara.ExternalWrench</code> objects. Each wrench combines a moment $m$ and a force $f$ acting on a frame according to</p>
+<p>$$
 \boldsymbol{w}=
 \begin{bmatrix}\boldsymbol{m}\\boldsymbol{f}\end{bmatrix}
 \in\mathbb{R}^6.
 $$</p>
-<p>The wrench array therefore has size <code>6</code>-by-<code>nFrames</code>, and one can define multiple external wrenches at different sets of frames or with different time evolutions, which are summed together.</p>
+<p>The wrench array therefore has size <code>6</code>-by-<code>nFrames</code>. Multiple external wrenches can be defined for different sets of frames or with different time profiles; their contributions are summed.</p>
 <p>The following example defines a force that is resolved in the spatial frame, points in the global z-direction, and acts on the last frame of the system:</p>
 <div class="highlight highlight-source-matlab"><pre>maximumWrench <span class="pl-k">=</span> zeros(<span class="pl-c1">6</span>, <span class="pl-smi">sim</span>.system.nFrames);
 maximumWrench(<span class="pl-k">:</span>,<span class="pl-smi">end</span>) <span class="pl-k">=</span> [<span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>; <span class="pl-c1">30</span>];
@@ -137,7 +136,7 @@ sim.parameters.externalWrench_s <span class="pl-k">=</span> ...
         <span class="pl-c1">0</span>, <span class="pl-c1">1</span>, <span class="pl-c1">4</span>, <span class="pl-smi">maximumWrench</span>);</pre></div>
 <p>In this manner, one can add an arbitrary number of external wrench definitions.
 The helper method <code>addWrench</code> takes the arguments <code>(startTime, endTime, interpolationType, maximumWrench)</code>.
-The arguments <code>startTime, endTime, interpolationType</code> specify the time profile:</p>
+The arguments <code>startTime</code>, <code>endTime</code>, and <code>interpolationType</code> specify the time profile:</p>
 <table>
 <thead>
 <tr>
@@ -175,7 +174,7 @@ The arguments <code>startTime, endTime, interpolationType</code> specify the tim
 </table>
 <p>The object returned by <code>addWrench</code> needs to be stored. <code>externalWrench_b</code> is used when the components are expressed in each moving body-fixed frame, whereas <code>externalWrench_s</code> is used when they are expressed in the inertial frame. A spatial impulse is demonstrated in the Chiemsee example.</p>
 <div class="markdown-heading"><h2 class="heading-element">Running and Inspecting the Simulation</h2></div>
-<p>After the model, parameters, and integrator have been configured, time integration is initiated through <code>simulateSystem</code>. This method returns a modified value object, which therefore needs to be retained:</p>
+<p>After configuring the model, parameters, and integrator, call <code>simulateSystem</code> to start time integration. This method returns a modified value object, which must therefore be retained:</p>
 <div class="highlight highlight-source-matlab"><pre>sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
 results <span class="pl-k">=</span> <span class="pl-smi">sim</span>.results;</pre></div>
 <p>The most useful result fields are:</p>
@@ -258,7 +257,7 @@ results <span class="pl-k">=</span> <span class="pl-smi">sim</span>.results;</pr
 </ul>
 <p>Geometry settings, movie export, and result conversion are described under <a href="visualization.html">Visualizing Systems and Results</a>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Common Problems</h2></div>
-<p>Most simulation issues can be traced to dimensions, reference configurations, input coverage, or value-object assignments. The following checks cover the common cases:</p>
+<p>Most simulation issues can be traced to dimensions, reference configurations, input coverage, or value-object assignments. The following checks cover the most common cases:</p>
 <ul>
 <li>
 <strong>Dimension mismatch:</strong> initial-condition and input sizes can be derived from <code>nDoF</code> and <code>nInputs</code> after assembly.</li>
@@ -276,15 +275,15 @@ results <span class="pl-k">=</span> <span class="pl-smi">sim</span>.results;</pr
 <p>The simulation examples demonstrate the main model and integration combinations:</p>
 <ul>
 <li>
-<code>simulation_rigid_robot.m</code> -- variational and ODE integration of a rigid robot.</li>
+<code>simulation_rigid_robot.m</code>  variational and ODE integration of a rigid robot.</li>
 <li>
-<code>simulation_rigid_flexible_system.m</code> -- stiff mixed system and <code>ode15s</code> comparison.</li>
+<code>simulation_rigid_flexible_system.m</code>  stiff mixed rigid-flexible system and <code>ode15s</code> comparison.</li>
 <li>
-<code>simulation_continuum_manipulator.m</code> -- sampled tendon inputs.</li>
+<code>simulation_continuum_manipulator.m</code>  sampled tendon inputs.</li>
 <li>
-<code>simulation_rigid_flexible_robot_PD_control.m</code> -- stiffness/damping-based joint control.</li>
+<code>simulation_rigid_flexible_robot_PD_control.m</code>  joint control based on stiffness and damping.</li>
 <li>
-<code>simulation_chiemsee_lecture_notes.m</code> -- precurvature, equilibrium, external wrench, energies, projections, and snapshots.</li>
+<code>simulation_chiemsee_lecture_notes.m</code>  precurvature, equilibrium, external wrenches, energies, projections, and snapshots.</li>
 </ul>
 <p>The individual scripts also show suitable parameter and visualization settings for each system type.</p>
 <p>See also <a href="system_definition.html">Defining Multibody Systems</a> and <a href="integration.html">Choosing an Integration Method</a>.</p></div></main><script src="resources/copycode.js">//</script></body></html>

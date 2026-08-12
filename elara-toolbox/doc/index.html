@@ -5,8 +5,8 @@
 <li>simulation through standard ODE solvers or a Lie-group variational integrator, and</li>
 <li>CasADi-based direct optimal control.</li>
 </ul>
-<p>These components share the same link-based model definition, allowing a system to be carried from simulation to trajectory optimization with little additional setup.</p>
-<p>Moreover, the toolbox explicitly supports the modeling and optimal control of soft robots and continuum manipulators with tendon actuation.</p>
+<p>These components share the same link-based model definition, allowing the same system model to be used for simulation and trajectory optimization with little additional setup.</p>
+<p>The toolbox also supports modeling and optimal control of soft robots and continuum manipulators with tendon actuation.</p>
 <p>The documentation is intentionally task-oriented. Complete argument lists and implementation details are available through <code>help</code>, in the well-commented class and function files, and in the scripts in the <code>examples</code> folder.</p>
 <div class="markdown-heading"><h2 class="heading-element">Requirements and Setup</h2></div>
 <p>ELARA requires MATLAB R2025b or later. Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:</p>
@@ -18,15 +18,15 @@
 <li>Optimization Toolbox, Mapping Toolbox, and Robotics System Toolbox are used by the inverse-dynamics initial-guess helpers.</li>
 </ul>
 <p>These other products are not required for the basic MATLAB simulation workflow.</p>
-<p>After installation, the active setup can be checked with:</p>
+<p>After installation, the active configuration can be checked with:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-smi">elara</span>.setup</pre></div>
-<p>Missing MEX files or CasADi do not prevent use of the core MATLAB simulation implementation. The optional MEX functions can be built after a C++ compiler has been configured:</p>
+<p>Missing MEX files or CasADi do not prevent use of the core MATLAB simulation implementation. The optional MEX functions can be built after configuring a C++ compiler:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-smi">mex</span> <span class="pl-k">-</span><span class="pl-smi">setup</span> <span class="pl-smi">C</span>++
 <span class="pl-smi">elara</span>.build
 <span class="pl-smi">elara</span>.setup</pre></div>
-<p>The toolbox automatically selects an available MEX implementation; no simulation code has to be changed.</p>
+<p>The toolbox automatically selects an available MEX implementation without requiring changes to simulation code.</p>
 <div class="markdown-heading"><h2 class="heading-element">First Simulation</h2></div>
-<p>In the standard workflow, the links are defined first, after which a simulation is constructed and supplied with initial data and an integration method. One of the included system definitions is used below:</p>
+<p>In the standard workflow, the links are defined first. A simulation is then constructed and configured with initial conditions and an integration method. The example below uses one of the included system definitions:</p>
 <div class="highlight highlight-source-matlab"><pre>systemsFolder <span class="pl-k">=</span> fullfile(<span class="pl-smi">elara</span>.internal.getToolboxRootFolder, ...
     <span class="pl-s"><span class="pl-pds">"</span>examples<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>example-systems<span class="pl-pds">"</span></span>);
 addpath(<span class="pl-smi">systemsFolder</span>)
@@ -45,7 +45,7 @@ sim.integrator.h <span class="pl-k">=</span> <span class="pl-c1">2</span>^-<span
 sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
 <span class="pl-smi">sim</span>.plotJointAngles;
 <span class="pl-smi">sim</span>.animateSimResults;</pre></div>
-<p><code>elara.Simulation</code> and most configuration classes have value semantics. Therefore, the returned object needs to be retained when it is modified by a method, as in <code>sim = sim.simulateSystem</code> and <code>sim = sim.computeEnergies</code>.</p>
+<p><code>elara.Simulation</code> and most configuration classes have value semantics. Therefore, the returned object must be retained when it is modified by a method, as in <code>sim = sim.simulateSystem</code> and <code>sim = sim.computeEnergies</code>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Documentation Topics</h2></div>
 <p>The main workflows are described in the following topic pages:</p>
 <ul>
@@ -54,7 +54,7 @@ sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
 <li>
 <a href="simulation.html">Running Numerical Simulations</a> covers initial conditions, inputs, external wrenches, result data, and post-processing.</li>
 <li>
-<a href="integration.html">Choosing an Integration Method</a> compares the variational and ODE interfaces and summarizes their important settings.</li>
+<a href="integration.html">Choosing an Integration Method</a> compares the variational and ODE interfaces and summarizes their key settings.</li>
 <li>
 <a href="optimal_control.html">Solving Optimal-Control Problems</a> describes the <code>elara.ocp.Problem</code> workflow, costs, constraints, initial guesses, and solution processing.</li>
 <li>
@@ -64,7 +64,7 @@ sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
 </ul>
 <p>Together, these pages follow the usual progression from a model definition to simulation or optimal control and, finally, result analysis.</p>
 <div class="markdown-heading"><h2 class="heading-element">Conventions</h2></div>
-<p>ELARA uses SI units. Homogeneous matrices represent poses in $\mathrm{SE}(3)$, combining a three-dimensional orientation and position in a single matrix. Six-dimensional twists, strains, screw axes, and wrenches store the rotational component first and the translational component second. For example,</p>
+<p>ELARA uses SI units. Each homogeneous matrix combines a three-dimensional orientation and a position to represent a pose in $\mathrm{SE}(3)$. Six-dimensional twists, strains, screw axes, and wrenches store the rotational component first and the translational component second. For example,</p>
 <p>$$
 \boldsymbol{\eta} =
 \begin{bmatrix}\boldsymbol{\omega}\\boldsymbol{v}\end{bmatrix},
@@ -72,7 +72,7 @@ sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
 \boldsymbol{w} =
 \begin{bmatrix}\boldsymbol{m}\\boldsymbol{f}\end{bmatrix},
 $$</p>
-<p>where $\boldsymbol{\omega}$ and $\boldsymbol{v}$ are angular and translational velocities, while $\boldsymbol{m}$ and $\boldsymbol{f}$ are moment and force. Generalized coordinates and inputs are column vectors, while trajectory arrays store one time sample per column.</p>
+<p>where $\boldsymbol{\omega}$ and $\boldsymbol{v}$ are angular and translational velocities, while $\boldsymbol{m}$ and $\boldsymbol{f}$ represent a moment and a force. Generalized coordinates and inputs are column vectors, while trajectory arrays store one time sample per column.</p>
 <p>In ELARA, there are two representations of multibody systems:</p>
 <ul>
 <li>
@@ -80,7 +80,7 @@ $$</p>
 <li>
 <code>elara.SystemSym</code> contains a CasADi-compatible representation used to construct optimization graphs.</li>
 </ul>
-<p>Both representations have the same properties and methods, but different implementations optimized for their intended use.</p>
+<p>Both representations have the same properties and methods but use different implementations optimized for their intended purposes.</p>
 <div class="markdown-heading"><h2 class="heading-element">Examples</h2></div>
 <p>The <code>examples</code> folder contains complete, executable workflows for:</p>
 <ul>

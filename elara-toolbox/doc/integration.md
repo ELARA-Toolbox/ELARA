@@ -1,7 +1,7 @@
 # Choosing an Integration Method
 
-The numerical forward simlations can be performed with various integrators.
-The used integrator is stored in the `simulation.integrator` field in the simulation object and must be assigned and correctly configured before `simulation.simulateSystem` is called. 
+ELARA supports several numerical integrators for forward simulation.
+The selected integrator is stored in `simulation.integrator` and must be assigned and configured before `simulation.simulateSystem` is called.
 By default, ELARA provides a fixed-step Lie-group variational integrator and two interfaces to standard ODE solvers.
 
 ## Available Integrators
@@ -22,13 +22,13 @@ All integrators inherit two common settings:
 ## Lie-Group Variational Integrator
 
 With `elara.integration.VIBroyden`, an implementation of an implicit, fixed-step, first/second-order Lie-group variational integrator is available that can be highly efficient both for numerically non-stiff and stiff systems.
-It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle, meaning that the mechanical balance laws are formulated directly in discrete time rather than discretizing an ODE a-posteriori. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form
+It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle: the mechanical balance laws are formulated directly in discrete time rather than by discretizing an ODE *a posteriori*. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form
 
 $$
 F_{\mathrm{DEL}}\!\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
 $$
 
-which is solved with Broyden's good method, a quasi-Newton method which updates an approximation of the residual Jacobian instead of recomputing it in every iteration. In the conservative case, the integrator is second order and preserves the variational structure of the system, which generally gives good long-term momentum and energy behavior.
+which is solved with Broyden's good method, a quasi-Newton method that updates an approximation of the residual Jacobian instead of recomputing it at every iteration. In the conservative case, the integrator is second order and preserves the system's variational structure, which generally provides good long-term momentum and energy behavior.
 
 The formulation operates on consecutive configurations rather than a doubled first-order state containing both position and velocity. Together with the relative-coordinate model, this keeps the implicit solve practical for many stiff flexible systems. An adequately small time step is nevertheless still required.
 
@@ -54,9 +54,9 @@ simulation = simulation.simulateSystem;
 | `toleranceLimit` | `1e-6` to `1e-10` | Largest residual accepted after the iteration limit. |
 | `maxIterations` | `100` | Maximum Broyden iterations per step. |
 | `JacobianIterationThreshold` | 3 to 5 | Recompute the Jacobian after a step whose iteration count exceeds this value. |
-| `useFirstOrderDissipation` | `true` | Use the more robust, but less accurate rectangle-rule approximation for dissipation. |
+| `useFirstOrderDissipation` | `true` | Use the more robust but less accurate rectangle-rule approximation for dissipation. |
 
-`useFirstOrderDissipation = false` uses a trapezoidal dissipation term and is second order also when damping is present. `true` is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.
+`useFirstOrderDissipation = false` uses a trapezoidal dissipation term and is second order even when damping is present. `true` is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.
 
 The generated time grid is
 
@@ -121,7 +121,7 @@ The result can be assessed through `simulation.plotSolverStats` or the fields `s
 
 ## Object-Based ODE Interface
 
-MATLAB's newer object-based ODE interface keeps the solver choice and its options together in one object. ELARA exposes this workflow through `elara.integration.ODEDirect`, whose solver and tolerances are configured before the simulation is started:
+MATLAB's object-based ODE interface keeps the solver choice and its options together in one object. ELARA exposes this workflow through `elara.integration.ODEDirect`, whose solver and tolerances are configured before the simulation starts:
 
 ```matlab
 simulation.integrator = elara.integration.ODEDirect;
@@ -132,7 +132,7 @@ simulation.integrator.odeObject.RelativeTolerance = 1e-6;
 simulation = simulation.simulateSystem;
 ```
 
-`ode45` is a useful starting point for nonstiff rigid systems. Flexible systems commonly require a stiff solver such as `ode15s`. Solver selection, tolerances, and other supported options follow the MATLAB `ode` object interface. Integration is performed over `[0,tEnd]`, and the adaptive points selected by the solver are stored; the current simulation wrapper does not expose a custom output grid.
+`ode45` is a useful starting point for nonstiff rigid systems. Flexible systems commonly require a stiff solver such as `ode15s`. Solver selection, tolerances, and other supported options follow the MATLAB `ode` object interface. Integration is performed over `[0, tEnd]`, and the adaptive points selected by the solver are stored. The current simulation wrapper does not expose a custom output grid.
 
 ## Function-Based ODE Interface
 
@@ -170,10 +170,10 @@ In the derivative form, the acceleration is solved inside each model evaluation.
 
 ## MEX Acceleration
 
-The numerical workload of an integration can optionally be reduced through compiled MEX functions. Each integrator checks whether its required functions are available in the `elara.mex` namespace and otherwise uses the MATLAB implementation. The optional MEX functions can be compiled once with `elara.build`; solver configuration and result formats remain unchanged.
+Compiled MEX functions can reduce integration runtime. Each integrator checks whether its required functions are available in the `elara.mex` namespace and otherwise uses the MATLAB implementation. The optional MEX functions can be compiled once with `elara.build`; solver configuration and result formats remain unchanged.
 
 ## Implementing a Custom Integrator
 
-A custom integrator can be added by deriving a class from `elara.abstract.Integrator` and implementing the constant `type` and the methods `simulateSystem` and `plotSolverStats`. ODE-style implementations may instead derive from `elara.abstract.IntegratorODE` so that the mass-matrix option and ODE statistics plot are reused. The resulting object can then be assigned directly to `simulation.integrator`.
+To add a custom integrator, derive a class from `elara.abstract.Integrator` and implement the constant `type` and the methods `simulateSystem` and `plotSolverStats`. ODE-style implementations may instead derive from `elara.abstract.IntegratorODE` to reuse the mass-matrix option and ODE statistics plot. The resulting object can then be assigned directly to `simulation.integrator`.
 
 See also [Running Numerical Simulations](simulation.md), [Visualizing Systems and Results](visualization.md), and the simulation scripts in the `examples` folder.
