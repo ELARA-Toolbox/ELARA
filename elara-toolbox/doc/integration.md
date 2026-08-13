@@ -25,7 +25,7 @@ With `elara.integration.VIBroyden`, an implementation of an implicit, fixed-step
 It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle: the mechanical balance laws are formulated directly in discrete time rather than by discretizing an ODE *a posteriori*. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form
 
 $$
-F_{\mathrm{DEL}}\!\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
+F_{\mathrm{DEL}}\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
 $$
 
 which is solved with Broyden's good method, a quasi-Newton method that updates an approximation of the residual Jacobian instead of recomputing it at every iteration. In the conservative case, the integrator is second order and preserves the system's variational structure, which generally provides good long-term momentum and energy behavior.
@@ -62,7 +62,7 @@ The generated time grid is
 
 $$
 t_k=kh,\qquad
-k=0,\ldots,\operatorname{round}\!\left(\frac{t_{\mathrm{End}}}{h}\right).
+k=0,\ldots,\mathrm{round}\left(\frac{t_{\mathrm{End}}}{h}\right).
 $$
 
 When the exact endpoint matters, `h` should be chosen so that it divides `tEnd`.
@@ -155,15 +155,15 @@ The defaults are `@ode45` and `odeset()`.
 Both ODE classes use the first-order state
 
 $$
-x=\begin{bmatrix}q\\\dot q\end{bmatrix}.
+x=\begin{bmatrix}q\\ \dot{q}\end{bmatrix}.
 $$
 
 They also inherit `useMassMatrixForm`, which is `false` by default. The two available representations are
 
 $$
-\dot x=f(t,x,u)
+\dot{x}=f(t,x,u)
 \qquad\text{or}\qquad
-M(x)\dot x=f(t,x,u).
+M(x)\dot{x}=f(t,x,u).
 $$
 
 In the derivative form, the acceleration is solved inside each model evaluation. In the mass-matrix form, $M$ and the right-hand side are passed separately to the selected MATLAB solver. A solver supporting a state-dependent mass matrix is required for the latter form.

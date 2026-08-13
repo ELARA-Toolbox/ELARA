@@ -42,7 +42,7 @@ By default, ELARA provides a fixed-step Lie-group variational integrator and two
 <p>With <code>elara.integration.VIBroyden</code>, an implementation of an implicit, fixed-step, first/second-order Lie-group variational integrator is available that can be highly efficient both for numerically non-stiff and stiff systems.
 It provides a structure-preserving, numerically efficient alternative to conventional ODE solvers and is the ELARA default. As a variational integrator, it is based on a discrete Lagrange-d'Alembert principle: the mechanical balance laws are formulated directly in discrete time rather than by discretizing an ODE <em>a posteriori</em>. Configurations are advanced with Lie-group operations on $\mathrm{SE}(3)$. At each step, the next configuration is obtained from an implicit equation of the form</p>
 <p>$$
-F_{\mathrm{DEL}}!\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
+F_{\mathrm{DEL}}\left(q_{k-1},q_k,q_{k+1},u_k\right)=0,
 $$</p>
 <p>which is solved with Broyden's good method, a quasi-Newton method that updates an approximation of the residual Jacobian instead of recomputing it at every iteration. In the conservative case, the integrator is second order and preserves the system's variational structure, which generally provides good long-term momentum and energy behavior.</p>
 <p>The formulation operates on consecutive configurations rather than a doubled first-order state containing both position and velocity. Together with the relative-coordinate model, this keeps the implicit solve practical for many stiff flexible systems. An adequately small time step is nevertheless still required.</p>
@@ -104,7 +104,7 @@ simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.si
 <p>The generated time grid is</p>
 <p>$$
 t_k=kh,\qquad
-k=0,\ldots,\operatorname{round}!\left(\frac{t_{\mathrm{End}}}{h}\right).
+k=0,\ldots,\mathrm{round}\left(\frac{t_{\mathrm{End}}}{h}\right).
 $$</p>
 <p>When the exact endpoint matters, <code>h</code> should be chosen so that it divides <code>tEnd</code>.</p>
 <div class="markdown-heading"><h3 class="heading-element">Implementation Details</h3></div>
@@ -195,13 +195,13 @@ simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.si
 <div class="markdown-heading"><h3 class="heading-element">Derivative and Mass-Matrix Forms</h3></div>
 <p>Both ODE classes use the first-order state</p>
 <p>$$
-x=\begin{bmatrix}q\\dot q\end{bmatrix}.
+x=\begin{bmatrix}q\ \dot{q}\end{bmatrix}.
 $$</p>
 <p>They also inherit <code>useMassMatrixForm</code>, which is <code>false</code> by default. The two available representations are</p>
 <p>$$
-\dot x=f(t,x,u)
+\dot{x}=f(t,x,u)
 \qquad\text{or}\qquad
-M(x)\dot x=f(t,x,u).
+M(x)\dot{x}=f(t,x,u).
 $$</p>
 <p>In the derivative form, the acceleration is solved inside each model evaluation. In the mass-matrix form, $M$ and the right-hand side are passed separately to the selected MATLAB solver. A solver supporting a state-dependent mass matrix is required for the latter form.</p>
 <div class="markdown-heading"><h2 class="heading-element">MEX Acceleration</h2></div>

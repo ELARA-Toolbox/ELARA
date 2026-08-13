@@ -21,7 +21,7 @@ A rigid link contributes one body frame. For a screw joint with axis $X_i$ and c
 
 $$
 g_{p(i),i}(q_i)
-= g_{\mathrm{ref},i}\exp\!\left(\hat{X}_i q_i\right),
+= g_{\mathrm{ref},i}\exp\left(\hat{X}_i q_i\right),
 $$
 
 where $g_{\mathrm{ref},i}$ is the joint transformation in the reference configuration for $q_i = 0$.
@@ -33,7 +33,7 @@ A flexible link is a spatially discretized, geometrically exact (Cosserat) beam:
 These coordinates define the segment's overall discrete deformation $\xi_i$, from which the transformation of a discrete cross-section relative to its predecessor is computed. For a segment of length $l$ and discrete deformation $\xi_i$, the corresponding update is
 
 $$
-g_{i,i+1}=\operatorname{cay}\!\left(l\hat{\xi}_i\right).
+g_{i,i+1}=\mathrm{cay}\left(l\hat{\xi}_i\right).
 $$
 
 The hat operator denotes the matrix representation of a six-dimensional motion vector. These operations are handled internally; their practical benefit is that large three-dimensional rotations and deformations can be represented without linearizing the kinematics.
@@ -125,8 +125,7 @@ The six deformation components are ordered as two bending components, torsion, t
 
 $$
 \boldsymbol{\xi}_i
-= B_a\boldsymbol{\psi}_i
-+ B_c B_c^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i},
+= B_a\boldsymbol{\psi}_i + B_c B_c^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i},
 \qquad
 \boldsymbol{q}_{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
 $$

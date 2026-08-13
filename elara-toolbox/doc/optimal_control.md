@@ -18,8 +18,8 @@ ELARA uses direct transcription: the continuous trajectory is represented by a f
 
 $$
 \begin{aligned}
-\underset{z}{\operatorname{minimize}}\quad
-&J(z)=\sum_{k=0}^{N-1}\,\ell(x_k,u_k,w)+\Phi(x_N,u_N,w),\\
+\underset{z}{\mathrm{minimize}}\quad
+&J(z)=\sum_{k=0}^{N-1} \ell(x_k,u_k,w)+\Phi(x_N,u_N,w),\\
 \text{subject to}\quad
 &c(z)=0,\qquad g(z)\leq 0,
 \end{aligned}
@@ -30,7 +30,7 @@ where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running
 The variational discretization uses only configurations $q_k$ as state variables and imposes discrete Euler-Lagrange equations. ODE discretizations instead use
 
 $$
-x_k=\begin{bmatrix}q_k\\\dot q_k\end{bmatrix}.
+x_k=\begin{bmatrix}q_k\\ \dot{q}_k\end{bmatrix}.
 $$
 
 The practical differences are described under [Choosing an OCP Discretization](ocp_discretization.md).
@@ -86,7 +86,7 @@ The `Problem` class has value semantics, so the result of `initSolver` must be r
 Every transcription is defined on a uniform temporal mesh and may be supplemented with initial, final, and box constraints. The horizon settings `tEnd` and `h` determine the number and location of the transcription nodes:
 
 $$
-N=\operatorname{round}\!\left(\frac{t_{\mathrm{End}}}{h}\right),
+N=\mathrm{round}\left(\frac{t_{\mathrm{End}}}{h}\right),
 \qquad t_k=kh,\quad k=0,\ldots,N.
 $$
 

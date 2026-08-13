@@ -84,7 +84,7 @@ xInit = [qInit; qDotInit];
 The implicit-midpoint method provides a second-order ODE transcription with one midpoint evaluation per interval. `DiscretizationImplicitMidpoint` enforces the first-order dynamics according to
 
 $$
-x_{k+1}=x_k+h\,f\!\left(
+x_{k+1}=x_k+h f \left(
 \frac{x_k+x_{k+1}}{2},u_{k+\frac12}
 \right).
 $$
@@ -98,7 +98,7 @@ Although the step relation is implicit, it is imposed directly as part of the NL
 The temporal resolution controls the usual compromise between transcription accuracy and NLP size. All methods use the uniform step `problem.h`, and the dependent properties satisfy
 
 $$
-N=\operatorname{round}\!\left(\frac{t_{\mathrm{End}}}{h}\right),
+N=\mathrm{round} \left(\frac{t_{\mathrm{End}}}{h}\right),
 \qquad
 \boldsymbol{t}=\begin{bmatrix}0&h&\cdots&Nh\end{bmatrix}^{\mathsf T},
 $$
