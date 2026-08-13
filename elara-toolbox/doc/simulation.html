@@ -123,7 +123,7 @@ For a newly defined model, the resulting order can be checked through <code>sim.
 These wrenches are defined and stored in <code>elara.ExternalWrench</code> objects. Each wrench combines a moment $m$ and a force $f$ acting on a frame according to</p>
 <p>$$
 \boldsymbol{w}=
-\begin{bmatrix}\boldsymbol{m}\\boldsymbol{f}\end{bmatrix}
+\begin{bmatrix}\boldsymbol{m}\ \boldsymbol{f}\end{bmatrix}
 \in\mathbb{R}^6.
 $$</p>
 <p>The wrench array therefore has size <code>6</code>-by-<code>nFrames</code>. Multiple external wrenches can be defined for different sets of frames or with different time profiles; their contributions are summed.</p>

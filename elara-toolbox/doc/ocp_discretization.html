@@ -85,7 +85,7 @@ $$</p>
 <div class="markdown-heading"><h2 class="heading-element">Implicit-Midpoint Discretization</h2></div>
 <p>The implicit-midpoint method provides a second-order ODE transcription with one midpoint evaluation per interval. <code>DiscretizationImplicitMidpoint</code> enforces the first-order dynamics according to</p>
 <p>$$
-x_{k+1}=x_k+h,f!\left(
+x_{k+1}=x_k+h f \left(
 \frac{x_k+x_{k+1}}{2},u_{k+\frac12}
 \right).
 $$</p>
@@ -94,7 +94,7 @@ $$</p>
 <div class="markdown-heading"><h2 class="heading-element">Selecting a Step Size</h2></div>
 <p>The temporal resolution controls the usual compromise between transcription accuracy and NLP size. All methods use the uniform step <code>problem.h</code>, and the dependent properties satisfy</p>
 <p>$$
-N=\operatorname{round}!\left(\frac{t_{\mathrm{End}}}{h}\right),
+N=\mathrm{round} \left(\frac{t_{\mathrm{End}}}{h}\right),
 \qquad
 \boldsymbol{t}=\begin{bmatrix}0&amp;h&amp;\cdots&amp;Nh\end{bmatrix}^{\mathsf T},
 $$</p>

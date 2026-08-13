@@ -67,10 +67,10 @@ sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;
 <p>ELARA uses SI units. Each homogeneous matrix combines a three-dimensional orientation and a position to represent a pose in $\mathrm{SE}(3)$. Six-dimensional twists, strains, screw axes, and wrenches store the rotational component first and the translational component second. For example,</p>
 <p>$$
 \boldsymbol{\eta} =
-\begin{bmatrix}\boldsymbol{\omega}\\boldsymbol{v}\end{bmatrix},
+\begin{bmatrix}\boldsymbol{\omega}\ \boldsymbol{v}\end{bmatrix},
 \qquad
 \boldsymbol{w} =
-\begin{bmatrix}\boldsymbol{m}\\boldsymbol{f}\end{bmatrix},
+\begin{bmatrix}\boldsymbol{m}\ \boldsymbol{f}\end{bmatrix},
 $$</p>
 <p>where $\boldsymbol{\omega}$ and $\boldsymbol{v}$ are angular and translational velocities, while $\boldsymbol{m}$ and $\boldsymbol{f}$ represent a moment and a force. Generalized coordinates and inputs are column vectors, while trajectory arrays store one time sample per column.</p>
 <p>In ELARA, there are two representations of multibody systems:</p>

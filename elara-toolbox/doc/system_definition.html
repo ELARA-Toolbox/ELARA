@@ -13,7 +13,7 @@ $$</p>
 <p>A rigid link contributes one body frame. For a screw joint with axis $X_i$ and coordinate $q_i$, its pose relative to the parent frame is</p>
 <p>$$
 g_{p(i),i}(q_i)
-= g_{\mathrm{ref},i}\exp!\left(\hat{X}_i q_i\right),
+= g_{\mathrm{ref},i}\exp\left(\hat{X}_i q_i\right),
 $$</p>
 <p>where $g_{\mathrm{ref},i}$ is the joint transformation in the reference configuration for $q_i = 0$.
 The screw axis $X_i$ defines whether the joint is a revolute, prismatic, or screw joint.</p>
@@ -21,7 +21,7 @@ The screw axis $X_i$ defines whether the joint is a revolute, prismatic, or scre
 <p>A flexible link is a spatially discretized, geometrically exact (Cosserat) beam: its cross-section frames form a serial chain, and each beam segment acts as a generalized joint. The coordinates of each segment are the allowed discrete deformations $q_i = \psi_i$.
 These coordinates define the segment's overall discrete deformation $\xi_i$, from which the transformation of a discrete cross-section relative to its predecessor is computed. For a segment of length $l$ and discrete deformation $\xi_i$, the corresponding update is</p>
 <p>$$
-g_{i,i+1}=\operatorname{cay}!\left(l\hat{\xi}_i\right).
+g_{i,i+1}=\mathrm{cay}\left(l\hat{\xi}_i\right).
 $$</p>
 <p>The hat operator denotes the matrix representation of a six-dimensional motion vector. These operations are handled internally; their practical benefit is that large three-dimensional rotations and deformations can be represented without linearizing the kinematics.</p>
 <p>For derivations, see Chapters 3 and 4 of the dissertation and the 2024 beam-model paper listed under <a href="index.html#further-reading">Further Reading</a>.</p>
@@ -151,14 +151,11 @@ link.bBoxSize <span class="pl-k">=</span> [
 </table>
 <p>The six deformation components are ordered as two bending components, torsion, two shear components, and extension. The deformation of segment $i$ is decomposed as</p>
 <p>$$
-\boldsymbol{\xi}_i
-= B_a\boldsymbol{\psi}_i</p>
-<ul>
-<li>B_c B_c^{\mathsf T}\boldsymbol{\xi}<em>{\mathrm{ref},i},
+\boldsymbol{\xi}<em>i
+= B_a\boldsymbol{\psi}<em>i + B_c B_c^{\mathsf T}\boldsymbol{\xi}</em>{\mathrm{ref},i},
 \qquad
 \boldsymbol{q}</em>{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
-$$</li>
-</ul>
+$$</p>
 <p>The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Both bases must have orthonormal columns, be mutually orthogonal, and together span all six deformation directions. Current validation uses exact matrix comparisons, so exact selection matrices such as the examples below are recommended instead of numerically approximated bases.</p>
 <p>Common choices are:</p>
 <table>
