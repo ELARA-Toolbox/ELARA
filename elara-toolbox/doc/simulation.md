@@ -100,7 +100,7 @@ These wrenches are defined and stored in `elara.ExternalWrench` objects. Each wr
 
 $$
 \boldsymbol{w}=
-\begin{bmatrix}\boldsymbol{m}\\\boldsymbol{f}\end{bmatrix}
+\begin{bmatrix}\boldsymbol{m}\\ \boldsymbol{f}\end{bmatrix}
 \in\mathbb{R}^6.
 $$
 
