@@ -86,10 +86,10 @@ ELARA uses SI units. Each homogeneous matrix combines a three-dimensional orient
 
 $$
 \boldsymbol{\eta} =
-\begin{bmatrix}\boldsymbol{\omega}\\\boldsymbol{v}\end{bmatrix},
+\begin{bmatrix}\boldsymbol{\omega}\\ \boldsymbol{v}\end{bmatrix},
 \qquad
 \boldsymbol{w} =
-\begin{bmatrix}\boldsymbol{m}\\\boldsymbol{f}\end{bmatrix},
+\begin{bmatrix}\boldsymbol{m}\\ \boldsymbol{f}\end{bmatrix},
 $$
 
 where $\boldsymbol{\omega}$ and $\boldsymbol{v}$ are angular and translational velocities, while $\boldsymbol{m}$ and $\boldsymbol{f}$ represent a moment and a force. Generalized coordinates and inputs are column vectors, while trajectory arrays store one time sample per column.
