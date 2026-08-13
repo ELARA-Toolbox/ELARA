@@ -5,12 +5,14 @@
 
 identifier = "5848c156-85fa-4ef4-a9e0-5008f0eccc84";
 toolboxFolder = elara.internal.getToolboxRootFolder;
+repoFolder = fileparts(toolboxFolder);
 
 opts = matlab.addons.toolbox.ToolboxOptions(toolboxFolder, identifier);
 
-opts.ToolboxVersion = "0.2";
+opts.ToolboxVersion = "0.2.1";
 opts.ToolboxName = "ELARA Robot Simulation and Control Toolbox";
-opts.ToolboxImageFile = "doc/.assets/elara_logo.png";
+opts.ToolboxImageFile = fullfile(repoFolder, ...
+    "doc", ".assets/elara_logo.png");
 opts.ToolboxGettingStartedGuide = fullfile( toolboxFolder, ...
     "doc", "GettingStarted.mlx");
 
