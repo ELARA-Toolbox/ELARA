@@ -186,7 +186,7 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
             % First and last step have factor 1/2
             fTrap = 1 - 1/2*(iStep == 1 || iStep == (OCP.nSteps+1));
 
-            J_TCP_tr = J_TCP_tr + wR(5) * OCP.h * fTrap * 0.5*sumsqr(OCP.x_TCP_traj(:,iStep) - g_TCP_k.x);
+            J_TCP_tr = J_TCP_tr + wR(5) * OCP.h * fTrap * sumsqr(OCP.x_TCP_traj(:,iStep) - g_TCP_k.x);
         end
     end
     JR{5} = J_TCP_tr;
