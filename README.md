@@ -150,10 +150,18 @@ The core toolbox was developed by Maximilian Herrmann. Leander Pfeiffer provided
 Philipp Tarbiat, Tobias Farger, and Akash Cheriath also contributed feedback and code snippets during their student projects at the chair.
 These contributions are marked in the comments.
 
+## Projects using ELARA
+
+- [LGVI Multibody Experiments](https://github.com/mherrmann21/LGVI-Multibody-Experiments)
+- [PETER - Experimental Validation & Optimal Control](https://github.com/mherrmann21/PETER-Experimental-Validation-Control)
+
 ## Developer Documentation
 
-For a release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates the corresponding `.mltbx` file.
+- For a release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates the corresponding `.mltbx` file.
 The version number in the script must be incremented manually.
+
+- HTML documentation is generated from the markdown source files under `elara-toolbox/doc` using [MATLAB DocMaker](https://github.com/mathworks/docmaker/tree/master), which must be installed on the system.
+Run `tools/buildDocs.m` to build the HTML files.
 
 ## Contact & Support
 
