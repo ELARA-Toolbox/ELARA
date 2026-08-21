@@ -28,6 +28,7 @@ sim.integrator.h <span class="pl-k">=</span> <span class="pl-c1">2</span>^-<span
 sim <span class="pl-k">=</span> <span class="pl-smi">sim</span>.simulateSystem;</pre></div>
 <p>The constructor assembles <code>sim.system</code> as an <code>elara.SystemNum</code>. With <code>displayInfo = true</code> (the default), link, frame, and input data are printed, and the link and frame graphs are displayed. This output can be disabled for scripts and batch runs.</p>
 <p>The default integrator is already <code>elara.integration.VIBroyden</code>. The available alternatives and their settings are summarized under <a href="integration.html">Choosing an Integration Method</a>.</p>
+<p>In the continuous equations of motion, ELARA needs the kinematic acceleration-bias term $\dot J\dot q$, but not the full Jacobian derivative. The simulation routines therefore use <code>computeGeomJacobianAccelerationBiasMatrixFast</code>, whose result has the same product with $\dot q$ as the true derivative and is typically cheaper to construct. The distinct true derivative remains available through <code>computeGeomJacobianTimeDerivative</code>; see <a href="system_definition.html#jacobian-time-derivative-and-acceleration-bias">Jacobian Time Derivative and Acceleration Bias</a>.</p>
 <div class="markdown-heading"><h2 class="heading-element">Simulation Parameters</h2></div>
 <p>Initial conditions, prescribed inputs, gravity, and the simulation horizon are stored in <code>sim.parameters</code>, an <code>elara.SimulationParameters</code> object.</p>
 <table>

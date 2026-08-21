@@ -281,6 +281,9 @@ systemSym <span class="pl-k">=</span> <span class="pl-smi">elara</span>.SystemSy
 <p>The main high-level operations are:</p>
 <div class="highlight highlight-source-matlab"><pre>g <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeFwdKin(<span class="pl-smi">q</span>);
 J <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeGeomJacobian(<span class="pl-smi">q</span>);
+JDot <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeGeomJacobianTimeDerivative(<span class="pl-smi">q</span>, <span class="pl-smi">qDot</span>);
+JBias <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeGeomJacobianAccelerationBiasMatrix( ...
+    <span class="pl-smi">q</span>, <span class="pl-smi">qDot</span>, <span class="pl-smi">eta</span>);
 M <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeMassMatrix(<span class="pl-smi">q</span>);
 B <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeInputMatrix(<span class="pl-smi">q</span>);
 
@@ -288,9 +291,24 @@ theta <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.getJoint
 xi <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.getLinkDeformations(<span class="pl-smi">q</span>, <span class="pl-smi">iLink</span>);</pre></div>
 <p>Many of these methods have variants with the suffix <code>Fast</code>.
 These variants accept precomputed intermediate kinematicsfor example, the relative joint transformations returned by <code>g_rel = systemNum.computeJointTransformations(q)</code>and are intended for performance-sensitive internal or advanced use.
-They can avoid repeated computation of relative joint transformations in complex calculations, such as the equations of motion, where several kinematic quantities depend on the same intermediate variables.</p>
+They can avoid repeated computation of relative joint transformations in complex calculations, such as the equations of motion, where several kinematic quantities depend on the same intermediate variables.
+For the Jacobian derivative, the fast true-derivative method additionally accepts the precomputed geometric Jacobian, whereas the fast acceleration-bias method accepts the precomputed absolute frame velocities.</p>
 <p><code>SystemNum</code> and <code>SystemSym</code> share the core system interface but use different internal representations. In particular, the numeric and symbolic systems stored by an <code>elara.ocp.Problem</code> are independent copies: modifying the original links or either assembled system after construction does not update the others. Reconstruct the problem after changing model parameters.</p>
 <p>The assembled link and frame topology can be inspected with <code>elara.plot.systemGraphs(systemNum)</code>.</p>
+<div class="markdown-heading"><h4 class="heading-element">Jacobian Time Derivative and Acceleration Bias</h4></div>
+<p>In the continuous-time equations of motion, the absolute body-fixed accelerations of the system's frames are required,
+which can be computed using the time derivative of the geometric Jacobian:
+along a trajectory, differentiating the body-fixed twist gives</p>
+<p>$$
+\dot{\eta}_i
+= J_i(q) \ddot{q} + \dot{J}_i(q,\dot{q}) \dot{q},
+$$</p>
+<p>where $\dot{J}<em>i(q,\dot{q})$ is the time derivative of the geometric Jacobian $J_i(q)$.
+<code>computeGeomJacobianTimeDerivative</code> returns the true matrix $\dot J_i$, obtained by differentiating every block of the geometric Jacobian. ELARA also provides <code>computeGeomJacobianAccelerationBiasMatrix</code>, which returns a velocity-dependent factorization $J</em>{\mathrm{bias},i}$ satisfying</p>
+<p>$$
+J_{\mathrm{bias},i} \dot{q} = \dot{J}_i \dot{q}.
+$$</p>
+<p>The two matrices are generally not equal, although their products with the same generalized velocity are. The equations of motion require only the contracted acceleration-bias term, so ELARA uses <code>computeGeomJacobianAccelerationBiasMatrix</code> internally to avoid the additional work needed to construct the full true derivative. Use the true derivative whenever individual entries or columns of $\dot J_i$ are required. Numeric <code>SystemNum</code> objects return three-dimensional arrays, while symbolic <code>SystemSym</code> objects return the corresponding block-cell representation.</p>
 <div class="markdown-heading"><h2 class="heading-element">Related Examples</h2></div>
 <p>The example-system definitions illustrate the most common link combinations:</p>
 <ul>
