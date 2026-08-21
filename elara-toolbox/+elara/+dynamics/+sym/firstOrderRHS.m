@@ -41,7 +41,10 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
     for iFrm = 1:system.nFrames
         eta(:,iFrm) = J{iFrm} * q_dot;
     end
-    J_dot = system.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
+    % The equations of motion require only J_dot*q_dot, so use the
+    % efficient acceleration-bias factorization instead of the full J_dot.
+    J_bias = system.computeGeomJacobianAccelerationBiasMatrixFast( ...
+        q, q_dot, eta, g_rel);
 
 
     %% Evaluate EOM
@@ -68,7 +71,7 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
             ...% Frame forces
             + f_frame_b(:,iFrm)...
             ...% Coriolis Term
-            + (system.frames.MGen(:,:,iFrm) * J_dot{iFrm} ...
+            + (system.frames.MGen(:,:,iFrm) * J_bias{iFrm} ...
             - elara.SE3.smallAd(eta(:,iFrm)).' * system.frames.MGen(:,:,iFrm) * J{iFrm}) * q_dot ...
             );
     end

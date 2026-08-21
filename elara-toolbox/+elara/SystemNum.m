@@ -243,7 +243,7 @@ classdef SystemNum < elara.abstract.System
             end
             arguments (Output)
                 % Jacobian matrices with dimensions
-                % 6 x (nAllwd_1*nSegments1 + ... + nAllwdB*nSegmentsB + nLinks) x nFrames
+                % 6 x nDoF x nFrames
                 % where B is the number of flexible beams in the system
                 J       (6,:,:) double
             end
@@ -288,8 +288,7 @@ classdef SystemNum < elara.abstract.System
             end
             arguments (Output)
                 % Jacobian matrices with dimensions
-                % 6 x (nAllwd_1*nSegments1 + ... + nAllwdB*nSegmentsB + nLinks) x nFrames
-                % where B is the number of flexible beams in the system
+                % 6 x nDoF x nFrames
                 J       (6,:,:) double
 
                 % Relative configurations between body frames
@@ -302,9 +301,13 @@ classdef SystemNum < elara.abstract.System
             J = system.computeGeomJacobianFast(q, g_rel);
         end
 
-        function J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, eta, g_rel)
-            %% Compute the Time Derivative of the Geometric Jacobian Matrix
-            % for the full multibody system
+        function J_bias = computeGeomJacobianAccelerationBiasMatrixFast(system, q, q_dot, eta, g_rel)
+            %% Compute a Geometric-Jacobian Acceleration-Bias Matrix
+            % This matrix is not the true time derivative of the geometric
+            % Jacobian. It is an efficient factorization satisfying
+            % J_bias(:,:,iFrm)*q_dot = J_dot(:,:,iFrm)*q_dot, where J_dot
+            % denotes the true derivative. The equations of motion require
+            % only this contracted acceleration-bias term.
             % "Fast" function - with given relative transformations g_ij
             arguments (Input)
                 system      (1,1) elara.SystemNum
@@ -323,13 +326,14 @@ classdef SystemNum < elara.abstract.System
                 g_rel        (4,4,:) double
             end
             arguments (Output)
-                % Derivative of Jacobian matrix
-                J_dot       (6,:,:) double
+                % Acceleration-bias factorization matrix
+                J_bias      (6,:,:) double
             end
 
-            % Array holding all Jacobians
-            J_dot = zeros(6, system.nDoF, system.nFrames);
+            % Array holding all acceleration-bias matrices
+            J_bias = zeros(6, system.nDoF, system.nFrames);
             for iFrm = 1:system.nFrames
+                AdInvRel = elara.SE3.AdInv(g_rel(:,:,iFrm));
                 for ii = 1:iFrm
                     % Column indices of the current block
                     qIndices = system.frames.getQIndices(ii);
@@ -338,13 +342,13 @@ classdef SystemNum < elara.abstract.System
                     if ii == iFrm
                         switch system.frames.jointType(iFrm)
                             case 1
-                                J_dot(:,qIndices,iFrm) = ...
+                                J_bias(:,qIndices,iFrm) = ...
                                     elara.SE3.smallAd(eta(:,ii)) * system.frames.X(:,iFrm);
                             case 2
                                 xi     = system.frames.Ba(iFrm) * q(qIndices) + system.frames.xiC(:,iFrm);
                                 xi_dot = system.frames.Ba(iFrm) * q_dot(qIndices);
                                 l = system.frames.l(iFrm);
-                                J_dot(:,qIndices,iFrm) = l * ( ...
+                                J_bias(:,qIndices,iFrm) = l * ( ...
                                     + elara.SE3.smallAd(eta(:,ii)) * elara.SE3.dcay(-xi*l) ...
                                     + elara.SE3.dcayDerivative(-xi*l, -xi_dot*l ) ...
                                     ) * system.frames.Ba(iFrm);
@@ -353,17 +357,87 @@ classdef SystemNum < elara.abstract.System
                         end
                     else
                         if ismember(ii, system.frames.ancestors(:,iFrm))
-                            J_dot(:,qIndices,iFrm) = elara.SE3.AdInv( g_rel(:,:,iFrm) ) ...
-                                * J_dot(:,qIndices,system.frames.parent(iFrm));
+                            J_bias(:,qIndices,iFrm) = AdInvRel ...
+                                * J_bias(:,qIndices,system.frames.parent(iFrm));
                         end
                     end
                 end
             end
         end
+        function J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, J, g_rel)
+            %% Compute the True Time Derivative of the Geometric Jacobian
+            % Unlike computeGeomJacobianAccelerationBiasMatrixFast, this
+            % method differentiates every Jacobian block. Use the bias
+            % matrix when only J_dot*q_dot is required.
+            % "Fast" function - with given relative transformations g_ij
+            arguments (Input)
+                system      (1,1) elara.SystemNum
 
-        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot, eta)
-            %% Compute the Time Derivative of the Geometric Jacobian Matrix
-            % for the full multibody system
+                % System coordinates (nDoF, 1)
+                q           (:,1) double
+
+                % System coordinate velocities (nDoF, 1)
+                q_dot       (:,1) double
+
+                % Geometric Jacobian
+                J           (6,:,:) double
+
+                % Array of relative configurations between body frames
+                % dimensions (4,4,nFrames)
+                g_rel        (4,4,:) double
+            end
+            arguments (Output)
+                % Derivative of Jacobian matrix
+                J_dot       (6,:,:) double
+            end
+
+            % Array holding all Jacobians
+            J_dot = zeros(6, system.nDoF, system.nFrames);
+            for iFrm = 1:system.nFrames
+                % Body velocity of the current frame relative to its parent.
+                % This determines the derivative of AdInv(g_rel(:,:,iFrm))
+                % for every Jacobian block inherited from the parent.
+                currentQIndices = system.frames.getQIndices(iFrm);
+                eta_rel = J(:,currentQIndices,iFrm) * q_dot(currentQIndices);
+                AdInvRel = elara.SE3.AdInv(g_rel(:,:,iFrm));
+
+                for ii = 1:iFrm
+                    % Column indices of the current block
+                    qIndices = system.frames.getQIndices(ii);
+
+                    % Compute block columns for current frame
+                    if ii == iFrm
+                        switch system.frames.jointType(iFrm)
+                            case 1
+                                % The local screw-joint block is constant.
+                            case 2
+                                xi     = system.frames.Ba(iFrm) * q(qIndices) + system.frames.xiC(:,iFrm);
+                                xi_dot = system.frames.Ba(iFrm) * q_dot(qIndices);
+                                l = system.frames.l(iFrm);
+                                J_dot(:,qIndices,iFrm) = l ...
+                                    * elara.SE3.dcayDerivative(-xi*l, -xi_dot*l) ...
+                                    * system.frames.Ba(iFrm);
+                            otherwise
+                                % error
+                        end
+                    else
+                        if ismember(ii, system.frames.ancestors(:,iFrm))
+                            % J_i,ii = AdInvRel*J_parent,ii. Reusing the
+                            % already computed child block avoids an extra
+                            % matrix product in the differentiated formula.
+                            J_dot(:,qIndices,iFrm) = ...
+                                - elara.SE3.smallAd(eta_rel) * J(:,qIndices,iFrm) ...
+                                + AdInvRel * J_dot(:,qIndices,system.frames.parent(iFrm));
+                        end
+                    end
+                end
+            end
+        end
+        function [J_bias, g_rel] = computeGeomJacobianAccelerationBiasMatrix(system, q, q_dot, eta)
+            %% Compute a Geometric-Jacobian Acceleration-Bias Matrix
+            % This is not the true Jacobian derivative. It is an efficient
+            % factorization satisfying J_bias*q_dot = J_dot*q_dot and is
+            % therefore used by the equations of motion.
             arguments
                 system      (1,1) elara.SystemNum
 
@@ -380,10 +454,32 @@ classdef SystemNum < elara.abstract.System
             % Compute relative joint transformations
             g_rel = system.computeJointTransformations(q);
 
-            % Compute actual Jacobian derivative
-            J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, eta, g_rel);
+            % Compute acceleration-bias factorization
+            J_bias = computeGeomJacobianAccelerationBiasMatrixFast( ...
+                system, q, q_dot, eta, g_rel);
         end
+        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot)
+            %% Compute the True Time Derivative of the Geometric Jacobian
+            % Use computeGeomJacobianAccelerationBiasMatrix instead when
+            % only the contracted term J_dot*q_dot is required.
+            arguments
+                system      (1,1) elara.SystemNum
 
+                % System coordinates (nDoF, 1)
+                q           (:,1) double
+
+                % System coordinate velocities (nDoF, 1)
+                q_dot       (:,1) double
+            end
+
+            % Compute relative joint transformations
+            g_rel = system.computeJointTransformations(q);
+
+            J = system.computeGeomJacobianFast(q, g_rel);
+
+            % Compute true Jacobian derivative
+            J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, J, g_rel);
+        end
         function B = computeInputMatrixFast(system, g_rel)
             %% Compute the system input matrix
             % "Fast" function -- with given relative deformations

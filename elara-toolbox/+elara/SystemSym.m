@@ -316,9 +316,13 @@ classdef SystemSym < elara.abstract.System
             J = system.computeGeomJacobianFast(q, g_rel);
         end
 
-        function J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, eta, g_rel)
-            %% Compute the Time Derivative of the Geometric Jacobian Matrix
-            % for the full multibody system
+        function J_bias = computeGeomJacobianAccelerationBiasMatrixFast(system, q, q_dot, eta, g_rel)
+            %% Compute a Geometric-Jacobian Acceleration-Bias Matrix
+            % This matrix is not the true time derivative of the geometric
+            % Jacobian. Contracting each block row with the corresponding
+            % blocks of q_dot gives the same result as J_dot*q_dot, where
+            % J_dot denotes the true derivative. The equations of motion
+            % require only this contracted acceleration-bias term.
             % "Fast" function - with given relative transformations g_ij
             arguments (Input)
                 system      (1,1) elara.SystemSym
@@ -337,8 +341,8 @@ classdef SystemSym < elara.abstract.System
                 g_rel       (:,1) elara.SE3.Element
             end
             arguments (Output)
-                % Derivative of Jacobian matrix
-                J_dot        (:,:) cell
+                % Acceleration-bias factorization blocks
+                J_bias       (:,:) cell
             end
 
             %%%% TODO:
@@ -348,9 +352,10 @@ classdef SystemSym < elara.abstract.System
             f = elara.internal.math.getSE3Functions(q);
             fSE3DcayDerivative = elara.internal.math.getCayRTDSE3dtFunction(q);
 
-            % Array holding all Jacobians
-            J_dot = cell(system.nFrames, system.nFrames);
+            % Array holding all acceleration-bias matrices
+            J_bias = cell(system.nFrames, system.nFrames);
             for iFrm = 1:system.nFrames
+                AdInvRel = f.SE3.AdInv(g_rel(iFrm).R, g_rel(iFrm).x);
                 for iBlock = 1:iFrm
                     % Column indices of the current block
                     qIndices = double(system.frames.getQIndices(iBlock));
@@ -359,7 +364,7 @@ classdef SystemSym < elara.abstract.System
                     if iBlock == iFrm
                         switch system.frames.jointType(iFrm)
                             case 1
-                                J_dot{iFrm, iBlock} = ...
+                                J_bias{iFrm, iBlock} = ...
                                     f.SE3.smallAd(eta{iBlock}(1:3),eta{iBlock}(4:6)) * system.frames.X(:,iFrm);
                             case 2
                                 l = system.frames.l(iFrm);
@@ -369,7 +374,7 @@ classdef SystemSym < elara.abstract.System
                                 om_dot = Ba(1:3,:) * q_dot(qIndices)*l;
                                 v_dot  = Ba(4:6,:) * q_dot(qIndices)*l;
 
-                                J_dot{iFrm, iBlock} = l * ( ...
+                                J_bias{iFrm, iBlock} = l * ( ...
                                     f.SE3.smallAd(eta{iBlock}(1:3), eta{iBlock}(4:6)) * f.SE3.dcay(-om, -v) ...
                                     + fSE3DcayDerivative(-om, -v, -om_dot, -v_dot ) ...
                                     ) * system.frames.Ba(iFrm);
@@ -378,17 +383,19 @@ classdef SystemSym < elara.abstract.System
                         end
                     else
                         if ismember(iBlock, system.frames.ancestors(:,iFrm))
-                            J_dot{iFrm, iBlock} = f.SE3.AdInv(g_rel(iFrm).R, g_rel(iFrm).x) ...
-                                * J_dot{system.frames.parent(iFrm),iBlock};
+                            J_bias{iFrm, iBlock} = AdInvRel ...
+                                * J_bias{system.frames.parent(iFrm),iBlock};
                         end
                     end
                 end
             end
         end
 
-        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot, eta)
-            %% Compute the Time Derivative of the Geometric Jacobian Matrix
-            % for the full multibody system
+        function [J_bias, g_rel] = computeGeomJacobianAccelerationBiasMatrix(system, q, q_dot, eta)
+            %% Compute a Geometric-Jacobian Acceleration-Bias Matrix
+            % This is not the true Jacobian derivative. It is an efficient
+            % factorization satisfying J_bias*q_dot = J_dot*q_dot and is
+            % therefore used by the equations of motion.
             arguments
                 system      (1,1) elara.SystemSym
 
@@ -405,8 +412,106 @@ classdef SystemSym < elara.abstract.System
             % Compute relative joint transformations
             g_rel = system.computeJointTransformations(q);
 
-            % Compute actual Jacobian derivative
-            J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, eta, g_rel);
+            % Compute acceleration-bias factorization
+            J_bias = computeGeomJacobianAccelerationBiasMatrixFast( ...
+                system, q, q_dot, eta, g_rel);
+        end
+
+        function J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, J, g_rel)
+            %% Compute the True Time Derivative of the Geometric Jacobian
+            % Unlike computeGeomJacobianAccelerationBiasMatrixFast, this
+            % method differentiates every Jacobian block. Use the bias
+            % matrix when only J_dot*q_dot is required.
+            % "Fast" function - with given Jacobians and relative
+            % transformations g_ij
+            arguments (Input)
+                system      (1,1) elara.SystemSym
+
+                % System coordinates (nDoF, 1)
+                q           (:,1)
+
+                % System coordinate velocities (nDoF, 1)
+                q_dot       (:,1)
+
+                % Geometric Jacobian blocks
+                J           (:,:) cell
+
+                % Array of relative configurations between body frames
+                g_rel       (:,1) elara.SE3.Element
+            end
+            arguments (Output)
+                % True derivative of the geometric Jacobian blocks
+                J_dot       (:,:) cell
+            end
+
+            f = elara.internal.math.getSE3Functions(q);
+            fSE3DcayDerivative = elara.internal.math.getCayRTDSE3dtFunction(q);
+
+            J_dot = cell(system.nFrames, system.nFrames);
+            for iFrm = 1:system.nFrames
+                currentQIndices = double(system.frames.getQIndices(iFrm));
+                eta_rel = J{iFrm,iFrm} * q_dot(currentQIndices);
+                AdInvRel = f.SE3.AdInv(g_rel(iFrm).R, g_rel(iFrm).x);
+
+                for iBlock = 1:iFrm
+                    qIndices = double(system.frames.getQIndices(iBlock));
+
+                    if iBlock == iFrm
+                        switch system.frames.jointType(iFrm)
+                            case 1
+                                % The local screw-joint block is constant.
+                                J_dot{iFrm,iBlock} = zeros(6, numel(qIndices));
+                            case 2
+                                l = system.frames.l(iFrm);
+                                Ba = system.frames.Ba(iFrm);
+                                om = (Ba(1:3,:) * q(qIndices) ...
+                                    + system.frames.xiC(1:3,iFrm)) * l;
+                                v = (Ba(4:6,:) * q(qIndices) ...
+                                    + system.frames.xiC(4:6,iFrm)) * l;
+                                om_dot = Ba(1:3,:) * q_dot(qIndices) * l;
+                                v_dot = Ba(4:6,:) * q_dot(qIndices) * l;
+
+                                J_dot{iFrm,iBlock} = l ...
+                                    * fSE3DcayDerivative( ...
+                                    -om, -v, -om_dot, -v_dot) ...
+                                    * Ba;
+                            otherwise
+                                % error
+                        end
+                    else
+                        if ismember(iBlock, system.frames.ancestors(:,iFrm))
+                            % J_i,iBlock = AdInvRel*J_parent,iBlock.
+                            % Reuse the child block to avoid an additional
+                            % symbolic matrix product.
+                            J_dot{iFrm,iBlock} = ...
+                                - f.SE3.smallAd(eta_rel(1:3), eta_rel(4:6)) ...
+                                * J{iFrm,iBlock} ...
+                                + AdInvRel ...
+                                * J_dot{system.frames.parent(iFrm),iBlock};
+                        end
+                    end
+                end
+            end
+        end
+
+        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot)
+            %% Compute the True Time Derivative of the Geometric Jacobian
+            % Use computeGeomJacobianAccelerationBiasMatrix instead when
+            % only the contracted term J_dot*q_dot is required.
+            arguments
+                system      (1,1) elara.SystemSym
+
+                % System coordinates (nDoF, 1)
+                q           (:,1)
+
+                % System coordinate velocities (nDoF, 1)
+                q_dot       (:,1)
+            end
+
+            g_rel = system.computeJointTransformations(q);
+            J = system.computeGeomJacobianFast(q, g_rel);
+            J_dot = computeGeomJacobianTimeDerivativeFast( ...
+                system, q, q_dot, J, g_rel);
         end
 
         function B = computeInputMatrixFast(system, g_rel)

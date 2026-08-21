@@ -10,6 +10,8 @@ addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-syste
 
 % Absolute test tolerances
 tolKinematics = 1e-12;
+tolJacobianDerivative = 1e-8;
+tolJacobianBias = 1e-12;
 tolStatics = 1e-10;
 tolVelocities = 1e-8;
 tolDEL = 1e-8;
@@ -88,6 +90,96 @@ for iSystem = 1:numel(systemDefinitions)
     assert(errorJ <= tolKinematics, sprintf( ...
         "%s: Geometric Jacobian error %.3e exceeds tolerance %.3e.", ...
         systemNames(iSystem), errorJ, tolKinematics));
+end
+
+
+%% Test geometric Jacobian derivative and acceleration-bias matrix
+
+finiteDifferenceStep = 1e-6;
+for iSystem = 1:numel(systemDefinitions)
+    links = systemDefinitions{iSystem}();
+    simulation = elara.Simulation(links, "displayInfo", false);
+    systemNum = simulation.system;
+    systemSym = elara.SystemSym(links);
+
+    q = rand(systemNum.nDoF, 1);
+    qDot = rand(systemNum.nDoF, 1);
+
+    [JNum, gRelNum] = systemNum.computeGeomJacobian(q);
+    etaNum = zeros(6, systemNum.nFrames);
+    for iFrame = 1:systemNum.nFrames
+        etaNum(:,iFrame) = JNum(:,:,iFrame) * qDot;
+    end
+
+    JDotNum = systemNum.computeGeomJacobianTimeDerivativeFast( ...
+        q, qDot, JNum, gRelNum);
+    JBiasNum = systemNum.computeGeomJacobianAccelerationBiasMatrixFast( ...
+        q, qDot, etaNum, gRelNum);
+
+    JPlus = systemNum.computeGeomJacobian( ...
+        q + finiteDifferenceStep*qDot);
+    JMinus = systemNum.computeGeomJacobian( ...
+        q - finiteDifferenceStep*qDot);
+    JDotFiniteDifference = ...
+        (JPlus - JMinus) / (2*finiteDifferenceStep);
+
+    [JSymBlocks, gRelSym] = systemSym.computeGeomJacobian(q);
+    etaSym = cell(systemSym.nFrames, 1);
+    for iFrame = 1:systemSym.nFrames
+        etaSym{iFrame} = zeros(6,1);
+        for iBlock = 1:systemSym.nFrames
+            if ~isempty(JSymBlocks{iFrame,iBlock})
+                qIndices = double(systemSym.frames.getQIndices(iBlock));
+                etaSym{iFrame} = etaSym{iFrame} ...
+                    + JSymBlocks{iFrame,iBlock} * qDot(qIndices);
+            end
+        end
+    end
+
+    JDotSymBlocks = systemSym.computeGeomJacobianTimeDerivativeFast( ...
+        q, qDot, JSymBlocks, gRelSym);
+    JBiasSymBlocks = ...
+        systemSym.computeGeomJacobianAccelerationBiasMatrixFast( ...
+        q, qDot, etaSym, gRelSym);
+
+    JDotSym = zeros(size(JDotNum));
+    JBiasSym = zeros(size(JBiasNum));
+    for iFrame = 1:systemSym.nFrames
+        for iBlock = 1:systemSym.nFrames
+            qIndices = double(systemSym.frames.getQIndices(iBlock));
+            if ~isempty(JDotSymBlocks{iFrame,iBlock})
+                JDotSym(:,qIndices,iFrame) = ...
+                    full(JDotSymBlocks{iFrame,iBlock});
+            end
+            if ~isempty(JBiasSymBlocks{iFrame,iBlock})
+                JBiasSym(:,qIndices,iFrame) = ...
+                    full(JBiasSymBlocks{iFrame,iBlock});
+            end
+        end
+    end
+
+    errorDerivative = max(abs( ...
+        JDotNum(:) - JDotFiniteDifference(:)));
+    errorDerivativeSym = max(abs(JDotNum(:) - JDotSym(:)));
+    errorBiasSym = max(abs(JBiasNum(:) - JBiasSym(:)));
+    errorBiasProduct = 0;
+    for iFrame = 1:systemNum.nFrames
+        errorBiasProduct = max(errorBiasProduct, max(abs( ...
+            (JBiasNum(:,:,iFrame) - JDotNum(:,:,iFrame))*qDot)));
+    end
+
+    assert(errorDerivative <= tolJacobianDerivative, sprintf( ...
+        "%s: Jacobian derivative error %.3e exceeds tolerance %.3e.", ...
+        systemNames(iSystem), errorDerivative, tolJacobianDerivative));
+    assert(errorDerivativeSym <= tolJacobianBias, sprintf( ...
+        "%s: Symbolic Jacobian derivative error %.3e exceeds tolerance %.3e.", ...
+        systemNames(iSystem), errorDerivativeSym, tolJacobianBias));
+    assert(errorBiasSym <= tolJacobianBias, sprintf( ...
+        "%s: Symbolic Jacobian bias error %.3e exceeds tolerance %.3e.", ...
+        systemNames(iSystem), errorBiasSym, tolJacobianBias));
+    assert(errorBiasProduct <= tolJacobianBias, sprintf( ...
+        "%s: Jacobian bias-product error %.3e exceeds tolerance %.3e.", ...
+        systemNames(iSystem), errorBiasProduct, tolJacobianBias));
 end
 
 

@@ -267,6 +267,9 @@ The main high-level operations are:
 ```matlab
 g = systemNum.computeFwdKin(q);
 J = systemNum.computeGeomJacobian(q);
+JDot = systemNum.computeGeomJacobianTimeDerivative(q, qDot);
+JBias = systemNum.computeGeomJacobianAccelerationBiasMatrix( ...
+    q, qDot, eta);
 M = systemNum.computeMassMatrix(q);
 B = systemNum.computeInputMatrix(q);
 
@@ -277,11 +280,33 @@ xi = systemNum.getLinkDeformations(q, iLink);
 Many of these methods have variants with the suffix `Fast`.
 These variants accept precomputed intermediate kinematics—for example, the relative joint transformations returned by `g_rel = systemNum.computeJointTransformations(q)`—and are intended for performance-sensitive internal or advanced use.
 They can avoid repeated computation of relative joint transformations in complex calculations, such as the equations of motion, where several kinematic quantities depend on the same intermediate variables.
+For the Jacobian derivative, the fast true-derivative method additionally accepts the precomputed geometric Jacobian, whereas the fast acceleration-bias method accepts the precomputed absolute frame velocities.
 
 
 `SystemNum` and `SystemSym` share the core system interface but use different internal representations. In particular, the numeric and symbolic systems stored by an `elara.ocp.Problem` are independent copies: modifying the original links or either assembled system after construction does not update the others. Reconstruct the problem after changing model parameters.
 
 The assembled link and frame topology can be inspected with `elara.plot.systemGraphs(systemNum)`.
+
+
+#### Jacobian Time Derivative and Acceleration Bias
+
+In the continuous-time equations of motion, the absolute body-fixed accelerations of the system's frames are required,
+which can be computed using the time derivative of the geometric Jacobian:
+along a trajectory, differentiating the body-fixed twist gives
+
+$$
+\dot{\eta}_i
+= J_i(q) \ddot{q} + \dot{J}_i(q,\dot{q}) \dot{q},
+$$
+
+where $\dot{J}_i(q,\dot{q})$ is the time derivative of the geometric Jacobian $J_i(q)$.
+`computeGeomJacobianTimeDerivative` returns the true matrix $\dot J_i$, obtained by differentiating every block of the geometric Jacobian. ELARA also provides `computeGeomJacobianAccelerationBiasMatrix`, which returns a velocity-dependent factorization $J_{\mathrm{bias},i}$ satisfying
+
+$$
+J_{\mathrm{bias},i} \dot{q} = \dot{J}_i \dot{q}.
+$$
+
+The two matrices are generally not equal, although their products with the same generalized velocity are. The equations of motion require only the contracted acceleration-bias term, so ELARA uses `computeGeomJacobianAccelerationBiasMatrix` internally to avoid the additional work needed to construct the full true derivative. Use the true derivative whenever individual entries or columns of $\dot J_i$ are required. Numeric `SystemNum` objects return three-dimensional arrays, while symbolic `SystemSym` objects return the corresponding block-cell representation.
 
 ## Related Examples
 

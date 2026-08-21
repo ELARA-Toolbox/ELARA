@@ -44,7 +44,10 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
             end
         end
     end
-    J_dot = system.computeGeomJacobianTimeDerivativeFast(q, q_dot, eta, g_rel);
+    % The equations of motion require only J_dot*q_dot, so use the
+    % efficient acceleration-bias factorization instead of the full J_dot.
+    J_bias = system.computeGeomJacobianAccelerationBiasMatrixFast( ...
+        q, q_dot, eta, g_rel);
 
     %% Evaluate EOM
 
@@ -75,16 +78,16 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
     % frames
     f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(system, g, f_frame_s, simPars.g);
 
-    % Compute J_dot * eta
+    % Compute the acceleration-bias product J_dot*q_dot.
     JdotTerm = cell(system.nFrames,1);
     for iFrm = 1:system.nFrames
         for iBlock = 1:system.nFrames
             qIndices = double( system.frames.qIndices(1,iBlock):system.frames.qIndices(2,iBlock));
-            if ~isempty(J_dot{iFrm, iBlock})
+            if ~isempty(J_bias{iFrm, iBlock})
                 if isempty(JdotTerm{iFrm})
-                    JdotTerm{iFrm} = J_dot{iFrm, iBlock} * q_dot(qIndices);
+                    JdotTerm{iFrm} = J_bias{iFrm, iBlock} * q_dot(qIndices);
                 else
-                    JdotTerm{iFrm} = JdotTerm{iFrm} + J_dot{iFrm, iBlock} * q_dot(qIndices);
+                    JdotTerm{iFrm} = JdotTerm{iFrm} + J_bias{iFrm, iBlock} * q_dot(qIndices);
                 end
             end
         end

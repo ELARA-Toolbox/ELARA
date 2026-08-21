@@ -75,6 +75,8 @@ classdef (Abstract) System
         computeFwdKin
         computeGeomJacobianFast
         computeGeomJacobian
+        computeGeomJacobianAccelerationBiasMatrixFast
+        computeGeomJacobianAccelerationBiasMatrix
         computeGeomJacobianTimeDerivativeFast
         computeGeomJacobianTimeDerivative
         computeInputMatrixFast

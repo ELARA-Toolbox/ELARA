@@ -37,6 +37,8 @@ The constructor assembles `sim.system` as an `elara.SystemNum`. With `displayInf
 
 The default integrator is already `elara.integration.VIBroyden`. The available alternatives and their settings are summarized under [Choosing an Integration Method](integration.md).
 
+In the continuous equations of motion, ELARA needs the kinematic acceleration-bias term $\dot J\dot q$, but not the full Jacobian derivative. The simulation routines therefore use `computeGeomJacobianAccelerationBiasMatrixFast`, whose result has the same product with $\dot q$ as the true derivative and is typically cheaper to construct. The distinct true derivative remains available through `computeGeomJacobianTimeDerivative`; see [Jacobian Time Derivative and Acceleration Bias](system_definition.md#jacobian-time-derivative-and-acceleration-bias).
+
 ## Simulation Parameters
 
 Initial conditions, prescribed inputs, gravity, and the simulation horizon are stored in `sim.parameters`, an `elara.SimulationParameters` object.
