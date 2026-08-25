@@ -458,7 +458,7 @@ classdef SystemNum < elara.abstract.System
             J_bias = computeGeomJacobianAccelerationBiasMatrixFast( ...
                 system, q, q_dot, eta, g_rel);
         end
-        function [J_dot, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot)
+        function [J_dot, J, g_rel] = computeGeomJacobianTimeDerivative(system, q, q_dot)
             %% Compute the True Time Derivative of the Geometric Jacobian
             % Use computeGeomJacobianAccelerationBiasMatrix instead when
             % only the contracted term J_dot*q_dot is required.
