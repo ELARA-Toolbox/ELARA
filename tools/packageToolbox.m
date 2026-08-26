@@ -9,7 +9,7 @@ repoFolder = fileparts(toolboxFolder);
 
 opts = matlab.addons.toolbox.ToolboxOptions(toolboxFolder, identifier);
 
-opts.ToolboxVersion = "0.2.1";
+opts.ToolboxVersion = "0.3.0";
 opts.ToolboxName = "ELARA Robot Simulation and Control Toolbox";
 opts.ToolboxImageFile = fullfile(repoFolder, ...
     "doc", ".assets/elara_logo.png");
