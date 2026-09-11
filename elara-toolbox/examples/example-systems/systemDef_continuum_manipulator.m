@@ -75,7 +75,7 @@ function link = systemDef_continuum_manipulator(opts)
         @(s)x_m_fun_straight(s,0.02, 240)
         @(s)x_m_fun_helical(s, 0.02, link.L)
         };
-
+   % link.tendonActuation.tendonActuationType = "discrete";
     % Compute derivatives of cable path functions
     link.tendonActuation = link.tendonActuation.getSymbolicPathDerivatives;
 

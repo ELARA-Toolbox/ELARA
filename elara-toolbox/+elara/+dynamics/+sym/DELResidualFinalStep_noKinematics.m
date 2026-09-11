@@ -38,7 +38,7 @@ function DEL_res_N = DELResidualFinalStep_noKinematics( ...
     %% Jacobians, Mass and Input Matrix
     J_N = system.computeGeomJacobianFast(q_N, g_rel_N);
     M_N = system.computeMassMatrixFast(J_N);
-    B_N = system.computeInputMatrixFast(g_rel_N);
+    B_N = system.computeInputMatrix(q_N, g_rel_N);
 
     %% Forces / EOM Term
 

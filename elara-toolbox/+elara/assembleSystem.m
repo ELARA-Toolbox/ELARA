@@ -328,14 +328,24 @@ function sys = assembleSystem(links, sys)
 
     lastIndexU = 1; % Temp variable to compute the input vector indices
     nCablesMax = 0; % Maximum number of tendons across all links
+    sys.tendonActuationType = ones(1,sys.nLinks,'uint8');
+    sys.jointActuationType = zeros(1,sys.nLinks,'uint8');
 
     for iLink = 1:sys.nLinks
         linkFrames = sys.linkFrameIndices(1,iLink):sys.linkFrameIndices(2,iLink);
-
+        if ~links(iLink).isRigid
+            switch links(iLink).tendonActuation.tendonActuationType
+                case 'continuous'
+                    sys.tendonActuationType(iLink) = 1;
+                case 'discrete'
+                    sys.tendonActuationType(iLink) = 2;
+            end
+        end
         % Check if the current link has an actuated lower-pair joint
         hasJointActuation = ...
             (links(iLink).parentLink && links(iLink).jointIsActuated) || ...
             (~links(iLink).parentLink && ~sys.isCantilever && links(iLink).jointIsActuated);
+        sys.jointActuationType(iLink) = uint8(hasJointActuation);
 
         % Assign input index for scalar joint actuation to the first
         % frame in the link (which, for rigid links, is the only frame)
@@ -373,47 +383,104 @@ function sys = assembleSystem(links, sys)
 
     %% Compute data for tendon actuation
 
-    g_cm = repmat(eye(4), [1,1,2,sys.nFrames,nCablesMax]);
-    sys.frames.tendonIsActive = false(sys.nFrames, nCablesMax);
+    gBackboneTendon = repmat(eye(4), ...
+        [1,1,2,sys.nFrames,nCablesMax]);
+    sys.frames.tendonIsActive = false(sys.nFrames,nCablesMax);
+
+    % Precompute the frame, disk, and integration-section relationships.
+    % For now, beam sections, disk intervals, and flexible frames coincide.
+    framesPerLink = diff(sys.linkFrameIndices) + 1;
+    nSectionsPerLink = zeros(1,sys.nLinks);
+    for iLink = 1:sys.nLinks
+        linkFrames = sys.linkFrameIndices(1,iLink): ...
+            sys.linkFrameIndices(2,iLink);
+        nSectionsPerLink(iLink) = nnz( ...
+            sys.frames.jointType(linkFrames) == 2);
+    end
+    nSectionsMax = max([nSectionsPerLink,0]);
+
+    sys.sFrames = zeros(1,sys.nFrames);
+    sys.nDisks = zeros(1,sys.nLinks);
+    sys.sDisks = zeros(sys.nLinks,max(framesPerLink) + 1);
+    sys.sSection = zeros(sys.nLinks,nSectionsMax);
+    sys.frameIndexSection = zeros( ...
+        sys.nLinks,nSectionsMax,'uint16');
+    sys.iSectionsBetweenDisks = zeros( ...
+        2,nSectionsMax,sys.nLinks,'uint16');
+    sys.nSectionsBetweenDisks = zeros( ...
+        sys.nLinks,nSectionsMax,'uint16');
+
+    for iLink = 1:sys.nLinks
+        if links(iLink).isRigid
+            continue;
+        end
+
+        linkFrames = sys.linkFrameIndices(1,iLink): ...
+            sys.linkFrameIndices(2,iLink);
+        beamFrames = linkFrames( ...
+            sys.frames.jointType(linkFrames) == 2);
+        sLinkFrames = [0; cumsum(sys.frames.l(beamFrames))];
+        sys.sFrames(beamFrames) = sLinkFrames(2:end);
+
+        diskPositions = links(iLink).tendonActuation.sDisks;
+        if isempty(diskPositions)
+            diskPositions = sLinkFrames;
+        end
+        sys.nDisks(iLink) = length(diskPositions);
+        sys.sDisks(iLink,1:sys.nDisks(iLink)) = diskPositions;
+
+        nSections = length(beamFrames);
+        sys.sSection(iLink,1:nSections) = sys.frames.l(beamFrames);
+        sys.frameIndexSection(iLink,1:nSections) = beamFrames;
+
+        nDiskIntervals = sys.nDisks(iLink)-1;
+        sectionIndices = uint16(1:nDiskIntervals);
+        sys.iSectionsBetweenDisks(:,1:nDiskIntervals,iLink) = ...
+            [sectionIndices;sectionIndices];
+        sys.nSectionsBetweenDisks(iLink,1:nDiskIntervals) = 1;
+    end
 
     for iFrm = 1:sys.nFrames
-        % Check whether the joint is a beam joint and if it's actuated
-        % (=non-zero input index)
-        if sys.frames.jointType(iFrm) == 2 && sys.frames.uIndices(1,iFrm)
+        % Check whether the joint is a beam joint and if it is actuated.
+        if sys.frames.jointType(iFrm) == 2 && ...
+                sys.frames.uIndices(1,iFrm)
             iCurLink = sys.frames.linkIndex(iFrm);
-
-            % Get arc lengths of the beam nodes of the current link
-            linkFrameIndices = sys.linkFrameIndices(1,iCurLink):sys.linkFrameIndices(2,iCurLink);
-            beamFrameIndices = linkFrameIndices(sys.frames.jointType(linkFrameIndices) == 2);
+            linkFrameIndices = sys.linkFrameIndices(1,iCurLink): ...
+                sys.linkFrameIndices(2,iCurLink);
+            beamFrameIndices = linkFrameIndices( ...
+                sys.frames.jointType(linkFrameIndices) == 2);
             sLinkFrames = [0; cumsum(sys.frames.l(beamFrameIndices))];
 
-            % Get cable actuation data for current link
-            [g_m, termNodes] = links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
+            [g_m,termNodes] = ...
+                links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
 
-            % Get the local node number from iN = 0, ..., nSegments
             if ~(links(iCurLink).parentLink) && sys.isCantilever
-                nodeIndexLocal = iFrm - sys.linkFrameIndices(1,iCurLink) + 2;
+                nodeIndexLocal = ...
+                    iFrm-sys.linkFrameIndices(1,iCurLink)+2;
             else
-                nodeIndexLocal = iFrm - sys.linkFrameIndices(1,iCurLink) + 1;
+                nodeIndexLocal = ...
+                    iFrm-sys.linkFrameIndices(1,iCurLink)+1;
             end
-            % Assign cable positions to frames
-            for iC = 1:length(links(iCurLink).tendonActuation.x_td_funs)
-                if nodeIndexLocal <= termNodes(iC)
-                    g_cm(:,:,1,iFrm,iC) = g_m(:,:,nodeIndexLocal-1,iC);
-                    g_cm(:,:,2,iFrm,iC) = g_m(:,:,nodeIndexLocal,iC);
-                    sys.frames.tendonIsActive(iFrm,iC) = true;
+
+            for iTendon = 1:length( ...
+                    links(iCurLink).tendonActuation.x_td_funs)
+                if nodeIndexLocal <= termNodes(iTendon)
+                    gBackboneTendon(:,:,1,iFrm,iTendon) = ...
+                        g_m(:,:,nodeIndexLocal-1,iTendon);
+                    gBackboneTendon(:,:,2,iFrm,iTendon) = ...
+                        g_m(:,:,nodeIndexLocal,iTendon);
+                    sys.frames.tendonIsActive(iFrm,iTendon) = true;
                 end
             end
         end
     end
 
-    % Assign to frames
-    if isa(sys, "elara.SystemNum")
-        sys.frames.g_cm = g_cm;
+    if isa(sys,'elara.SystemNum')
+        sys.gBackboneTendon = gBackboneTendon;
     else
-        sys.frames.g_cm = elara.SE3.matrix2Element(g_cm);
+        sys.gBackboneTendon = ...
+            elara.SE3.matrix2Element(gBackboneTendon);
     end
-
     %% Store TCP data if TCP is defined
 
     if any([links.hasTCP])

@@ -21,6 +21,15 @@ classdef TendonActuation
         % First and second derivatives of the cable path functions w.r.t. s
         x_td_ds_funs     (:,1) cell
         x_td_dds_funs    (:,1) cell
+
+        % Local arc-length positions of the tendon-routing disks.
+        % If empty, the beam-node positions are used during assembly.
+        sDisks           (:,1) double {mustBeNonnegative}
+
+        % Tendon-actuation formulation.
+        tendonActuationType (1,:) char ...
+            {mustBeMember(tendonActuationType, {'continuous','discrete'})} ...
+            = 'continuous'
     end
     methods
         function obj = getSymbolicPathDerivatives(obj)

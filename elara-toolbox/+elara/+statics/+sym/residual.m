@@ -24,7 +24,7 @@ function [res, g, g_rel] = residual(system, simPars, q, u)
     J = system.computeGeomJacobianFast(q, g_rel);
 
     % Input matrix
-    B = system.computeInputMatrixFast(g_rel);
+    B = system.computeInputMatrix(q, g_rel);
 
     % Generalized forces (stress)
     f_gen = system.cSys .* (q - system.qRef);

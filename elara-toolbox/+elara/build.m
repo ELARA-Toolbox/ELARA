@@ -16,7 +16,7 @@ cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = true;
 
 % Get target path (build folder)
-targetDir = fullfile(elara.internal.getToolboxRootFolder, "+elara", "+mex");
+targetDir = fullfile(elara.internal.getToolboxRootFolder, '+elara', '+mex');
 
 %% Create output folder if not existing
 
@@ -26,34 +26,34 @@ end
 
 %% Compile functions
 
-fprintf("Compiling MEX functions...\n\n");
+fprintf('Compiling MEX functions...\n\n');
 
-functionNames = [
-    "elara.internal.integration.integrateVIBroyden"
-    "elara.dynamics.num.firstOrderRHS"
-    "elara.dynamics.num.firstOrderMassMatrix"
-    "elara.dynamics.num.firstOrderDerivative"
-    "elara.internal.simulation.getResultsFromStateTrajectory"
-    "elara.statics.num.residual"
-    "elara.internal.simulation.computeEnergies"
-    ];
+functionNames = {
+    'elara.internal.integration.integrateVIBroyden'
+    'elara.dynamics.num.firstOrderRHS'
+    'elara.dynamics.num.firstOrderMassMatrix'
+    'elara.dynamics.num.firstOrderDerivative'
+    'elara.internal.simulation.getResultsFromStateTrajectory'
+    'elara.statics.num.residual'
+    'elara.internal.simulation.computeEnergies'
+    };
 
-outputNames = [
-    "integrateVIBroyden"
-    "firstOrderRHS"
-    "firstOrderMassMatrix"
-    "firstOrderDerivative"
-    "getResultsFromStateTrajectory"
-    "staticResidual"
-    "computeEnergies"
-    ];
+outputNames = {
+    'integrateVIBroyden'
+    'firstOrderRHS'
+    'firstOrderMassMatrix'
+    'firstOrderDerivative'
+    'getResultsFromStateTrajectory'
+    'staticResidual'
+    'computeEnergies'
+    };
 
 for iFun = 1:numel(functionNames)
-    fprintf("Compiling function %d/%d (%s)...\n", ...
-        iFun, numel(functionNames), functionNames(iFun));
-    codegen("-d", targetDir, "-o", ...
-        fullfile(targetDir, outputNames(iFun) + "_mex"), ...
-        "-config", cfg, functionNames(iFun));
+    fprintf('Compiling function %d/%d (%s)...\n', ...
+        iFun, numel(functionNames), functionNames{iFun});
+    codegen('-d', targetDir, '-o', ...
+        fullfile(targetDir, [outputNames{iFun}, '_mex']), ...
+        '-config', cfg, functionNames{iFun});
 end
 
-fprintf("MEX function compilation finished.\n");
+fprintf('MEX function compilation finished.\n');

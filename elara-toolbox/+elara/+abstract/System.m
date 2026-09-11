@@ -41,12 +41,43 @@ classdef (Abstract) System
         % Number of system inputs (control inputs)
         nInputs             (1,1) double
 
+        % Tendon-actuation formulation for each link:
+        % 1 = continuous, 2 = discrete.
+        tendonActuationType (1,:) uint8 {mustBeMember(tendonActuationType, [1,2])}
+
+        % Physical-joint actuation for each link:
+        % 0 = not actuated, 1 = actuated.
+        jointActuationType (1,:) uint8 {mustBeMember(jointActuationType, [0,1])}
         % Assignment of link numbers to frame numbers
         % First row is the index of the first frame corresponding to the
         % link, second row is the index of the last frame
         % * For rigid links: Both are equal, link has only one frame
         % * For flexible links: First and last index of the beam node frames
         linkFrameIndices    (2,:) uint16
+
+        % Local arc length at the end of each flexible frame section.
+        % Entries corresponding to rigid frames are zero.
+        sFrames            (1,:) double
+
+        % Number of tendon-routing disks on each link.
+        nDisks             (1,:) double
+
+        % Local arc-length positions of tendon-routing disks, padded with zeros.
+        sDisks             (:,:) double
+        % Length of each integration section, padded with zeros by link.
+        sSection                (:,:) double
+
+        % Global frame index associated with each integration section.
+        frameIndexSection       (:,:) uint16
+
+        % First and last section index between consecutive disks.
+        % Dimensions: (2,nDiskIntervalsMax,nLinks).
+        iSectionsBetweenDisks   (2,:,:) uint16
+
+        % Number of integration sections between consecutive disks.
+        % Dimensions: (nLinks,nDiskIntervalsMax).
+        nSectionsBetweenDisks   (:,:) uint16
+
 
 
         %% TCP data
@@ -79,7 +110,8 @@ classdef (Abstract) System
         computeGeomJacobianAccelerationBiasMatrix
         computeGeomJacobianTimeDerivativeFast
         computeGeomJacobianTimeDerivative
-        computeInputMatrixFast
+        computeTendonInputMatrixElementContinuous
+        computeTendonInputMatrixElementDiscrete
         computeInputMatrix
         computeMassMatrixFast
         computeMassMatrix

@@ -1,0 +1,54 @@
+# CompilerName=mingw64
+# Mode=optim
+ninja_required_version = 1.3
+
+# Basic folders
+root = .
+builddir = $root/build/win64
+matlabdir = C:/Program Files/MATLAB/R2025b
+startdir = C:/Users/Pfeiffer/Desktop/elara/ELARA/elara-toolbox/build
+
+# Toolchain information
+cc = C:\ProgramData\MATLAB\SupportPackages\R2025b\3P.instrset\mingw_w64.instrset\bin\gcc
+cxx = C:\ProgramData\MATLAB\SupportPackages\R2025b\3P.instrset\mingw_w64.instrset\bin\g++
+linker = C:\ProgramData\MATLAB\SupportPackages\R2025b\3P.instrset\mingw_w64.instrset\bin\gcc
+linkerxx = C:\ProgramData\MATLAB\SupportPackages\R2025b\3P.instrset\mingw_w64.instrset\bin\g++
+
+cflags =  -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I "C:\Users\Pfeiffer\Desktop\elara\ELARA\elara-toolbox\build" -I "C:\Users\Pfeiffer\Desktop\elara\ELARA\elara-toolbox\build\interface" -I "C:\Program Files\MATLAB\R2025b\extern\include" -I "." -DMODEL=computeStaticResiduum_mex -D__USE_MINGW_ANSI_STDIO=1 -DMW_NEEDS_VERSION_H -msse2 -fno-predictive-commoning -Wno-stringop-overflow -Wno-maybe-uninitialized -fopenmp 
+
+cxxflags =  -c -fexceptions -fno-omit-frame-pointer -std=c++11 -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c++11 -I "C:\Users\Pfeiffer\Desktop\elara\ELARA\elara-toolbox\build" -I "C:\Users\Pfeiffer\Desktop\elara\ELARA\elara-toolbox\build\interface" -I "C:\Program Files\MATLAB\R2025b\extern\include" -I "." -DMODEL=computeStaticResiduum_mex -D__USE_MINGW_ANSI_STDIO=1 -DMW_NEEDS_VERSION_H -msse2 -fno-predictive-commoning -Wno-stringop-overflow -Wno-maybe-uninitialized -fopenmp 
+
+ldflags =  -m64 -Wl,--no-undefined -shared -static -L"C:\Program Files\MATLAB\R2025b\extern\lib\win64\mingw64" -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas -o "computeStaticResiduum_mex.mexw64" -L"$matlabdir\extern\lib\win64\mingw64" -llibmwblas -llibemlrt -llibcovrt -llibut -llibmwmathutil -fopenmp
+
+ldxxflags =  -m64 -Wl,--no-undefined -shared -static -L"C:\Program Files\MATLAB\R2025b\extern\lib\win64\mingw64" -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas -llibMatlabDataArray  -o "computeStaticResiduum_mex.mexw64" -L"$matlabdir\extern\lib\win64\mingw64" -llibmwblas -llibemlrt -llibcovrt -llibut -llibmwmathutil -fopenmp
+
+linkobjs = 
+
+# Build Rules
+rule cc
+    command = $cc $cflags $in -o $out
+
+rule cxx
+    command = $cxx $cxxflags $in -o $out
+
+rule link
+    command = $linker @$out.rsp $linkobjs $ldflags
+    rspfile = $out.rsp
+    rspfile_content = $in
+
+rule linkxx
+    command = $linkerxx $in $linkobjs $ldxxflags
+
+# Build
+build $builddir/computeStaticResiduum_data.o : cxx $root/computeStaticResiduum_data.cpp
+build $builddir/rt_nonfinite.o : cxx $root/rt_nonfinite.cpp
+build $builddir/computeStaticResiduum_initialize.o : cxx $root/computeStaticResiduum_initialize.cpp
+build $builddir/computeStaticResiduum_terminate.o : cxx $root/computeStaticResiduum_terminate.cpp
+build $builddir/computeStaticResiduum.o : cxx $root/computeStaticResiduum.cpp
+build $builddir/_coder_computeStaticResiduum_api.o : cxx $root/interface/_coder_computeStaticResiduum_api.cpp
+build $builddir/_coder_computeStaticResiduum_mex.o : cxx $root/interface/_coder_computeStaticResiduum_mex.cpp
+build $builddir/_coder_computeStaticResiduum_info.o : cxx $root/interface/_coder_computeStaticResiduum_info.cpp
+build $builddir/cpp_mexapi_version.o : cxx $matlabdir/extern/version/cpp_mexapi_version.cpp
+
+# Link
+build $root\computeStaticResiduum_mex.mexw64 : linkxx $builddir/computeStaticResiduum_data.o $builddir/rt_nonfinite.o $builddir/computeStaticResiduum_initialize.o $builddir/computeStaticResiduum_terminate.o $builddir/computeStaticResiduum.o $builddir/_coder_computeStaticResiduum_api.o $builddir/_coder_computeStaticResiduum_mex.o $builddir/_coder_computeStaticResiduum_info.o $builddir/cpp_mexapi_version.o 

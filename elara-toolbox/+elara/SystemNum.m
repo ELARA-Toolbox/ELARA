@@ -23,6 +23,10 @@ classdef SystemNum < elara.abstract.System
         % Vector of reference deformations written in generalized
         % coordinates form
         qRef        (:,1) double
+
+        % Backbone-to-tendon routing transforms at both ends of each
+        % flexible section. Dimensions: (4,4,2,nFrames,nTendonsMax).
+        gBackboneTendon (4,4,2,:,:) double
     end
 
     methods
@@ -480,73 +484,176 @@ classdef SystemNum < elara.abstract.System
             % Compute true Jacobian derivative
             J_dot = computeGeomJacobianTimeDerivativeFast(system, q, q_dot, J, g_rel);
         end
-        function B = computeInputMatrixFast(system, g_rel)
-            %% Compute the system input matrix
-            % "Fast" function -- with given relative deformations
+        function BLink = computeTendonInputMatrixElementContinuous( ...
+                system, g_rel, beamFrames, uIndices)
+            %% Compute continuous tendon input-matrix block for one link
             arguments
-                system       (1,1) elara.SystemNum
+                system     (1,1) elara.SystemNum
+                g_rel      (4,4,:) double
+                beamFrames (1,:)
+                uIndices   (1,:)
+            end
+            BLink = zeros(sum(double(system.frames.nDof(beamFrames))), ...
+                length(uIndices));
 
-                % Array of relative configurations between body frames
-                % dimensions (4,4,nFrames)
-                g_rel        (4,4,:) double
+            iRow = 0;
+            for iFrm = beamFrames(1):beamFrames(end)
+                nFrameDofs = double(system.frames.nDof(iFrm));
+                rows = iRow + (1:nFrameDofs);
+                l = system.frames.l(iFrm);
+
+                for iTendon = 1:length(uIndices)
+                    if ~system.frames.tendonIsActive(iFrm,iTendon)
+                        continue;
+                    end
+
+                    g_cm_i1 = system.gBackboneTendon(:,:,1,iFrm,iTendon);
+                    g_cm_i2 = system.gBackboneTendon(:,:,2,iFrm,iTendon);
+                    xi_c = elara.SE3.cayInv( ...
+                        g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2) / l;
+                    b_i = system.frames.Ba(iFrm).' * [
+                        1/2 * elara.SO3.skew( ...
+                        g_cm_i1(1:3,4) + g_cm_i2(1:3,4)) * xi_c(4:6);
+                        xi_c(4:6)
+                        ];
+                    BLink(rows,iTendon) = ...
+                        -l / norm(xi_c(4:6)) * b_i;
+                end
+                iRow = iRow + nFrameDofs;
+            end
+        end
+
+        function BLink = computeTendonInputMatrixElementDiscrete( ...
+                system, iLink, q, beamFrames, uIndices)
+            %% Compute the discrete tendon input-matrix block for one link
+            % Positive tendon tension yields BLink = -d(l_tendon)/dq.
+            arguments
+                system  (1,1) elara.SystemNum
+                iLink   (1,1) double
+                q          (:,1) double
+                beamFrames (1,:)
+                uIndices   (1,:)
+            end
+            nTendons = length(uIndices);
+            nFrameDofs = double(system.frames.nDof(beamFrames(end)));
+            BLink = zeros(sum(double(system.frames.nDof(beamFrames))), ...
+                nTendons);
+
+            xi = system.getLinkDeformations(q,iLink);
+            qLinkStart = double(system.frames.qIndices(1,beamFrames(1)));
+
+            for iDisk = 1:system.nDisks(iLink)-1
+                iDiskFrame = iDisk + beamFrames(1) - 1;
+                iTendons = find(system.frames.tendonIsActive( ...
+                    iDiskFrame,1:nTendons));
+                if isempty(iTendons)
+                    continue;
+                end
+                nActiveTendons = length(iTendons);
+                p_td_i = squeeze(system.gBackboneTendon( ...
+                    :,4,1,iDiskFrame,iTendons));
+                p_td_i1 = squeeze(system.gBackboneTendon( ...
+                    :,4,2,iDiskFrame,iTendons));
+
+                iSectionFirst = double( ...
+                    system.iSectionsBetweenDisks(1,iDisk,iLink));
+                iSectionLast = double( ...
+                    system.iSectionsBetweenDisks(2,iDisk,iLink));
+                nSections = double( ...
+                    system.nSectionsBetweenDisks(iLink,iDisk));
+                iSections = iSectionFirst:iSectionLast;
+
+                g_tau = zeros(4,4,nSections);
+                dtau = zeros(6,nFrameDofs,nSections);
+                r_mat = zeros(3,nActiveTendons,nSections);
+
+                % Forward pass: compute the section transformations,
+                % tangent maps, and proximal tendon points.
+                for i = 1:nSections
+                    iSection = iSections(i);
+                    iFrm = double( ...
+                        system.frameIndexSection(iLink,iSection));
+                    iFrameLocal = find(beamFrames == iFrm,1);
+                    ds = system.sSection(iLink,iSection);
+                    dsxi = ds * xi(:,iFrameLocal);
+
+                    g_tau(:,:,i) = elara.SE3.cay(dsxi);
+                    dtau(:,:,i) = ds * elara.SE3.dcay(dsxi) ...
+                        * system.frames.Ba(iFrm);
+                    r_mat(:,:,i) = p_td_i(1:3,:);
+                    p_td_i = elara.SE3.invertMatrix(g_tau(:,:,i)) ...
+                        * p_td_i;
+                end
+                p_tendon_vec = p_td_i1(1:3,:) - p_td_i(1:3,:);
+                l_tendons = vecnorm(p_tendon_vec);
+
+                % Backward pass: propagate the distal tendon point to each
+                % section and accumulate all tendon/DoF terms at once.
+                a_mat = p_td_i1;
+                for i = nSections:-1:1
+                    iSection = iSections(i);
+                    iFrm = double( ...
+                        system.frameIndexSection(iLink,iSection));
+                    a_mat = g_tau(:,:,i) * a_mat;
+
+                    qIndices = double(system.frames.getQIndices(iFrm));
+                    rows = qIndices-qLinkStart+1;
+                    n_mat = (a_mat(1:3,:)-r_mat(:,:,i)) ...
+                        ./ l_tendons;
+                    % Tendon tension produces -dl/dq.
+                    BLink(rows,iTendons) = BLink(rows,iTendons) + ( ...
+                        [cross(n_mat,a_mat(1:3,:),1);-n_mat].' ...
+                        * dtau(:,:,i)).';
+                end
+            end
+        end
+        function B = computeInputMatrix(system, q, g_rel)
+            %% Compute the system generalized-force input matrix
+            % Tendon columns map positive tension to generalized force and
+            % therefore equal -d(l_tendon)/dq.
+            arguments
+                system  (1,1) elara.SystemNum
+                q       (:,1) double
+                g_rel = zeros(4,4,system.nFrames);
             end
 
-            B = zeros(system.nDoF, system.nInputs);
-            for iFrm = 1:system.nFrames
-                if system.frames.uIndices(1,iFrm)
-                    uIndices = system.frames.getUIndices(iFrm);
-                    qIndices = system.frames.getQIndices(iFrm);
+            B = zeros(system.nDoF,system.nInputs);
+            for iLink = 1:system.nLinks
+                linkFrames = system.linkFrameIndices(1,iLink): ...
+                    system.linkFrameIndices(2,iLink);
 
-                    switch system.frames.jointType(iFrm)
-                        case 1
-                            % Rigid joint (scalar input)
-                            B(qIndices, uIndices) = 1;
-                        case 2
-                            % Flexible joint (multiple cable inputs)
-                            l = system.frames.l(iFrm);
-
-                            for iC = 1:length(uIndices)
-                                if ~system.frames.tendonIsActive(iFrm,iC)
-                                    continue;
-                                end
-
-                                % Cable configurations at adjacent nodes
-                                g_cm_i1 = system.frames.g_cm(:,:,1,iFrm,iC);
-                                g_cm_i2 = system.frames.g_cm(:,:,2,iFrm,iC);
-
-                                % Discrete deformation gradient cable routing
-                                % Tangent vector is in elements 4:6
-                                xi_c = elara.SE3.cayInv( g_cm_i1 \ g_rel(:,:,iFrm) * g_cm_i2 ) / l;
-
-                                % Compute matrix entry
-                                b_i = system.frames.Ba(iFrm).' * [
-                                    1/2 * ( elara.SO3.skew( g_cm_i1(1:3,4) + g_cm_i2(1:3,4) ) ) * xi_c(4:6);
-                                    xi_c(4:6)
-                                    ];
-                                B(qIndices, uIndices(iC)) = -l / norm(xi_c(4:6)) * b_i;
-                            end
-                        otherwise
-                            % error
-                    end
+                iJointFrame = linkFrames(1);
+                if system.jointActuationType(iLink)
+                    B(system.frames.getQIndices(iJointFrame), ...
+                        system.frames.getUIndices(iJointFrame)) = 1;
                 end
 
+                beamFrames = linkFrames( ...
+                    system.frames.jointType(linkFrames) == 2);
+                if isempty(beamFrames) || ...
+                        ~system.frames.uIndices(1,beamFrames(1))
+                    continue;
+                end
+
+                qIndices = system.frames.qIndices(1,beamFrames(1)): ...
+                    system.frames.qIndices(2,beamFrames(end));
+                uIndices = system.frames.getUIndices(beamFrames(1));
+
+                switch system.tendonActuationType(iLink)
+                    case 1
+                        if isempty(g_rel)
+                            g_rel = system.computeJointTransformations(q);
+                        end
+                        B(qIndices,uIndices) = system. ...
+                            computeTendonInputMatrixElementContinuous( ...
+                            g_rel,beamFrames,uIndices);
+                    case 2
+                        B(qIndices,uIndices) = system. ...
+                            computeTendonInputMatrixElementDiscrete( ...
+                            iLink,q,beamFrames,uIndices);
+                end
             end
         end
-        function B = computeInputMatrix(system, q)
-            %% Compute the system input matrix
-            arguments
-                system      (1,1) elara.SystemNum
-
-                % System coordinates (nDoF, 1)
-                q           (:,1) double
-            end
-            % Compute relative joint transformations
-            g_rel = system.computeJointTransformations(q);
-
-            % Compute input matrix
-            B = system.computeInputMatrixFast(g_rel);
-        end
-
         function M = computeMassMatrixFast(system, J)
             %% Compute the system mass matrix
             arguments (Input)

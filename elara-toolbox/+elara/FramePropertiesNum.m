@@ -24,14 +24,5 @@ classdef FramePropertiesNum < elara.abstract.FrameProperties
 
         % Mass of the external body
         m_a     (1,:) double {mustBeNonnegative}
-
-        % For tendon actuation:
-        % Relative SE(3) configurations of the cable path frames (w.r.t.
-        % backbone) at the two segment nodes (i.e., nodes i-1 and i for
-        % flex. joint i) (in beam reference configuration)
-        % Dimensions: (4, 4, 2, nFrames, nTendonsMax),
-        % where nTendonsMax is the largest number of tendons across all
-        % tendon-actuated flexible links
-        g_cm        (4,4,2,:,:) double
     end
 end
