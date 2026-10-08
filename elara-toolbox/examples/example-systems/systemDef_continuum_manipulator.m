@@ -67,22 +67,26 @@ function link = systemDef_continuum_manipulator(opts)
 
 
     %% Set Up Cable Configuration
+    LTermination = [link.L, link.L, link.L,link.L];
 
-    % Cell array of function handles; defines the individual cable paths
-    link.tendonActuation.x_td_funs = {
+    x_td_funs = {
         @(s)x_m_fun_straight(s,0.02, 0)
         @(s)x_m_fun_straight(s,0.02, 120)
         @(s)x_m_fun_straight(s,0.02, 240)
         @(s)x_m_fun_helical(s, 0.02, link.L)
         };
-   % link.tendonActuation.tendonActuationType = "discrete";
-    % Compute derivatives of cable path functions
-    link.tendonActuation = link.tendonActuation.getSymbolicPathDerivatives;
 
-    % Lengths at which the cables terminate along the link length
-    link.tendonActuation.LTermination = [
-        link.L, link.L, link.L,link.L
-        ];
+    sDisks = linspace(0,link.L,link.nSegments+1); % Locate Disks at Segment boundaries
+  
+    % Cell array of function handles; defines the individual cable paths
+    link.tendonActuation = elara.ContinuousTendonActuation(LTermination, sDisks, x_td_funs);
+
+   % helper = elara.ContinuousTendonActuation(LTermination, sDisks, x_td_funs);
+   % gBackboneTendon = helper.gBackboneTendon;
+   % terminationDisks = helper.terminationDisks;
+   % 
+   % link.tendonActuation = elara.DiscreteTendonActuation(terminationDisks, sDisks, gBackboneTendon);
+   % 
 
     %% Define TCP
     link.hasTCP = true;

@@ -42,18 +42,18 @@ classdef (Abstract) System
         nInputs             (1,1) double
 
         % Tendon-actuation formulation for each link:
-        % 1 = continuous, 2 = discrete.
-        tendonActuationType (1,:) uint8 {mustBeMember(tendonActuationType, [1,2])}
+        % 0 = no tendon actuation, 1 = continuous, 2 = discrete.
+        tendonActuationType (1,:) double {mustBeMember(tendonActuationType, [0,1,2])}
 
         % Physical-joint actuation for each link:
         % 0 = not actuated, 1 = actuated.
-        jointActuationType (1,:) uint8 {mustBeMember(jointActuationType, [0,1])}
+        jointActuationType (1,:) double {mustBeMember(jointActuationType, [0,1])}
         % Assignment of link numbers to frame numbers
         % First row is the index of the first frame corresponding to the
         % link, second row is the index of the last frame
         % * For rigid links: Both are equal, link has only one frame
         % * For flexible links: First and last index of the beam node frames
-        linkFrameIndices    (2,:) uint16
+        linkFrameIndices    (2,:) double
 
         % Local arc length at the end of each flexible frame section.
         % Entries corresponding to rigid frames are zero.
@@ -62,22 +62,31 @@ classdef (Abstract) System
         % Number of tendon-routing disks on each link.
         nDisks             (1,:) double
 
-        % Local arc-length positions of tendon-routing disks, padded with zeros.
-        sDisks             (:,:) double
+        % Index Limits of disks for each Link
+        iDisks             (2,:) double
+
+        % Local arc-length positions of tendon-routing disks.
+        sDisks             (1,:) double
+
+        nSectionsInLink     (1,:) double
+
         % Length of each integration section, padded with zeros by link.
-        sSection                (:,:) double
+        sSection                (1,:) double
 
         % Global frame index associated with each integration section.
-        frameIndexSection       (:,:) uint16
+        frameIndexSection       (1,:) double
 
         % First and last section index between consecutive disks.
-        % Dimensions: (2,nDiskIntervalsMax,nLinks).
-        iSectionsBetweenDisks   (2,:,:) uint16
+        % Dimensions: (2,nSections).
+        iSectionsBetweenDisks   (2,:) double
 
         % Number of integration sections between consecutive disks.
-        % Dimensions: (nLinks,nDiskIntervalsMax).
-        nSectionsBetweenDisks   (:,:) uint16
+        % Dimensions: (1, nDisks).
+        nSectionsBetweenDisks   (1,:) double
 
+        % Whether a tendon is active on a flexible beam segment
+        % Dimensions: (nDisks, nTendonsMax)
+        tendonIsActive (:,:) logical
 
 
         %% TCP data
