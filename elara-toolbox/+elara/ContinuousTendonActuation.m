@@ -1,4 +1,7 @@
 classdef ContinuousTendonActuation < elara.abstract.TendonActuation
+    properties (Constant)
+        tendonActuationType = 'continuous';
+    end
     methods
         function obj = ContinuousTendonActuation(LTermination, sDisks, x_td_funs,x_td_ds_funs, x_td_dds_funs)
             arguments

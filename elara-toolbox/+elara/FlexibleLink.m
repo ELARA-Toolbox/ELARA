@@ -33,7 +33,7 @@ classdef FlexibleLink < elara.abstract.Link
 
         %%% For continuum manipulators
         % Configuration object for cable actuation
-        tendonActuation (1,1) elara.TendonActuation
+        tendonActuation (1,1) elara.abstract.TendonActuation
 
     end
     properties (Constant)

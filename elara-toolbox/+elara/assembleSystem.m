@@ -327,25 +327,28 @@ function sys = assembleSystem(links, sys)
     sys.frames.uIndices = zeros(2, sys.nFrames);
 
     lastIndexU = 1; % Temp variable to compute the input vector indices
-    nCablesMax = 0; % Maximum number of tendons across all links
-    sys.tendonActuationType = ones(1,sys.nLinks,'uint8');
-    sys.jointActuationType = zeros(1,sys.nLinks,'uint8');
+    nTendonsMax = 0; % Maximum number of tendons across all links
+    nDisksTotal = 0;
+    nDisks = zeros(sys.nLinks,1);
+    sDisks = [];
+    iDisks = zeros(2, sys.nLinks);
+    nSectionsInLink = zeros(sys.nLinks,1);
+    dsSections = [];
+    nSectionsBetweenDisks = []; % nDisks - 1
+    iSectionsBetweenDisks = []; % nDisks - 1
+    frameIndexSection = []; % nSections
+    lastSection = 1;
+    sys.tendonActuationType = zeros(1,sys.nLinks);
+    sys.jointActuationType = zeros(1,sys.nLinks);
 
     for iLink = 1:sys.nLinks
         linkFrames = sys.linkFrameIndices(1,iLink):sys.linkFrameIndices(2,iLink);
-        if ~links(iLink).isRigid
-            switch links(iLink).tendonActuation.tendonActuationType
-                case 'continuous'
-                    sys.tendonActuationType(iLink) = 1;
-                case 'discrete'
-                    sys.tendonActuationType(iLink) = 2;
-            end
-        end
+        
         % Check if the current link has an actuated lower-pair joint
         hasJointActuation = ...
             (links(iLink).parentLink && links(iLink).jointIsActuated) || ...
             (~links(iLink).parentLink && ~sys.isCantilever && links(iLink).jointIsActuated);
-        sys.jointActuationType(iLink) = uint8(hasJointActuation);
+        sys.jointActuationType(iLink) = hasJointActuation;
 
         % Assign input index for scalar joint actuation to the first
         % frame in the link (which, for rigid links, is the only frame)
@@ -356,9 +359,37 @@ function sys = assembleSystem(links, sys)
         end
 
         % Check if current link has tendon actuation (for flexible links)
-        if ~links(iLink).isRigid && ~isempty(links(iLink).tendonActuation.x_td_funs)
+        if ~links(iLink).isRigid && ~isempty(links(iLink).tendonActuation)
+            sFramesLink = linspace(0, links(iLink).L, links(iLink).nSegments+1).';
 
-            nCables = length(links(iLink).tendonActuation.x_td_funs);
+            switch links(iLink).tendonActuation.tendonActuationType
+                case 'continuous'
+                    sys.tendonActuationType(iLink) = 1;
+                    assert(isequal(links(iLink).tendonActuation.sDisks, sFramesLink), ...
+                        'Disks and Frame position must be identical for continuous tendon actuation')
+                case 'discrete'
+                    sys.tendonActuationType(iLink) = 2;
+            end
+
+            nTendons = length(links(iLink).tendonActuation.terminationDisks);
+            sDisksLink = links(iLink).tendonActuation.sDisks;
+            nDisks(iLink) = nDisksTotal + length(sDisksLink);
+            sDisks = [sDisks; sDisksLink];
+          
+            iDisks(1, iLink) = max(iDisks, [], "all") + 1;
+            iDisks(2, iLink) = iDisks(1,iLink) + nDisks(iLink) - 1;
+            
+            sSectionsLink = sort(uniquetol([sDisksLink; sFramesLink]));
+            dsSectionsLink = diff(sSectionsLink); 
+          %  nSectionsBetweenDisks = [nSectionsInLink length(dsSectionsLink)];
+  
+            dsSections = [dsSections; dsSectionsLink];
+            nSectionsLink(iLink) = length(dsSectionsLink);
+
+            nSectionsBetweenDisksLink = zeros(1,nDisks(iLink));
+            iSectionsBetweenDisksLink = zeros(2, nDisks(iLink));
+           
+            iSectionsBetweenDisksLink(1,1) = lastSection;
 
             % Check if current link is a cantilever link:
             % Then, the first joint may have cable actuation;
@@ -369,109 +400,65 @@ function sys = assembleSystem(links, sys)
                 actuatedFrames = linkFrames(2:end);
             end
 
+            
+            for iSection =1:nSectionsLink(iLink)
+                sEndOfSection = sSectionsLink(iSection + 1);
+                localFrameIndex = find(sEndOfSection <= sFramesLink(2:end) , 1);
+                frameIndexSection = [frameIndexSection; actuatedFrames(localFrameIndex)];
+
+                localDiskIndex = find(sEndOfSection <= sDisksLink(2:end), 1);
+                nSectionsBetweenDisksLink(localDiskIndex) = nSectionsBetweenDisksLink(localDiskIndex) + 1; 
+                iSectionsBetweenDisksLink(2, localDiskIndex) = iSectionsBetweenDisksLink(1, localDiskIndex) + nSectionsBetweenDisksLink(localDiskIndex)-1 ;
+                if localDiskIndex < nDisks(iLink) - 1
+                    iSectionsBetweenDisksLink(1, localDiskIndex+1) = iSectionsBetweenDisksLink(2, localDiskIndex) + 1;
+                end
+            end 
+            nSectionsBetweenDisks = [nSectionsBetweenDisks nSectionsBetweenDisksLink];
+
+            
             sys.frames.uIndices(1,actuatedFrames) = lastIndexU;
-            sys.frames.uIndices(2,actuatedFrames) = lastIndexU + nCables - 1;
-            lastIndexU = lastIndexU + nCables;
+            sys.frames.uIndices(2,actuatedFrames) = lastIndexU + nTendons - 1;
+            lastIndexU = lastIndexU + nTendons;
 
-            nCablesMax = max([nCables, nCablesMax]);
+            nTendonsMax = max([nTendons, nTendonsMax]);
+            
+            %
+            nSectionsInLink(iLink) = length(dsSectionsLink);
+            iSectionsBetweenDisks = [iSectionsBetweenDisks iSectionsBetweenDisksLink];
+            lastSection = max(iSectionsBetweenDisks, [], "all")+1;
         end
-    end
 
+        
+    end
+    sys.nDisks = nDisks;
+    sys.iDisks = iDisks;
+    sys.sDisks = sDisks;
+    sys.nSectionsInLink = nSectionsInLink;
+    sys.nSectionsBetweenDisks = nSectionsBetweenDisks;
+    sys.iSectionsBetweenDisks = iSectionsBetweenDisks;
+    sys.sSection = dsSections;
+    sys.frameIndexSection = frameIndexSection;
+
+    nDisksTotal = max(nDisks);
     % Number of system inputs
     sys.nInputs =  max(sys.frames.uIndices(2,:));
 
 
     %% Compute data for tendon actuation
 
-    gBackboneTendon = repmat(eye(4), ...
-        [1,1,2,sys.nFrames,nCablesMax]);
-    sys.frames.tendonIsActive = false(sys.nFrames,nCablesMax);
+    gBackboneTendon = repmat(eye(4), [1,1,nTendonsMax, nDisksTotal]);
+    sys.tendonIsActive = false(nTendonsMax, nDisksTotal);
 
-    % Precompute the frame, disk, and integration-section relationships.
-    % For now, beam sections, disk intervals, and flexible frames coincide.
-    framesPerLink = diff(sys.linkFrameIndices) + 1;
-    nSectionsPerLink = zeros(1,sys.nLinks);
-    for iLink = 1:sys.nLinks
-        linkFrames = sys.linkFrameIndices(1,iLink): ...
-            sys.linkFrameIndices(2,iLink);
-        nSectionsPerLink(iLink) = nnz( ...
-            sys.frames.jointType(linkFrames) == 2);
-    end
-    nSectionsMax = max([nSectionsPerLink,0]);
+    for iLink=1:sys.nLinks
 
-    sys.sFrames = zeros(1,sys.nFrames);
-    sys.nDisks = zeros(1,sys.nLinks);
-    sys.sDisks = zeros(sys.nLinks,max(framesPerLink) + 1);
-    sys.sSection = zeros(sys.nLinks,nSectionsMax);
-    sys.frameIndexSection = zeros( ...
-        sys.nLinks,nSectionsMax,'uint16');
-    sys.iSectionsBetweenDisks = zeros( ...
-        2,nSectionsMax,sys.nLinks,'uint16');
-    sys.nSectionsBetweenDisks = zeros( ...
-        sys.nLinks,nSectionsMax,'uint16');
+        nTendons = length(links(iLink).tendonActuation.terminationDisks);
+        iDiskAbsolute = sys.iDisks(1, iLink):sys.iDisks(2, iLink);
 
-    for iLink = 1:sys.nLinks
-        if links(iLink).isRigid
-            continue;
-        end
-
-        linkFrames = sys.linkFrameIndices(1,iLink): ...
-            sys.linkFrameIndices(2,iLink);
-        beamFrames = linkFrames( ...
-            sys.frames.jointType(linkFrames) == 2);
-        sLinkFrames = [0; cumsum(sys.frames.l(beamFrames))];
-        sys.sFrames(beamFrames) = sLinkFrames(2:end);
-
-        diskPositions = links(iLink).tendonActuation.sDisks;
-        if isempty(diskPositions)
-            diskPositions = sLinkFrames;
-        end
-        sys.nDisks(iLink) = length(diskPositions);
-        sys.sDisks(iLink,1:sys.nDisks(iLink)) = diskPositions;
-
-        nSections = length(beamFrames);
-        sys.sSection(iLink,1:nSections) = sys.frames.l(beamFrames);
-        sys.frameIndexSection(iLink,1:nSections) = beamFrames;
-
-        nDiskIntervals = sys.nDisks(iLink)-1;
-        sectionIndices = uint16(1:nDiskIntervals);
-        sys.iSectionsBetweenDisks(:,1:nDiskIntervals,iLink) = ...
-            [sectionIndices;sectionIndices];
-        sys.nSectionsBetweenDisks(iLink,1:nDiskIntervals) = 1;
-    end
-
-    for iFrm = 1:sys.nFrames
-        % Check whether the joint is a beam joint and if it is actuated.
-        if sys.frames.jointType(iFrm) == 2 && ...
-                sys.frames.uIndices(1,iFrm)
-            iCurLink = sys.frames.linkIndex(iFrm);
-            linkFrameIndices = sys.linkFrameIndices(1,iCurLink): ...
-                sys.linkFrameIndices(2,iCurLink);
-            beamFrameIndices = linkFrameIndices( ...
-                sys.frames.jointType(linkFrameIndices) == 2);
-            sLinkFrames = [0; cumsum(sys.frames.l(beamFrameIndices))];
-
-            [g_m,termNodes] = ...
-                links(iCurLink).tendonActuation.getNodeData(sLinkFrames);
-
-            if ~(links(iCurLink).parentLink) && sys.isCantilever
-                nodeIndexLocal = ...
-                    iFrm-sys.linkFrameIndices(1,iCurLink)+2;
-            else
-                nodeIndexLocal = ...
-                    iFrm-sys.linkFrameIndices(1,iCurLink)+1;
-            end
-
-            for iTendon = 1:length( ...
-                    links(iCurLink).tendonActuation.x_td_funs)
-                if nodeIndexLocal <= termNodes(iTendon)
-                    gBackboneTendon(:,:,1,iFrm,iTendon) = ...
-                        g_m(:,:,nodeIndexLocal-1,iTendon);
-                    gBackboneTendon(:,:,2,iFrm,iTendon) = ...
-                        g_m(:,:,nodeIndexLocal,iTendon);
-                    sys.frames.tendonIsActive(iFrm,iTendon) = true;
-                end
-            end
+        for i = 1:nDisks(iLink)
+            iDisk = iDiskAbsolute(i);
+            
+            gBackboneTendon(:,:,1:nTendons, iDisk) =  links(iLink).tendonActuation.gBackboneTendon(:,:,:,i);
+            sys.tendonIsActive(1:nTendons, iDisk) = links(iLink).tendonActuation.terminationDisks >= i; 
         end
     end
 

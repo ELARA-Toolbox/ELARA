@@ -1,4 +1,4 @@
-classdef TendonActuation
+classdef (Abstract) TendonActuation
     %% Class to define the actuation properties of cable actuated flexible links
     % used to model cable-actuated continuum manipulators
     %
@@ -17,5 +17,8 @@ classdef TendonActuation
         % Disk at which each tendon terminates
         terminationDisks (:,1) % nTendons x 1
     end
-     
+     properties (Abstract, Constant)
+        % Whether the link is rigid or flexible
+        tendonActuationType (1,:) char
+    end
 end

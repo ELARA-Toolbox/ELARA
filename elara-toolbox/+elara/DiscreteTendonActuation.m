@@ -1,4 +1,7 @@
 classdef DiscreteTendonActuation < elara.abstract.TendonActuation
+    properties (Constant)
+        tendonActuationType = 'discrete';
+    end
     methods
         function obj = DiscreteTendonActuation(terminationDisks,sDisks, gBackboneTendons)
             arguments

@@ -81,12 +81,6 @@ function link = systemDef_continuum_manipulator(opts)
     % Cell array of function handles; defines the individual cable paths
     link.tendonActuation = elara.ContinuousTendonActuation(LTermination, sDisks, x_td_funs);
 
-   % helper = elara.ContinuousTendonActuation(LTermination, sDisks, x_td_funs);
-   % gBackboneTendon = helper.gBackboneTendon;
-   % terminationDisks = helper.terminationDisks;
-   % 
-   % link.tendonActuation = elara.DiscreteTendonActuation(terminationDisks, sDisks, gBackboneTendon);
-   % 
 
     %% Define TCP
     link.hasTCP = true;

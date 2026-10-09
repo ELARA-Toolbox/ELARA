@@ -54,7 +54,7 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
 
     % Actuation (if nonzero)
     if ~isempty(simPars.uConst)
-        f_gen = f_gen + system.computeInputMatrix(q) * u;
+        f_gen = f_gen + system.computeInputMatrix(q, g_rel) * u;
     end
 
     % Placeholder values for external forces

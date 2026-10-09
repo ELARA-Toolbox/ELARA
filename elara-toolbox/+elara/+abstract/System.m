@@ -54,11 +54,7 @@ classdef (Abstract) System
         % * For rigid links: Both are equal, link has only one frame
         % * For flexible links: First and last index of the beam node frames
         linkFrameIndices    (2,:) double
-
-        % Local arc length at the end of each flexible frame section.
-        % Entries corresponding to rigid frames are zero.
-        sFrames            (1,:) double
-
+        
         % Number of tendon-routing disks on each link.
         nDisks             (1,:) double
 
@@ -87,7 +83,6 @@ classdef (Abstract) System
         % Whether a tendon is active on a flexible beam segment
         % Dimensions: (nDisks, nTendonsMax)
         tendonIsActive (:,:) logical
-
 
         %% TCP data
 
