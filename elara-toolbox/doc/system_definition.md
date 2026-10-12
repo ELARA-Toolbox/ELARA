@@ -119,7 +119,7 @@ A flexible link replaces a single rigid-body frame with a chain of beam cross-se
 | `Ba`, `Bc` | Orthonormal, complementary bases for allowed and constrained deformation modes. |
 | `xiRef` | Reference deformation gradient, size `6`-by-`nSegments`. |
 | `beamParameters` | Material, cross-section, inertia, stiffness, and damping data. |
-| `tendonActuation` | Optional tendon paths and termination locations. |
+| `tendonActuation` | Optional continuous or discrete tendon-actuation configuration. |
 
 The six deformation components are ordered as two bending components, torsion, two shear components, and extension. The deformation of segment $i$ is decomposed as
 
@@ -220,23 +220,47 @@ beam.M_a(:,:,end) = blkdiag(payloadInertia, payloadMass*eye(3));
 
 ### Tendon Actuation
 
-The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators.
-Any number of tendons with arbitrary paths along the backbone can be specified.
+The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators. Assign one of two configurations to `beam.tendonActuation`. Each tendon-actuated flexible link contributes one input per tendon.
 
-A tendon path is a function of arc length `s` that returns the tendon position relative to the beam backbone. The model stores one path and one termination length for each tendon. The required derivatives may be provided directly or generated with the symbolic helper:
+#### Continuous tendon actuation
+
+`elara.ContinuousTendonActuation` models tendons that are parallel to the backbone along their active length. Define each tendon by its constant position relative to the backbone, its termination length, and the beam-frame locations at which it is evaluated. The disk locations `sDisks` must match the beam-frame positions.
 
 ```matlab
 r = 0.02;
-beam.tendonActuation.x_td_funs = {
+x_td_funs = {
     @(s) [ r; 0; 0]
     @(s) [-r; 0; 0]
 };
-beam.tendonActuation.LTermination = [beam.L; beam.L];
-beam.tendonActuation = ...
-    beam.tendonActuation.getSymbolicPathDerivatives;
+sDisks = linspace(0, beam.L, beam.nSegments + 1).';
+LTermination = [beam.L; beam.L];
+
+beam.tendonActuation = elara.ContinuousTendonActuation( ...
+    LTermination, sDisks, x_td_funs);
 ```
 
-Each tendon-actuated flexible link uses one input per tendon. A specified termination length is snapped to the nearest beam node, so the beam discretization should contain a node sufficiently close to each intended termination point. Straight and helical full-length paths are illustrated in `systemDef_continuum_manipulator.m`. The continuum-robot reference listed under [Further Reading](index.md#further-reading) provides additional modeling context.
+`LTermination` contains one arc-length termination position per tendon. A tendon terminates at the first entry of `sDisks` that is greater than or equal to its specified length. The constructor can also receive first and second derivatives of `x_td_funs` as its fourth and fifth arguments; when omitted, they are generated symbolically. A continuous configuration is used in `systemDef_continuum_manipulator.m`.
+
+#### Discrete tendon actuation
+
+`elara.DiscreteTendonActuation` models a tendon as a straight line between its contact points on two consecutive spacer disks. Provide the ordered spacer-disk positions, the last contacted disk for each tendon, and the backbone-to-tendon transforms at every contact. `gBackboneTendon` has size `4 x 4 x nTendons x nDisks`; `terminationDisks(i)` is the final disk contact of tendon `i`.
+
+The following setup mirrors `test_.m` by reusing the contact transforms from a continuous reference link:
+
+```matlab
+referenceLink = systemDef_continuum_manipulator("nSegments", 5);
+helper = referenceLink.tendonActuation;
+
+nDisks = 6;
+gBackboneTendon = helper.gBackboneTendon(:, :, :, 1:nDisks);
+terminationDisks = nDisks * ones(size(gBackboneTendon, 3), 1);
+sDisks = linspace(0, beam.L, nDisks).';
+
+beam.tendonActuation = elara.DiscreteTendonActuation( ...
+    terminationDisks, sDisks, gBackboneTendon);
+```
+
+Use monotonically increasing `sDisks`, and ensure that every termination-disk index refers to an entry in `sDisks`. Unlike the continuous model, the discrete model does not require disk locations to coincide with beam-frame positions. The continuum-robot reference listed under [Further Reading](index.md#further-reading) provides additional modeling context.
 
 ## Assembling a System
 
