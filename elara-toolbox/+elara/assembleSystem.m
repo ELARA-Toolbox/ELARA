@@ -379,7 +379,7 @@ function sys = assembleSystem(links, sys)
             iDisks(1, iLink) = max(iDisks, [], "all") + 1;
             iDisks(2, iLink) = iDisks(1,iLink) + nDisks(iLink) - 1;
             
-            sSectionsLink = sort(uniquetol([sDisksLink; sFramesLink]));
+            sSectionsLink = sort(uniquetol([sDisksLink; sFramesLink], 1e-6));
             dsSectionsLink = diff(sSectionsLink); 
           %  nSectionsBetweenDisks = [nSectionsInLink length(dsSectionsLink)];
   
