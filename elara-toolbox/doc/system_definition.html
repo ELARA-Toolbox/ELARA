@@ -145,7 +145,7 @@ link.bBoxSize <span class="pl-k">=</span> [
 </tr>
 <tr>
 <td><code>tendonActuation</code></td>
-<td>Optional tendon paths and termination locations.</td>
+<td>Optional continuous or discrete tendon-actuation configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -248,18 +248,34 @@ beam.M_a <span class="pl-k">=</span> zeros(<span class="pl-c1">6</span>, <span c
 <span class="pl-smi">beam</span>.M_a(<span class="pl-k">:</span>,<span class="pl-k">:</span>,<span class="pl-smi">end</span>) <span class="pl-k">=</span> blkdiag(<span class="pl-smi">payloadInertia</span>, <span class="pl-smi">payloadMass</span><span class="pl-k">*</span>eye(<span class="pl-c1">3</span>));</pre></div>
 <p><code>M_a(:,:,i)</code> must be the generalized inertia expressed about beam node <code>i</code>; include the required rotation, parallel-axis, and coupling terms for an offset body. <code>g_a(:,:,i)</code> records the center-of-mass transform used for gravity but does not transform <code>M_a</code> during assembly.</p>
 <div class="markdown-heading"><h3 class="heading-element">Tendon Actuation</h3></div>
-<p>The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators.
-Any number of tendons with arbitrary paths along the backbone can be specified.</p>
-<p>A tendon path is a function of arc length <code>s</code> that returns the tendon position relative to the beam backbone. The model stores one path and one termination length for each tendon. The required derivatives may be provided directly or generated with the symbolic helper:</p>
-<div class="highlight highlight-source-matlab"><pre>r <span class="pl-k">=</span> <span class="pl-c1">0.02</span>;
-beam.tendonActuation.x_td_funs <span class="pl-k">=</span> {
-    @(<span class="pl-smi">s</span>) [ <span class="pl-smi">r</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>]
-    @(<span class="pl-smi">s</span>) [-<span class="pl-smi">r</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>]
+<p>The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators. Assign one of two configurations to <code>beam.tendonActuation</code>. Each tendon-actuated flexible link contributes one input per tendon.</p>
+<div class="markdown-heading"><h4 class="heading-element">Continuous tendon actuation</h4></div>
+<p><code>elara.ContinuousTendonActuation</code> models tendons that are parallel to the backbone along their active length. Define each tendon by its constant position relative to the backbone, its termination length, and the beam-frame locations at which it is evaluated. The disk locations <code>sDisks</code> must match the beam-frame positions.</p>
+<div class="highlight highlight-source-matlab"><pre>r = 0.02;
+x_td_funs = {
+    @(s) [ r; 0; 0]
+    @(s) [-r; 0; 0]
 };
-beam.tendonActuation.LTermination <span class="pl-k">=</span> [<span class="pl-smi">beam</span>.L; <span class="pl-smi">beam</span>.L];
-beam.tendonActuation <span class="pl-k">=</span> ...
-    <span class="pl-smi">beam</span>.tendonActuation.getSymbolicPathDerivatives;</pre></div>
-<p>Each tendon-actuated flexible link uses one input per tendon. A specified termination length is snapped to the nearest beam node, so the beam discretization should contain a node sufficiently close to each intended termination point. Straight and helical full-length paths are illustrated in <code>systemDef_continuum_manipulator.m</code>. The continuum-robot reference listed under <a href="index.html#further-reading">Further Reading</a> provides additional modeling context.</p>
+sDisks = linspace(0, beam.L, beam.nSegments + 1).';
+LTermination = [beam.L; beam.L];
+
+beam.tendonActuation = elara.ContinuousTendonActuation( ...
+    LTermination, sDisks, x_td_funs);</pre></div>
+<p><code>LTermination</code> contains one arc-length termination position per tendon. A tendon terminates at the first entry of <code>sDisks</code> that is greater than or equal to its specified length. The constructor can also receive first and second derivatives of <code>x_td_funs</code> as its fourth and fifth arguments; when omitted, they are generated symbolically. A continuous configuration is used in <code>systemDef_continuum_manipulator.m</code>.</p>
+<div class="markdown-heading"><h4 class="heading-element">Discrete tendon actuation</h4></div>
+<p><code>elara.DiscreteTendonActuation</code> models a tendon as a straight line between its contact points on two consecutive spacer disks. Provide the ordered spacer-disk positions, the last contacted disk for each tendon, and the backbone-to-tendon transforms at every contact. <code>gBackboneTendon</code> has size <code>4 x 4 x nTendons x nDisks</code>; <code>terminationDisks(i)</code> is the final disk contact of tendon <code>i</code>.</p>
+<p>The following setup mirrors <code>test_.m</code> by reusing the contact transforms from a continuous reference link:</p>
+<div class="highlight highlight-source-matlab"><pre>referenceLink = systemDef_continuum_manipulator("nSegments", 5);
+helper = referenceLink.tendonActuation;
+
+nDisks = 6;
+gBackboneTendon = helper.gBackboneTendon(:, :, :, 1:nDisks);
+terminationDisks = nDisks * ones(size(gBackboneTendon, 3), 1);
+sDisks = linspace(0, beam.L, nDisks).';
+
+beam.tendonActuation = elara.DiscreteTendonActuation( ...
+    terminationDisks, sDisks, gBackboneTendon);</pre></div>
+<p>Use monotonically increasing <code>sDisks</code>, and ensure that every termination-disk index refers to an entry in <code>sDisks</code>. Unlike the continuous model, the discrete model does not require disk locations to coincide with beam-frame positions. The continuum-robot reference listed under <a href="index.html#further-reading">Further Reading</a> provides additional modeling context.</p>
 <div class="markdown-heading"><h2 class="heading-element">Assembling a System</h2></div>
 <p>Once the link array is complete, it is converted into the compact system representation used by the numerical algorithms. Construction performs four main tasks:</p>
 <ul>

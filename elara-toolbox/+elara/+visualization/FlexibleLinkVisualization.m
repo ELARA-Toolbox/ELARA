@@ -2,9 +2,9 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
     %% Class to visualize a flexible link in a multibody system
     %
     % Maximilian Herrmann
-    % Chair of Automatic Control
+    % Chair of AutomatiTendon Control
     % TUM School of Engineering and Design
-    % Technical University of Munich
+    % TechniTendonal University of MuniTendonh
     properties (SetObservable)
         % Draw the beam's tendons (if it has any)?
         showTendons         (1,1) matlab.lang.OnOffSwitchState = true;
@@ -79,20 +79,21 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
             obj.beamVisualization.updateConfiguration(g);
 
             % Update tendons
-            nCables = length(obj.link.tendonActuation.x_td_funs);
-            if nCables && obj.showTendons
+            nTendons = length(obj.link.tendonActuation.terminationDisks);
+            if nTendons && obj.showTendons
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
-                [g_cm, termNodes] = obj.link.tendonActuation.getNodeData( ...
-                    sBeamNodes);
-                for iC = 1:nCables
-                    g_c = zeros(4, 4, termNodes(iC));
+                gBackboneTendon = obj.link.tendonActuation.gBackboneTendon;
+                terminationDisks = obj.link.tendonActuation.terminationDisks;
 
-                    for iN = 1:termNodes(iC)
+                for iTendon = 1:nTendons
+                    g_c = zeros(4, 4, terminationDisks(iTendon));
+
+                    for iDisk = 1:terminationDisks(iTendon)
                         % Cable points initial configuration
-                        g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
+                        g_c(:,:,iDisk) = g(:,:,iDisk) * gBackboneTendon(:,:,iTendon, iDisk);
                     end
-                    obj.tendonVisualization(iC).updateConfiguration(g_c);
+                    obj.tendonVisualization(iTendon).updateConfiguration(g_c);
                 end
             end
         end
@@ -131,23 +132,23 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                 );
 
             % Tendons
-            nCables = length(obj.link.tendonActuation.x_td_funs);
-            if nCables
-                colorsTendons = lines(nCables);
+            nTendons = length(obj.link.tendonActuation.terminationDisks);
+            if nTendons
+                colorsTendons = lines(nTendons);
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
-                [g_cm, termNodes] = obj.link.tendonActuation.getNodeData( ...
-                    sBeamNodes);
+                gBackboneTendon = obj.link.tendonActuation.gBackboneTendon;
+                terminationDisks = obj.link.tendonActuation.terminationDisks;
 
-                for iC = 1:nCables
-                    g_c = zeros(4, 4, termNodes(iC));
+                for iTendon = 1:nTendons
+                    g_c = zeros(4, 4, terminationDisks(iTendon));
 
-                    for iN = 1:termNodes(iC)
+                    for iDisk = 1:terminationDisks(iTendon)
                         % Cable points initial configuration
-                        g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
+                        g_c(:,:,iDisk) = g(:,:,iDisk) * gBackboneTendon(:,:,iTendon,iDisk);
                     end
 
-                    obj.tendonVisualization(iC) = elara.visualization.ElasticBeam( g_c, ...
+                    obj.tendonVisualization(iTendon) = elara.visualization.ElasticBeam( g_c, ...
                         "edgeAlpha", 0, ...
                         "FaceAlpha", 0, ...
                         "DrawEdges", false, ...
@@ -155,7 +156,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                         "drawCrossSections", true, ...
                         "showFrames", false, ...
                         "interpolateBeam", true, ...
-                        "Color", colorsTendons(iC,:), ...
+                        "Color", colorsTendons(iTendon,:), ...
                         "Height", 0.003, "Width", 0.003, ...
                         "showFrames", false, ...
                         "Visible", obj.showTendons...

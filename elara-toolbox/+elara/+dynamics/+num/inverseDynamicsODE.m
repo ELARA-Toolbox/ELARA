@@ -29,22 +29,25 @@ function [u, solInfo] = inverseDynamicsODE(system, simPars, q, qd, qdd, lbu, ubu
     solInfo.cond_B = zeros(nSteps + 1,1);
 
     % Check whether system is fully actuated or underactuated
-    isFullyActuated = rank(system.computeInputMatrix(q(:,1))) == system.nDoF;
+    g_rel_1 = system.computeFwdKin(q(:,1));
+    isFullyActuated = rank(system.computeInputMatrix(q(:,1), g_rel_1)) == system.nDoF;
 
     %% Compute Inputs
     for k = 1:nSteps+1
         res_k = elara.dynamics.num.secondOrderODEResidual(0, q(:,k), qd(:,k), qdd(:,k), uZero, system, simPars);
+        g_rel_k = system.computeJointTransformations(q(:,k));
 
+        B_k = system.computeInputMatrix(q(:,k), g_rel_k);
         % Compute Inputs
         if isFullyActuated
             % Fully actuated system: Directly invert input matrix
-            u(:,k) = -system.computeInputMatrix(q(:,k)) \ res_k;
+            u(:,k) = -B_k \ res_k;
         else
             [u(:,k), solInfo_k] = elara.internal.dynamics.solveSystemInputs( ...
                 system, res_k, q(:,k), lbu, ubu);
             solInfo.resNorm(k)  = solInfo_k.resNorm;
-            solInfo.rank_B(k) = rank(system.computeInputMatrix(q(:,k)));
-            solInfo.cond_B(k) = cond(system.computeInputMatrix(q(:,k)));
+            solInfo.rank_B(k) = rank(B_k);
+            solInfo.cond_B(k) = cond(B_k);
         end
     end
 end
