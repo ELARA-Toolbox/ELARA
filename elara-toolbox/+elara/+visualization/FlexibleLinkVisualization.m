@@ -4,7 +4,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
     % Maximilian Herrmann
     % Chair of AutomatiTendon Control
     % TUM School of Engineering and Design
-    % TechniTendonal University of MuniTendonh
+    % Technical University of Munich
     properties (SetObservable)
         % Draw the beam's tendons (if it has any)?
         showTendons         (1,1) matlab.lang.OnOffSwitchState = true;
