@@ -33,7 +33,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
 
     % Check whether system is fully actuated or underactuated
 
-    g_rel_k  = system.computeJointTransformations(q(:,1));
+    [g_k, g_rel_k]  = system.computeFwdKin(q(:,1));
 
     B_1 = system.computeInputMatrix(q(:,1), g_rel_k);
     isFullyActuated = rank(B_1) == system.nDoF;
@@ -45,7 +45,6 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
     a = 1/2;
 
     % DEL residual
-    [g_k]  = system.computeFwdKinFast(g_rel_k);
     [g_k1, g_rel_k1] = system.computeFwdKin(q(:,2));
     eta_k = system.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
     res_0 = elara.dynamics.num.DELResidualInitialStep_noKinematics(system, h, simPars, ...
@@ -64,8 +63,8 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
             system, res_0/(1-a), q(:,1), lbu, ubu);
 
         solInfo.resNorm(1)  = solInfo_1.resNorm;
-        solInfo.rank_B(1) = rank(B_1, g_rel_k));
-        solInfo.cond_B(1) = cond(B_1, g_rel_k));
+        solInfo.rank_B(1) = rank(B_1);
+        solInfo.cond_B(1) = cond(B_1);
     end
 
     %% Intermediate steps
@@ -96,8 +95,8 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
                 system, res_k, q(:,k), lbu, ubu);
 
             solInfo.resNorm(k)  = solInfo_k.resNorm;
-            solInfo.rank_B(k) = rank(B_k, g_rel_k);
-            solInfo.cond_B(k) = cond(B_k, g_rel_k);
+            solInfo.rank_B(k) = rank(B_k);
+            solInfo.cond_B(k) = cond(B_k);
         end
     end
 
