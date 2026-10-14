@@ -6,7 +6,7 @@ cfg = coder.config('mex');
 cfg.TargetLang = 'C++';
 cfg.GenerateReport = false;
 
-% Function inlining 'always' seems to improve runtime significantly
+% Function inlining "always" seems to improve runtime significantly
 cfg.InlineBetweenMathWorksFunctions = 'Always';
 cfg.InlineBetweenUserAndMathWorksFunctions = 'Always';
 cfg.InlineBetweenUserFunctions = 'Always';
@@ -28,7 +28,7 @@ end
 
 fprintf("Compiling MEX functions...\n\n");
 
-functionNames = {
+functionNames = [
     "elara.internal.integration.integrateVIBroyden"
     "elara.dynamics.num.firstOrderRHS"
     "elara.dynamics.num.firstOrderMassMatrix"
@@ -36,9 +36,9 @@ functionNames = {
     "elara.internal.simulation.getResultsFromStateTrajectory"
     "elara.statics.num.residual"
     "elara.internal.simulation.computeEnergies"
-    };
+    ];
 
-outputNames = {
+outputNames = [
     "integrateVIBroyden"
     "firstOrderRHS"
     "firstOrderMassMatrix"
@@ -46,14 +46,14 @@ outputNames = {
     "getResultsFromStateTrajectory"
     "staticResidual"
     "computeEnergies"
-    };
+    ];
 
 for iFun = 1:numel(functionNames)
     fprintf("Compiling function %d/%d (%s)...\n", ...
-        iFun, numel(functionNames), functionNames{iFun});
+        iFun, numel(functionNames), functionNames(iFun));
     codegen("-d", targetDir, "-o", ...
-        fullfile(targetDir, (outputNames{iFun}+"_mex")), ...
-        "-config", cfg, functionNames{iFun});
+        fullfile(targetDir, outputNames(iFun) + "_mex"), ...
+        "-config", cfg, functionNames(iFun));
 end
 
 fprintf("MEX function compilation finished.\n");
