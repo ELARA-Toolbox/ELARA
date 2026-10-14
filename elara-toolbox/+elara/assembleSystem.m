@@ -430,14 +430,14 @@ function sys = assembleSystem(links, sys)
 
         
     end
-    sys.nDisks = nDisks;
-    sys.iDisks = iDisks;
-    sys.sDisks = sDisks;
-    sys.nSectionsInLink = nSectionsInLink;
-    sys.nSectionsBetweenDisks = nSectionsBetweenDisks;
-    sys.iSectionsBetweenDisks = iSectionsBetweenDisks;
-    sys.sSection = dsSections;
-    sys.frameIndexSection = frameIndexSection;
+    sys.nTendonDisksInLink = nDisks;
+    sys.iTendonDisksInLink = iDisks;
+    sys.sTendonDisk = sDisks;
+    sys.nTendonSectionsInLink = nSectionsInLink;
+    sys.nTendonSectionsBetweenDisks = nSectionsBetweenDisks;
+    sys.iTendonSectionsBetweenDisks = iSectionsBetweenDisks;
+    sys.lTendonSection = dsSections;
+    sys.tendonSectionFrameIndex = frameIndexSection;
 
     nDisksTotal = max(nDisks);
     % Number of system inputs
@@ -452,7 +452,8 @@ function sys = assembleSystem(links, sys)
     for iLink=1:sys.nLinks
 
         nTendons = length(links(iLink).tendonActuation.terminationDisks);
-        iDiskAbsolute = sys.iDisks(1, iLink):sys.iDisks(2, iLink);
+        iDiskAbsolute = sys.iTendonDisksInLink(1, iLink): ...
+            sys.iTendonDisksInLink(2, iLink);
 
         for i = 1:nDisks(iLink)
             iDisk = iDiskAbsolute(i);

@@ -56,29 +56,10 @@ classdef (Abstract) System
         linkFrameIndices    (2,:) double
         
         % Number of tendon-routing disks on each link.
-        nDisks             (1,:) double
-
-        % Index Limits of disks for each Link
-        iDisks             (2,:) double
+        nTendonDisksInLink (1,:) double
 
         % Local arc-length positions of tendon-routing disks.
-        sDisks             (1,:) double
-
-        nSectionsInLink     (1,:) double
-
-        % Length of each integration section, padded with zeros by link.
-        sSection                (1,:) double
-
-        % Global frame index associated with each integration section.
-        frameIndexSection       (1,:) double
-
-        % First and last section index between consecutive disks.
-        % Dimensions: (2,nSections).
-        iSectionsBetweenDisks   (2,:) double
-
-        % Number of integration sections between consecutive disks.
-        % Dimensions: (1, nDisks).
-        nSectionsBetweenDisks   (1,:) double
+        sTendonDisk        (1,:) double
 
         % Whether a tendon is active on a flexible beam segment
         % Dimensions: (nDisks, nTendonsMax)
@@ -91,6 +72,27 @@ classdef (Abstract) System
 
         % Transformation from the frame to the TCP
         g_B_TCP     (4,4)  double {elara.internal.validation.mustBeSE3Matrix} = eye(4);
+    end
+
+    properties (Hidden)
+        % Index Limits of disks for each Link
+        iTendonDisksInLink (2,:) double
+
+        nTendonSectionsInLink     (1,:) double
+
+        % Length of each integration section, padded with zeros by link.
+        lTendonSection           (1,:) double
+
+        % Global frame index associated with each integration section.
+        tendonSectionFrameIndex  (1,:) double
+
+        % First and last section index between consecutive disks.
+        % Dimensions: (2,nSections).
+        iTendonSectionsBetweenDisks   (2,:) double
+
+        % Number of integration sections between consecutive disks.
+        % Dimensions: (1, nTendonDisksInLink).
+        nTendonSectionsBetweenDisks   (1,:) double
     end
 
     properties (Abstract)
@@ -114,12 +116,15 @@ classdef (Abstract) System
         computeGeomJacobianAccelerationBiasMatrix
         computeGeomJacobianTimeDerivativeFast
         computeGeomJacobianTimeDerivative
-        computeTendonInputMatrixElementContinuous
-        computeTendonInputMatrixElementDiscrete
         computeInputMatrix
         computeMassMatrixFast
         computeMassMatrix
         computeDiscreteAbsoluteVelocities
+    end
+
+    methods (Abstract, Hidden)
+        computeTendonInputMatrixElementContinuous
+        computeTendonInputMatrixElementDiscrete
     end
     methods
         function obj = System(links)
