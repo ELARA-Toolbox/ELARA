@@ -450,16 +450,19 @@ function sys = assembleSystem(links, sys)
     sys.tendonIsActive = false(nTendonsMax, nDisksTotal);
 
     for iLink=1:sys.nLinks
+        if ~links(iLink).isRigid && ~isempty(links(iLink).tendonActuation)
+            nTendons = length(links(iLink).tendonActuation.terminationDisks);
+            iDiskAbsolute = sys.iTendonDisksInLink(1, iLink): ...
+                sys.iTendonDisksInLink(2, iLink);
 
-        nTendons = length(links(iLink).tendonActuation.terminationDisks);
-        iDiskAbsolute = sys.iTendonDisksInLink(1, iLink): ...
-            sys.iTendonDisksInLink(2, iLink);
+            for i = 1:nDisks(iLink)
+                iDisk = iDiskAbsolute(i);
 
-        for i = 1:nDisks(iLink)
-            iDisk = iDiskAbsolute(i);
-            
-            gBackboneTendon(:,:,1:nTendons, iDisk) =  links(iLink).tendonActuation.gBackboneTendon(:,:,:,i);
-            sys.tendonIsActive(1:nTendons, iDisk) = links(iLink).tendonActuation.terminationDisks >= i; 
+                gBackboneTendon(:,:,1:nTendons, iDisk) = ...
+                    links(iLink).tendonActuation.gBackboneTendon(:,:,:,i);
+                sys.tendonIsActive(1:nTendons, iDisk) = ...
+                    links(iLink).tendonActuation.terminationDisks >= i;
+            end
         end
     end
 

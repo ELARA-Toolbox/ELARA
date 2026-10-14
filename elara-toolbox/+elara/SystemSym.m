@@ -354,7 +354,7 @@ classdef SystemSym < elara.abstract.System
             %%%% omega, v
 
             f = elara.internal.math.getSE3Functions(q);
-            fSE3DcayDerivative = elara.internal.math.getCayRTDSE3dtFunction(q);
+            fSE3DcayDerivative = f.SE3.dcayDerivative;
 
             % Array holding all acceleration-bias matrices
             J_bias = cell(system.nFrames, system.nFrames);
@@ -449,7 +449,7 @@ classdef SystemSym < elara.abstract.System
             end
 
             f = elara.internal.math.getSE3Functions(q);
-            fSE3DcayDerivative = elara.internal.math.getCayRTDSE3dtFunction(q);
+            fSE3DcayDerivative = f.SE3.dcayDerivative;
 
             J_dot = cell(system.nFrames, system.nFrames);
             for iFrm = 1:system.nFrames
@@ -651,7 +651,7 @@ classdef SystemSym < elara.abstract.System
                         end
                         B(beamFrames,uIndices) = system. ...
                             computeTendonInputMatrixElementContinuous( ...
-                            g_rel,beamFrames,uIndices);
+                            iLink,g_rel,beamFrames,uIndices);
                     case 2
                         B(beamFrames,uIndices) = system. ...
                             computeTendonInputMatrixElementDiscrete( ...
@@ -676,12 +676,10 @@ classdef SystemSym < elara.abstract.System
             f = elara.internal.math.getSE3Functions(g_rel(1).R);
             BLink = cell(length(beamFrames),length(uIndices));
 
-
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
                 iFrame = iDisk;
-                nFrameDofs = system.frames.nDof(iFrame);
-                rows = iRow + (1:nFrameDofs);
+                iBeamFrame = find(beamFrames == iFrame, 1);
                 l = system.frames.l(iFrame);
 
                 for iTendon = 1:length(uIndices)
@@ -691,17 +689,16 @@ classdef SystemSym < elara.abstract.System
 
                     g_cm_i1 = system.gBackboneTendon(iTendon, iDisk);
                     g_cm_i2 = system.gBackboneTendon(iTendon, iDisk + 1);
-                    g_rel_c = g_cm_i1 \ g_rel(iFrm) * g_cm_i2;
+                    g_rel_c = g_cm_i1 \ g_rel(iFrame) * g_cm_i2;
                     [~,v_c] = f.SE3.cayInv(g_rel_c.R,g_rel_c.x);
                     v_c = v_c / l;
-                    BLink{rows,iTendon} = ...
-                        -l / norm(v_c) * system.frames.Ba(iFrm).' * [
+                    BLink{iBeamFrame,iTendon} = ...
+                        -l / norm(v_c) * system.frames.Ba(iFrame).' * [
                         1/2 * elara.SO3.skew( ...
                         g_cm_i1.x + g_cm_i2.x) * v_c;
                         v_c
                         ];
                 end
-                iRow = iRow + double(nFrameDofs);
             end
         end
 

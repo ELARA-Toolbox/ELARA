@@ -160,6 +160,25 @@ function f = getSE3FunctionsCasadi
 
     clear T
 
+    %% SE(3) directional derivative of the right-trivialized Cayley map
+    % Vector/matrix form from elara.SE3.dcayDerivative.  Keeping the
+    % expression in this form lets CasADi construct the graph without a
+    % component-wise scalar expansion.
+    xH = f.SO3.skew(omS2);
+    yH = f.SO3.skew(vS2);
+    factor = 1 / (4 + omS.' * omS);
+    dcay = f.SE3.dcay(omS, vS);
+    T_dot = factor * ([
+        2 * xH, zerosF(3,3);
+        yH * (2 * eyeF(3) + omHS) + vHS * xH, ...
+        2 * xH + omS * omS2.' + omS2 * omS.'
+        ] - 2 * omS.' * omS2 * dcay);
+    f.SE3.dcayDerivative = casadi.Function('SE3_dcayDerivative', ...
+        {omS, vS, omS2, vS2}, {T_dot}, ...
+        {'omega', 'v', 'omegaDot', 'vDot'}, {'T_dot'}, funOpts);
+
+    clear xH yH factor dcay T_dot
+
 
     %% SE(3) inverse right-trivialized Cayley derivative
     % Inverse Right-Trivialized Derivative of the Cayley map for SE(3) in

@@ -79,7 +79,10 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
             obj.beamVisualization.updateConfiguration(g);
 
             % Update tendons
-            nTendons = length(obj.link.tendonActuation.terminationDisks);
+            nTendons = 0;
+            if ~isempty(obj.link.tendonActuation)
+                nTendons = length(obj.link.tendonActuation.terminationDisks);
+            end
             if nTendons && obj.showTendons
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
@@ -132,7 +135,10 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                 );
 
             % Tendons
-            nTendons = length(obj.link.tendonActuation.terminationDisks);
+            nTendons = 0;
+            if ~isempty(obj.link.tendonActuation)
+                nTendons = length(obj.link.tendonActuation.terminationDisks);
+            end
             if nTendons
                 colorsTendons = lines(nTendons);
                 lBeam = obj.link.L/obj.link.nSegments;
