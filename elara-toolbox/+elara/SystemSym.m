@@ -776,7 +776,7 @@ classdef SystemSym < elara.abstract.System
                     p_help1 = g_tau.R.'*(g_tau.x - p_td_1);
                     p_help2 = p_td_2 + p_help1;
                 
-                    l_tendon = norm(p_help1);
+                    l_tendon = norm(p_help2);
                     td_part = [cross(p_td_2, p_help1); p_help2].'/l_tendon;
                     for i = 1:nSections
                          iSection = iSections(i);

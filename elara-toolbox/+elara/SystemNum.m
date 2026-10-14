@@ -711,7 +711,7 @@ classdef SystemNum < elara.abstract.System
                 % active tendons column-wise.
                 p_help1 = g_tau(1:3,1:3).' * (g_tau(1:3,4) - p_td_1);
                 p_help2 = p_td_2 + p_help1;
-                td_part = ([cross(p_td_2, p_help1, 1); p_help2] ./ vecnorm(p_help1)).';
+                td_part = ([cross(p_td_2, p_help1, 1); p_help2] ./ vecnorm(p_help2)).';
 
                 lastFrame = system.tendonSectionFrameIndex(lastSection);
                 firstFrame = system.tendonSectionFrameIndex(firstSection);
