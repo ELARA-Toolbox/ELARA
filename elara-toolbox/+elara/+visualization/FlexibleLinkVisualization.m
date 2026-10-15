@@ -2,7 +2,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
     %% Class to visualize a flexible link in a multibody system
     %
     % Maximilian Herrmann
-    % Chair of AutomatiTendon Control
+    % Chair of Automatic Control
     % TUM School of Engineering and Design
     % Technical University of Munich
     properties (SetObservable)
