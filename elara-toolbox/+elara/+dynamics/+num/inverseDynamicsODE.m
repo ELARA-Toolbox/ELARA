@@ -29,7 +29,7 @@ function [u, solInfo] = inverseDynamicsODE(system, simPars, q, qd, qdd, lbu, ubu
     solInfo.cond_B = zeros(nSteps + 1,1);
 
     % Check whether system is fully actuated or underactuated
-    g_rel_1 = system.computeFwdKin(q(:,1));
+    g_rel_1 = system.computeJointTransformations(q(:,1));
     isFullyActuated = rank(system.computeInputMatrix(q(:,1), g_rel_1)) == system.nDoF;
 
     %% Compute Inputs

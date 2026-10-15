@@ -334,10 +334,10 @@ function sys = assembleSystem(links, sys)
     iDisks = zeros(2, sys.nLinks);
     nSectionsInLink = zeros(sys.nLinks,1);
     dsSections = [];
-    nSectionsBetweenDisks = []; % nDisks - 1
-    iSectionsBetweenDisks = []; % nDisks - 1
-    frameIndexSection = []; % nSections
-    lastSection = 1;
+    nSectionsBetweenDisks = [];
+    iSectionsBetweenDisks = [];
+    frameIndexSection = []; % One global beam-frame index per routing section.
+    nextSectionIndex = 1;
     sys.tendonActuationType = zeros(1,sys.nLinks);
     sys.jointActuationType = zeros(1,sys.nLinks);
 
@@ -362,34 +362,39 @@ function sys = assembleSystem(links, sys)
         if ~links(iLink).isRigid && ~isempty(links(iLink).tendonActuation)
             sFramesLink = linspace(0, links(iLink).L, links(iLink).nSegments+1).';
 
+            sDisksLink = links(iLink).tendonActuation.sDisks;
+            nDisksLink = length(sDisksLink);
+            assert(nDisksLink >= 2 && all(isfinite(sDisksLink)) && ...
+                all(diff(sDisksLink) > 0) && ...
+                sDisksLink(1) >= 0 && sDisksLink(end) <= links(iLink).L, ...
+                ['Disk positions must be finite, strictly increasing, and ', ...
+                'within the flexible-link arc-length range.']);
+
             switch links(iLink).tendonActuation.tendonActuationType
                 case 'continuous'
                     sys.tendonActuationType(iLink) = 1;
-                    assert(isequal(links(iLink).tendonActuation.sDisks, sFramesLink), ...
+                    assert(isequal(sDisksLink, sFramesLink), ...
                         'Disks and Frame position must be identical for continuous tendon actuation')
                 case 'discrete'
                     sys.tendonActuationType(iLink) = 2;
             end
 
             nTendons = length(links(iLink).tendonActuation.terminationDisks);
-            sDisksLink = links(iLink).tendonActuation.sDisks;
-            nDisks(iLink) = nDisksTotal + length(sDisksLink);
+            assert(all(isfinite(links(iLink).tendonActuation.terminationDisks)) && ...
+                all(links(iLink).tendonActuation.terminationDisks == ...
+                    floor(links(iLink).tendonActuation.terminationDisks)) && ...
+                all(links(iLink).tendonActuation.terminationDisks >= 2) && ...
+                all(links(iLink).tendonActuation.terminationDisks <= nDisksLink), ...
+                'Termination disks must be integer indices from 2 through nDisks.');
+            nDisks(iLink) = nDisksLink;
             sDisks = [sDisks; sDisksLink];
-          
-            iDisks(1, iLink) = max(iDisks, [], "all") + 1;
-            iDisks(2, iLink) = iDisks(1,iLink) + nDisks(iLink) - 1;
-            
-            sSectionsLink = sort(uniquetol([sDisksLink; sFramesLink], 1e-6));
-            dsSectionsLink = diff(sSectionsLink); 
-          %  nSectionsBetweenDisks = [nSectionsInLink length(dsSectionsLink)];
-  
-            dsSections = [dsSections; dsSectionsLink];
-            nSectionsLink(iLink) = length(dsSectionsLink);
+
+            iDisks(1, iLink) = nDisksTotal + 1;
+            iDisks(2, iLink) = nDisksTotal + nDisks(iLink);
+            nDisksTotal = nDisksTotal + nDisks(iLink);
 
             nSectionsBetweenDisksLink = zeros(1,nDisks(iLink));
             iSectionsBetweenDisksLink = zeros(2, nDisks(iLink));
-           
-            iSectionsBetweenDisksLink(1,1) = lastSection;
 
             % Check if current link is a cantilever link:
             % Then, the first joint may have cable actuation;
@@ -400,19 +405,32 @@ function sys = assembleSystem(links, sys)
                 actuatedFrames = linkFrames(2:end);
             end
 
-            
-            for iSection =1:nSectionsLink(iLink)
-                sEndOfSection = sSectionsLink(iSection + 1);
-                localFrameIndex = find(sEndOfSection <= sFramesLink(2:end) , 1);
-                frameIndexSection = [frameIndexSection; actuatedFrames(localFrameIndex)];
+            % Split the space between consecutive disks at beam-frame boundaries.
+            % The global section cursor advances for every appended section,
+            % including sections after an early tendon termination.
+            for iDiskLocal = 1:nDisks(iLink)-1
+                sDiskStart = sDisksLink(iDiskLocal);
+                sDiskEnd = sDisksLink(iDiskLocal + 1);
+                sInteriorFrames = sFramesLink( ...
+                    sFramesLink > sDiskStart & sFramesLink < sDiskEnd);
+                sSectionEnds = [sInteriorFrames; sDiskEnd];
+                nSections = length(sSectionEnds);
 
-                localDiskIndex = find(sEndOfSection <= sDisksLink(2:end), 1);
-                nSectionsBetweenDisksLink(localDiskIndex) = nSectionsBetweenDisksLink(localDiskIndex) + 1; 
-                iSectionsBetweenDisksLink(2, localDiskIndex) = iSectionsBetweenDisksLink(1, localDiskIndex) + nSectionsBetweenDisksLink(localDiskIndex)-1 ;
-                if localDiskIndex < nDisks(iLink) - 1
-                    iSectionsBetweenDisksLink(1, localDiskIndex+1) = iSectionsBetweenDisksLink(2, localDiskIndex) + 1;
+                iSectionsBetweenDisksLink(1,iDiskLocal) = nextSectionIndex;
+                iSectionsBetweenDisksLink(2,iDiskLocal) = ...
+                    nextSectionIndex + nSections - 1;
+                nSectionsBetweenDisksLink(iDiskLocal) = nSections;
+
+                dsSections = [dsSections; diff([sDiskStart; sSectionEnds])];
+                for iSectionLocal = 1:nSections
+                    sEndOfSection = sSectionEnds(iSectionLocal);
+                    iFrameLocal = find( ...
+                        sEndOfSection <= sFramesLink(2:end), 1);
+                    frameIndexSection = [frameIndexSection; ...
+                        actuatedFrames(iFrameLocal)];
                 end
-            end 
+                nextSectionIndex = nextSectionIndex + nSections;
+            end
             nSectionsBetweenDisks = [nSectionsBetweenDisks nSectionsBetweenDisksLink];
 
             
@@ -422,10 +440,8 @@ function sys = assembleSystem(links, sys)
 
             nTendonsMax = max([nTendons, nTendonsMax]);
             
-            %
-            nSectionsInLink(iLink) = length(dsSectionsLink);
+            nSectionsInLink(iLink) = sum(nSectionsBetweenDisksLink);
             iSectionsBetweenDisks = [iSectionsBetweenDisks iSectionsBetweenDisksLink];
-            lastSection = max(iSectionsBetweenDisks, [], "all")+1;
         end
 
         
@@ -439,7 +455,6 @@ function sys = assembleSystem(links, sys)
     sys.lTendonSection = dsSections;
     sys.tendonSectionFrameIndex = frameIndexSection;
 
-    nDisksTotal = max(nDisks);
     % Number of system inputs
     sys.nInputs =  max(sys.frames.uIndices(2,:));
 
@@ -455,13 +470,18 @@ function sys = assembleSystem(links, sys)
             iDiskAbsolute = sys.iTendonDisksInLink(1, iLink): ...
                 sys.iTendonDisksInLink(2, iLink);
 
-            for i = 1:nDisks(iLink)
-                iDisk = iDiskAbsolute(i);
+            for iDiskLocal = 1:nDisks(iLink)
+                iDisk = iDiskAbsolute(iDiskLocal);
 
                 gBackboneTendon(:,:,1:nTendons, iDisk) = ...
-                    links(iLink).tendonActuation.gBackboneTendon(:,:,:,i);
-                sys.tendonIsActive(1:nTendons, iDisk) = ...
-                    links(iLink).tendonActuation.terminationDisks >= i;
+                    links(iLink).tendonActuation.gBackboneTendon( ...
+                        :,:,:,iDiskLocal);
+
+                if iDiskLocal < nDisks(iLink)
+                    sys.tendonIsActive(1:nTendons, iDisk) = ...
+                        links(iLink).tendonActuation.terminationDisks >= ...
+                        iDiskLocal + 1;
+                end
             end
         end
     end

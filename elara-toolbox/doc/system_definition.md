@@ -295,7 +295,8 @@ JDot = systemNum.computeGeomJacobianTimeDerivative(q, qDot);
 JBias = systemNum.computeGeomJacobianAccelerationBiasMatrix( ...
     q, qDot, eta);
 M = systemNum.computeMassMatrix(q);
-B = systemNum.computeInputMatrix(q);
+gRel = systemNum.computeJointTransformations(q);
+B = systemNum.computeInputMatrix(q, gRel);
 
 theta = systemNum.getJointAngles(q);
 xi = systemNum.getLinkDeformations(q, iLink);
@@ -304,6 +305,7 @@ xi = systemNum.getLinkDeformations(q, iLink);
 Many of these methods have variants with the suffix `Fast`.
 These variants accept precomputed intermediate kinematics—for example, the relative joint transformations returned by `g_rel = systemNum.computeJointTransformations(q)`—and are intended for performance-sensitive internal or advanced use.
 They can avoid repeated computation of relative joint transformations in complex calculations, such as the equations of motion, where several kinematic quantities depend on the same intermediate variables.
+`computeInputMatrix` also requires these relative joint transformations so callers can reuse the same code-generation-friendly kinematic data.
 For the Jacobian derivative, the fast true-derivative method additionally accepts the precomputed geometric Jacobian, whereas the fast acceleration-bias method accepts the precomputed absolute frame velocities.
 
 

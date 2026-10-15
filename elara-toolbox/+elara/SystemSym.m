@@ -621,7 +621,7 @@ classdef SystemSym < elara.abstract.System
             arguments
                 system  (1,1) elara.SystemSym
                 q       (:,1)
-                g_rel = []
+                g_rel   (:,1) elara.SE3.Element
             end
 
             B = cell(system.nFrames,system.nInputs);
@@ -646,9 +646,6 @@ classdef SystemSym < elara.abstract.System
                     system.frames.getUIndices(beamFrames(1)));
                 switch system.tendonActuationType(iLink)
                     case 1
-                        if isempty(g_rel)
-                            g_rel = system.computeJointTransformations(q);
-                        end
                         B(beamFrames,uIndices) = system. ...
                             computeTendonInputMatrixElementContinuous( ...
                             iLink,g_rel,beamFrames,uIndices);
@@ -678,7 +675,8 @@ classdef SystemSym < elara.abstract.System
 
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
-                iFrame = iDisk;
+                firstSection = system.iTendonSectionsBetweenDisks(1,iDisk);
+                iFrame = system.tendonSectionFrameIndex(firstSection);
                 iBeamFrame = find(beamFrames == iFrame, 1);
                 l = system.frames.l(iFrame);
 
@@ -719,15 +717,13 @@ classdef SystemSym < elara.abstract.System
             nFrameDofs = system.frames.nDof(beamFrames(end));
 
             BLink = cell(length(beamFrames),nTendons);
+            zerosOfQ = elara.internal.math.getZeros(q);
 
             xi = system.getLinkDeformations(q,iLink);
-            startDisk = system.iTendonDisksInLink(1, iLink);
-            startSection = system.iTendonSectionsBetweenDisks(1, startDisk);
-            iFrameStart = system.tendonSectionFrameIndex(1, startSection);
            
        
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
-                    (system.iTendonDisksInLink(2, iLink)-1)
+                    system.iTendonDisksInLink(2, iLink)-1
                 
                 firstSection = system.iTendonSectionsBetweenDisks(1,iDisk);
                 lastSection = system.iTendonSectionsBetweenDisks(2,iDisk);
@@ -750,7 +746,7 @@ classdef SystemSym < elara.abstract.System
                 for i = nSections:-1:1
                     iSection = iSections(i);
                     iFrame = system.tendonSectionFrameIndex(iSection);
-                    iFrameLocal = iFrame - iFrameStart+1 ; 
+                    iFrameLocal = find(beamFrames == iFrame, 1);
                     ds = system.lTendonSection(iSection);
 
                     dsxi = ds * xi(:,iFrameLocal);
@@ -778,10 +774,10 @@ classdef SystemSym < elara.abstract.System
                     for i = 1:nSections
                          iSection = iSections(i);
                          iFrame = system.tendonSectionFrameIndex(iSection);
-                         iFrameLocal = iFrame - iFrameStart+1 ; 
+                         iFrameLocal = find(beamFrames == iFrame, 1);
                     
                          if isempty(BLink{iFrameLocal, iTendon})
-                             BLink{iFrameLocal, iTendon} = f.zeros(nFrameDofs,1);
+                             BLink{iFrameLocal, iTendon} = zerosOfQ(nFrameDofs,1);
                          end
                          BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * tau_part{i}).'; 
                     end

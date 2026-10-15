@@ -86,6 +86,9 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
             if nTendons && obj.showTendons
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
+                sDisks = obj.link.tendonActuation.sDisks;
+                gDisks = elara.SE3.interpolateConfigurations( ...
+                    g, sBeamNodes.', sDisks);
                 gBackboneTendon = obj.link.tendonActuation.gBackboneTendon;
                 terminationDisks = obj.link.tendonActuation.terminationDisks;
 
@@ -94,7 +97,8 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
 
                     for iDisk = 1:terminationDisks(iTendon)
                         % Cable points initial configuration
-                        g_c(:,:,iDisk) = g(:,:,iDisk) * gBackboneTendon(:,:,iTendon, iDisk);
+                        g_c(:,:,iDisk) = gDisks(:,:,iDisk) * ...
+                            gBackboneTendon(:,:,iTendon, iDisk);
                     end
                     obj.tendonVisualization(iTendon).updateConfiguration(g_c);
                 end
@@ -143,6 +147,9 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                 colorsTendons = lines(nTendons);
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
+                sDisks = obj.link.tendonActuation.sDisks;
+                gDisks = elara.SE3.interpolateConfigurations( ...
+                    g, sBeamNodes.', sDisks);
                 gBackboneTendon = obj.link.tendonActuation.gBackboneTendon;
                 terminationDisks = obj.link.tendonActuation.terminationDisks;
 
@@ -151,7 +158,8 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
 
                     for iDisk = 1:terminationDisks(iTendon)
                         % Cable points initial configuration
-                        g_c(:,:,iDisk) = g(:,:,iDisk) * gBackboneTendon(:,:,iTendon,iDisk);
+                        g_c(:,:,iDisk) = gDisks(:,:,iDisk) * ...
+                            gBackboneTendon(:,:,iTendon,iDisk);
                     end
 
                     obj.tendonVisualization(iTendon) = elara.visualization.ElasticBeam( g_c, ...
@@ -161,7 +169,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                         "drawCenterline", true, ...
                         "drawCrossSections", true, ...
                         "showFrames", false, ...
-                        "interpolateBeam", true, ...
+                        "interpolateBeam", false, ...
                         "Color", colorsTendons(iTendon,:), ...
                         "Height", 0.003, "Width", 0.003, ...
                         "showFrames", false, ...

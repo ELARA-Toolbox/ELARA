@@ -20,6 +20,17 @@ function systemSym = systemNum2SystemSym(systemNum)
             % Ignore properties that are not shared or cannot be converted.
         end
     end
+    routingProperties = [ ...
+        "iTendonDisksInLink"
+        "nTendonSectionsInLink"
+        "lTendonSection"
+        "tendonSectionFrameIndex"
+        "iTendonSectionsBetweenDisks"
+        "nTendonSectionsBetweenDisks"
+        ];
+    for propertyName = routingProperties.'
+        systemSym.(propertyName) = systemNum.(propertyName);
+    end
     systemSym.gBackboneTendon = elara.SE3.matrix2Element( ...
         systemNum.gBackboneTendon);
     systemSym.frames.MGen = squeeze(num2cell(systemNum.frames.MGen,[1,2]));

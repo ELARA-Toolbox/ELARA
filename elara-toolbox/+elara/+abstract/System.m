@@ -61,8 +61,11 @@ classdef (Abstract) System
         % Local arc-length positions of tendon-routing disks.
         sTendonDisk        (1,:) double
 
-        % Whether a tendon is active on a flexible beam segment
-        % Dimensions: (nDisks, nTendonsMax)
+        % Tendon-routing arrays are disk-indexed. With N disks, columns
+        % 1:N-1 describe the path from disk i to disk i + 1; column N is
+        % zero/inactive.
+        % Whether a tendon is active from disk i to disk i + 1.
+        % Dimensions: (nTendonsMax, nTendonDisksTotal)
         tendonIsActive (:,:) logical
 
         %% TCP data
@@ -75,23 +78,23 @@ classdef (Abstract) System
     end
 
     properties (Hidden)
-        % Index Limits of disks for each Link
+        % Global disk-index range for each link.
         iTendonDisksInLink (2,:) double
 
         nTendonSectionsInLink     (1,:) double
 
-        % Length of each integration section, padded with zeros by link.
+        % Length of each flattened routing integration section.
         lTendonSection           (1,:) double
 
         % Global frame index associated with each integration section.
         tendonSectionFrameIndex  (1,:) double
 
         % First and last section index between consecutive disks.
-        % Dimensions: (2,nSections).
+        % Dimensions: (2,nTendonDisksTotal); final-disk columns are unused.
         iTendonSectionsBetweenDisks   (2,:) double
 
         % Number of integration sections between consecutive disks.
-        % Dimensions: (1, nTendonDisksInLink).
+        % Dimensions: (1,nTendonDisksTotal); final-disk entries are zero.
         nTendonSectionsBetweenDisks   (1,:) double
     end
 
