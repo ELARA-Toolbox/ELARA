@@ -619,15 +619,13 @@ classdef SystemNum < elara.abstract.System
                 uIndices   (1,:)
             end
             BLink = zeros(sum(system.frames.nDof(beamFrames)), length(uIndices));
+            nPreviousDofs = 0;
 
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
                 firstSection = system.iTendonSectionsBetweenDisks(1,iDisk);
                 iFrame = system.tendonSectionFrameIndex(firstSection);
-                iBeamFrame = find(beamFrames == iFrame, 1);
-                nFrameDofs = system.frames.nDof(iFrame);
-                nPreviousDofs = sum(system.frames.nDof( ...
-                    beamFrames(1:iBeamFrame-1)));
+                nFrameDofs = double(system.frames.nDof(iFrame));
                 rows = nPreviousDofs + (1:nFrameDofs);
                 l = system.frames.l(iFrame);
 
@@ -648,6 +646,8 @@ classdef SystemNum < elara.abstract.System
                     BLink(rows,iTendon) = ...
                         -l / norm(xi_c(4:6)) * b_i;
                 end
+
+                nPreviousDofs = nPreviousDofs + nFrameDofs;
             end
         end
 
