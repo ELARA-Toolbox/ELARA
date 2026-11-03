@@ -56,9 +56,11 @@ classdef (Abstract) System
         linkFrameIndices    (2,:) double
         
         % Number of tendon-routing disks on each link.
+        % Dimensions: (1, nLinks)
         nTendonDisksInLink (1,:) double
 
         % Local arc-length positions of tendon-routing disks.
+        % Dimesnions: (1, nDisks)
         sTendonDisk        (1,:) double
 
         % Tendon-routing arrays are disk-indexed. With N disks, columns
@@ -79,14 +81,18 @@ classdef (Abstract) System
 
     properties (Hidden)
         % Global disk-index range for each link.
+        % Dimensions: (2, nLinks)
         iTendonDisksInLink (2,:) double
 
+        % Dimensions: (1, nLinks)
         nTendonSectionsInLink     (1,:) double
 
         % Length of each flattened routing integration section.
+        % Dimensions: (1, nTendonSections)
         lTendonSection           (1,:) double
 
         % Global frame index associated with each integration section.
+        % Dimensions: (1, nTendonSections)
         tendonSectionFrameIndex  (1,:) double
 
         % First and last section index between consecutive disks.
