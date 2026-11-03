@@ -616,11 +616,17 @@ classdef SystemSym < elara.abstract.System
 
         function B = computeInputMatrix(system, q, g_rel)
             %% Compute the system generalized-force input matrix
-            % Tendon columns map positive tension to generalized force and
-            % therefore equal -d(l_tendon)/dq.
+            % Assigns 1s for the inputs that correspond to joint actuation
+            % Calls the tendon input matrix function for one link
+            % depending on if the tendon is routed continuously or discretely
+            %
             arguments
                 system  (1,1) elara.SystemSym
+
+                % System coordinates (nDoF, 1)
                 q       (:,1)
+
+                % Array of relative configurations
                 g_rel   (:,1) elara.SE3.Element
             end
 
@@ -630,6 +636,8 @@ classdef SystemSym < elara.abstract.System
                     system.linkFrameIndices(2,iLink);
 
                 iJointFrame = linkFrames(1);
+
+                % Assign 1 if the joint between two links is actuated
                 if system.jointActuationType(iLink)
                     B{iJointFrame,double( ...
                         system.frames.getUIndices(iJointFrame))} = 1;
@@ -637,6 +645,8 @@ classdef SystemSym < elara.abstract.System
 
                 beamFrames = linkFrames( ...
                     system.frames.jointType(linkFrames) == 2);
+
+                % Only continue if the link is flexible and tendon actuated
                 if isempty(beamFrames) || ...
                         ~system.frames.uIndices(1,beamFrames(1))
                     continue;
@@ -644,6 +654,8 @@ classdef SystemSym < elara.abstract.System
 
                 uIndices = double( ...
                     system.frames.getUIndices(beamFrames(1)));
+
+                % Call respective tendon input matrix function depening on tendon type
                 switch system.tendonActuationType(iLink)
                     case 1
                         B(beamFrames,uIndices) = system. ...
@@ -664,9 +676,17 @@ classdef SystemSym < elara.abstract.System
             %% Compute continuous tendon input-matrix block for one link
             arguments
                 system     (1,1) elara.SystemSym
+
+                % Index of Link
                 iLink      (1,1) double
+
+                % Array of relative configurations
                 g_rel      (:,1) elara.SE3.Element
+
+                % Frames along the beam (base frame is omitted for non-cantilever beams)
                 beamFrames (1,:)
+
+                % Indices of inputs corresponding to the tendon actuation
                 uIndices   (1,:)
             end
 
@@ -685,8 +705,11 @@ classdef SystemSym < elara.abstract.System
                         continue;
                     end
 
+                    % Cable configurations at adjacent disks
                     g_cm_i1 = system.gBackboneTendon(iTendon, iDisk);
                     g_cm_i2 = system.gBackboneTendon(iTendon, iDisk + 1);
+
+                    % Discrete deformation gradient cable routing
                     g_rel_c = g_cm_i1 \ g_rel(iFrame) * g_cm_i2;
                     [~,v_c] = f.SE3.cayInv(g_rel_c.R,g_rel_c.x);
                     v_c = v_c / l;
@@ -706,9 +729,17 @@ classdef SystemSym < elara.abstract.System
             % Positive tendon tension yields BLink = -d(l_tendon)/dq.
             arguments
                 system  (1,1) elara.SystemSym
+
+                % Index of Link
                 iLink   (1,1) double
+
+                % System coordinates (nDoF, 1)
                 q          (:,1)
+
+                % Frames along the beam (base frame is omitted for non-cantilever beams)
                 beamFrames (1,:)
+
+                % Indices of inputs corresponding to the tendon actuation
                 uIndices   (1,:)
             end
 
@@ -722,6 +753,7 @@ classdef SystemSym < elara.abstract.System
             xi = system.getLinkDeformations(q,iLink);
            
        
+            % Builds input matrix from disk interval to disk interval
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
                 
@@ -741,8 +773,8 @@ classdef SystemSym < elara.abstract.System
                 g_tau = elara.SE3.Element();
                 tau_part = cell(nSections);
                 
-                % Backward pass: compute the section transformations,
-                % tangent maps, and proximal tendon points.
+                % Backward pass: compute the transformation between the first and second
+                % disk position along the backbone and build the derivative part
                 for i = nSections:-1:1
                     iSection = iSections(i);
                     iFrame = system.tendonSectionFrameIndex(iSection);
@@ -760,6 +792,8 @@ classdef SystemSym < elara.abstract.System
                     g_section = elara.SE3.Element(R,p);
                     g_tau = g_section * g_tau;
                 end
+
+                % Now add relative transformations between tendon and backbone where applicable
 
                 for j=1:nActiveTendons
                     iTendon = iTendons(j);
@@ -779,6 +813,8 @@ classdef SystemSym < elara.abstract.System
                          if isempty(BLink{iFrameLocal, iTendon})
                              BLink{iFrameLocal, iTendon} = zerosOfQ(nFrameDofs,1);
                          end
+
+                         % Add effect of disk interval to B
                          BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * tau_part{i}).'; 
                     end
                 end
