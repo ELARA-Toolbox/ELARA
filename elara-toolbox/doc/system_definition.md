@@ -220,11 +220,16 @@ beam.M_a(:,:,end) = blkdiag(payloadInertia, payloadMass*eye(3));
 
 ### Tendon Actuation
 
-The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators. Assign one of two configurations to `beam.tendonActuation`. Each tendon-actuated flexible link contributes one input per tendon.
+The toolbox supports tendon actuation for flexible links, enabling models of tendon-actuated soft robots and continuum manipulators. 
+Supported are tendons that are routed either continuously along the backbone (e.g., in channels), or routed via individual, discrete spacer disks.
+In the overall system, each tendon-actuated flexible link contributes one input per tendon.
+
+The type of actuation is specified with the link property `beam.tendonActuation`:
 
 #### Continuous tendon actuation
 
-`elara.ContinuousTendonActuation` models tendons that are parallel to the backbone along their active length. Define each tendon by its constant position relative to the backbone, its termination length, and the beam-frame locations at which it is evaluated. The disk locations `sDisks` must match the beam-frame positions.
+`elara.ContinuousTendonActuation` models tendons that continuously routed along the backbone for their active length. 
+Each tendon path is defined by a function of arc length `s` that returns the tendon position relative to the beam backbone. The model stores one path and one termination length for each tendon. The required derivatives may be provided directly or generated with the symbolic helper:
 
 ```matlab
 r = 0.02;
@@ -239,7 +244,8 @@ beam.tendonActuation = elara.ContinuousTendonActuation( ...
     LTermination, sDisks, x_td_funs);
 ```
 
-`LTermination` contains one arc-length termination position per tendon. A tendon terminates at the first entry of `sDisks` that is greater than or equal to its specified length. The constructor can also receive first and second derivatives of `x_td_funs` as its fourth and fifth arguments; when omitted, they are generated symbolically. A continuous configuration is used in `systemDef_continuum_manipulator.m`.
+A specified termination length is snapped to the nearest beam node, so the beam discretization should contain a node sufficiently close to each intended termination point. Straight and helical full-length paths are illustrated in `systemDef_continuum_manipulator.m`. The continuum-robot reference listed under [Further Reading](index.md#further-reading) provides additional modeling context.
+The constructor can also receive first and second derivatives of `x_td_funs` as its fourth and fifth arguments; when omitted, they are generated symbolically.
 
 #### Discrete tendon actuation
 
@@ -305,7 +311,6 @@ xi = systemNum.getLinkDeformations(q, iLink);
 Many of these methods have variants with the suffix `Fast`.
 These variants accept precomputed intermediate kinematics—for example, the relative joint transformations returned by `g_rel = systemNum.computeJointTransformations(q)`—and are intended for performance-sensitive internal or advanced use.
 They can avoid repeated computation of relative joint transformations in complex calculations, such as the equations of motion, where several kinematic quantities depend on the same intermediate variables.
-`computeInputMatrix` also requires these relative joint transformations so callers can reuse the same code-generation-friendly kinematic data.
 For the Jacobian derivative, the fast true-derivative method additionally accepts the precomputed geometric Jacobian, whereas the fast acceleration-bias method accepts the precomputed absolute frame velocities.
 
 
