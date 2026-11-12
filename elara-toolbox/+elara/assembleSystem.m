@@ -339,16 +339,14 @@ function sys = assembleSystem(links, sys)
     frameIndexSection = []; % One global beam-frame index per routing section.
     nextSectionIndex = 1;
     sys.tendonActuationType = zeros(1,sys.nLinks);
-    sys.jointActuationType = zeros(1,sys.nLinks);
 
     for iLink = 1:sys.nLinks
         linkFrames = sys.linkFrameIndices(1,iLink):sys.linkFrameIndices(2,iLink);
-        
+
         % Check if the current link has an actuated lower-pair joint
         hasJointActuation = ...
             (links(iLink).parentLink && links(iLink).jointIsActuated) || ...
             (~links(iLink).parentLink && ~sys.isCantilever && links(iLink).jointIsActuated);
-        sys.jointActuationType(iLink) = hasJointActuation;
 
         % Assign input index for scalar joint actuation to the first
         % frame in the link (which, for rigid links, is the only frame)
@@ -371,18 +369,18 @@ function sys = assembleSystem(links, sys)
                 'within the flexible-link arc-length range.']);
 
             switch links(iLink).tendonActuation.tendonActuationType
-                case 'continuous'
+                case "continuous"
                     sys.tendonActuationType(iLink) = 1;
                     assert(isequal(sDisksLink, sFramesLink), ...
                         'Disks and Frame position must be identical for continuous tendon actuation')
-                case 'discrete'
+                case "discrete"
                     sys.tendonActuationType(iLink) = 2;
             end
 
             nTendons = length(links(iLink).tendonActuation.terminationDisks);
             assert(all(isfinite(links(iLink).tendonActuation.terminationDisks)) && ...
                 all(links(iLink).tendonActuation.terminationDisks == ...
-                    floor(links(iLink).tendonActuation.terminationDisks)) && ...
+                floor(links(iLink).tendonActuation.terminationDisks)) && ...
                 all(links(iLink).tendonActuation.terminationDisks >= 2) && ...
                 all(links(iLink).tendonActuation.terminationDisks <= nDisksLink), ...
                 'Termination disks must be integer indices from 2 through nDisks.');
@@ -433,18 +431,18 @@ function sys = assembleSystem(links, sys)
             end
             nSectionsBetweenDisks = [nSectionsBetweenDisks nSectionsBetweenDisksLink];
 
-            
+
             sys.frames.uIndices(1,actuatedFrames) = lastIndexU;
             sys.frames.uIndices(2,actuatedFrames) = lastIndexU + nTendons - 1;
             lastIndexU = lastIndexU + nTendons;
 
             nTendonsMax = max([nTendons, nTendonsMax]);
-            
+
             nSectionsInLink(iLink) = sum(nSectionsBetweenDisksLink);
             iSectionsBetweenDisks = [iSectionsBetweenDisks iSectionsBetweenDisksLink];
         end
 
-        
+
     end
     sys.nTendonDisksInLink = nDisks;
     sys.iTendonDisksInLink = iDisks;
@@ -464,7 +462,7 @@ function sys = assembleSystem(links, sys)
     gBackboneTendon = repmat(eye(4), [1,1,nTendonsMax, nDisksTotal]);
     sys.tendonIsActive = false(nTendonsMax, nDisksTotal);
 
-    for iLink=1:sys.nLinks
+    for iLink = 1:sys.nLinks
         if ~links(iLink).isRigid && ~isempty(links(iLink).tendonActuation)
             nTendons = length(links(iLink).tendonActuation.terminationDisks);
             iDiskAbsolute = sys.iTendonDisksInLink(1, iLink): ...
@@ -475,7 +473,7 @@ function sys = assembleSystem(links, sys)
 
                 gBackboneTendon(:,:,1:nTendons, iDisk) = ...
                     links(iLink).tendonActuation.gBackboneTendon( ...
-                        :,:,:,iDiskLocal);
+                    :,:,:,iDiskLocal);
 
                 if iDiskLocal < nDisks(iLink)
                     sys.tendonIsActive(1:nTendons, iDisk) = ...
@@ -492,8 +490,8 @@ function sys = assembleSystem(links, sys)
         sys.gBackboneTendon = ...
             elara.SE3.matrix2Element(gBackboneTendon);
     end
-    %% Store TCP data if TCP is defined
 
+    %% Store TCP data if TCP is defined
     if any([links.hasTCP])
         iTCPLink = find([links.hasTCP]);
         sys.indexTCPFrame = sys.linkFrameIndices(2, iTCPLink);

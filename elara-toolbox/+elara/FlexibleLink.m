@@ -16,7 +16,7 @@ classdef FlexibleLink < elara.abstract.Link
         %% Flexible Link properties
 
         % Number of segments in the discretized beam
-        nSegments        (1,1) double {mustBeNonnegative}
+        nSegments   (1,1) double {mustBeNonnegative}
 
         % Length of the beam (from first to last cross section)
         L           (1,1) double {mustBeNonnegative}
@@ -26,14 +26,14 @@ classdef FlexibleLink < elara.abstract.Link
         Bc          (6,:) double
 
         % Beam material
-        beamParameters    (1,1) elara.BeamParameters
+        beamParameters      (1,1) elara.BeamParameters
 
         % Discrete deformations in the reference configuration (6,nSegments)
-        xiRef       (6,:) double
+        xiRef               (6,:) double
 
         %%% For continuum manipulators
         % Configuration object for cable actuation
-        tendonActuation elara.abstract.TendonActuation = elara.ContinuousTendonActuation.empty
+        tendonActuation     (1,:)  elara.abstract.TendonActuation = elara.ContinuousTendonActuation.empty
 
     end
     properties (Constant)
@@ -50,6 +50,10 @@ classdef FlexibleLink < elara.abstract.Link
             % Require at least two segments for the beam discretization
             assert(link.nSegments > 1, ...
                 "A flexible link must have at least two segments.");
+
+            % Check dimension of tendonActuation property
+            assert(numel(link.tendonActuation)<2, ...
+                "tendonActuation property must be scalar or empty.")
 
             % Check that inertia, mass, and center-of-mass transform arrays for
             % attached masses are either all empty or have the

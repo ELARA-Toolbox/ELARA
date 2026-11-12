@@ -41,31 +41,32 @@ classdef (Abstract) System
         % Number of system inputs (control inputs)
         nInputs             (1,1) double
 
-        % Tendon-actuation formulation for each link:
-        % 0 = no tendon actuation, 1 = continuous, 2 = discrete.
-        tendonActuationType (1,:) double {mustBeMember(tendonActuationType, [0,1,2])}
-
-        % Physical-joint actuation for each link:
-        % 0 = not actuated, 1 = actuated.
-        jointActuationType (1,:) double {mustBeMember(jointActuationType, [0,1])}
         % Assignment of link numbers to frame numbers
         % First row is the index of the first frame corresponding to the
         % link, second row is the index of the last frame
         % * For rigid links: Both are equal, link has only one frame
         % * For flexible links: First and last index of the beam node frames
         linkFrameIndices    (2,:) double
-        
+
+        %% Tendon actuation data
+        % For continuously or discretely routed tendons
+
+        % Tendon-actuation formulation for each link:
+        % 0 = no tendon actuation, 1 = continuous, 2 = discrete.
+        tendonActuationType (1,:) double {mustBeMember(tendonActuationType, [0,1,2])}
+
+
         % Number of tendon-routing disks on each link.
         % Dimensions: (1, nLinks)
         nTendonDisksInLink (1,:) double
 
         % Local arc-length positions of tendon-routing disks.
-        % Dimesnions: (1, nDisks)
-        sTendonDisk        (1,:) double
-
+        % Dimensions: (1, nDisks)
         % Tendon-routing arrays are disk-indexed. With N disks, columns
         % 1:N-1 describe the path from disk i to disk i + 1; column N is
         % zero/inactive.
+        sTendonDisk        (1,:) double
+
         % Whether a tendon is active from disk i to disk i + 1.
         % Dimensions: (nTendonsMax, nTendonDisksTotal)
         tendonIsActive (:,:) logical

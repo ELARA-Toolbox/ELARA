@@ -616,10 +616,13 @@ classdef SystemSym < elara.abstract.System
 
         function B = computeInputMatrix(system, q, g_rel)
             %% Compute the system generalized-force input matrix
+            % Currently supports actuated screw joints (for physical
+            % joints) and continuously and discretely routed tendon
+            % actuation.
             % Assigns 1s for the inputs that correspond to joint actuation
-            % Calls the tendon input matrix function for one link
-            % depending on if the tendon is routed continuously or discretely
-            %
+            % and calls the tendon input matrix function for one link
+            % depending on if the tendon is routed continuously or
+            % discretely.
             arguments
                 system  (1,1) elara.SystemSym
 
@@ -631,18 +634,19 @@ classdef SystemSym < elara.abstract.System
             end
 
             B = cell(system.nFrames,system.nInputs);
+
+            % Compute blocks of B corresponding to each link            
             for iLink = 1:system.nLinks
                 linkFrames = system.linkFrameIndices(1,iLink): ...
                     system.linkFrameIndices(2,iLink);
 
-                iJointFrame = linkFrames(1);
-
-                % Assign 1 if the joint between two links is actuated
-                if system.jointActuationType(iLink)
-                    B{iJointFrame,double( ...
-                        system.frames.getUIndices(iJointFrame))} = 1;
+                %%% Joint actuation for actuated screw joints
+                % Check if the link has an actuated physical joint
+                if system.frames.jointType(linkFrames(1)) == 1
+                    B{linkFrames(1), system.frames.getUIndices(linkFrames(1))} = 1;
                 end
 
+                %%% Tendon actuation for flexible links
                 beamFrames = linkFrames( ...
                     system.frames.jointType(linkFrames) == 2);
 
@@ -655,7 +659,6 @@ classdef SystemSym < elara.abstract.System
                 uIndices = double( ...
                     system.frames.getUIndices(beamFrames(1)));
 
-                % Call respective tendon input matrix function depening on tendon type
                 switch system.tendonActuationType(iLink)
                     case 1
                         B(beamFrames,uIndices) = system. ...
@@ -665,6 +668,8 @@ classdef SystemSym < elara.abstract.System
                         B(beamFrames,uIndices) = system. ...
                             computeTendonInputMatrixElementDiscrete( ...
                             iLink,q,beamFrames,uIndices);
+                    otherwise
+                        % not defined (error)                        
                 end
             end
         end
@@ -713,6 +718,8 @@ classdef SystemSym < elara.abstract.System
                     g_rel_c = g_cm_i1 \ g_rel(iFrame) * g_cm_i2;
                     [~,v_c] = f.SE3.cayInv(g_rel_c.R,g_rel_c.x);
                     v_c = v_c / l;
+
+                    % Compute matrix entry
                     BLink{iBeamFrame,iTendon} = ...
                         -l / norm(v_c) * system.frames.Ba(iFrame).' * [
                         1/2 * elara.SO3.skew( ...
