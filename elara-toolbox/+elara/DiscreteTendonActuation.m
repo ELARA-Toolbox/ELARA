@@ -1,11 +1,13 @@
 classdef DiscreteTendonActuation < elara.abstract.TendonActuation
+    %%  Class defining tendon actuation with discretely routed tendons
+    % i.e., with discrete spacer disks
     properties (Constant)
-        tendonActuationType = 'discrete';
+        tendonActuationType = "discrete";
     end
     methods
         function obj = DiscreteTendonActuation(terminationDisks,sDisks, gBackboneTendons)
             arguments
-                terminationDisks     (:,1) double % nTendons x 1         
+                terminationDisks    (:,1) double % nTendons x 1
                 sDisks              (:,1) double {mustBeNonnegative} % nDisks x 1
                 gBackboneTendons    (4,4,:,:) double % 4 x 4 x nTendons x nDisks
             end

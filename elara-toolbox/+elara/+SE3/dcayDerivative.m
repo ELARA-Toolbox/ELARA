@@ -1,6 +1,6 @@
 function Ddcay = dcayDerivative(eta, X)
     % Directional derivative of the right-trivialized derivative
-    % D_eta dcay (X), where this is dcay(eta) differentiated in direction X
+    % D_eta dcay (X), which is dcay(eta) differentiated in direction X
     arguments
         eta (6,1)
         X   (6,:)
