@@ -1,6 +1,6 @@
 classdef (Abstract) TendonActuation
-    %% Class to define the actuation properties of cable actuated flexible links
-    % used to model cable-actuated continuum manipulators
+    %% Class to define the actuation properties of tendon-actuated flexible links
+    % used to model tendon-actuated continuum manipulators
     %
     % Maximilian Herrmann
     % Chair of Automatic Control
@@ -19,6 +19,6 @@ classdef (Abstract) TendonActuation
     end
      properties (Abstract, Constant)
         % Whether the link is rigid or flexible
-        tendonActuationType (1,:) char
+        tendonActuationType (1,:) string {mustBeMember(tendonActuationType,["continuous", "discrete"])}
     end
 end
