@@ -66,9 +66,10 @@ function link = systemDef_continuum_manipulator(opts)
         ];
 
 
-    %% Set Up Cable Configuration
+    %% Set Up Tendon Configuration
     LTermination = [link.L, link.L, link.L,link.L];
 
+    % Cell array of function handles; defines the individual tendon paths
     x_td_funs = {
         @(s)x_m_fun_straight(s,0.02, 0)
         @(s)x_m_fun_straight(s,0.02, 120)
@@ -76,11 +77,9 @@ function link = systemDef_continuum_manipulator(opts)
         @(s)x_m_fun_helical(s, 0.02, link.L)
         };
 
-    sDisks = linspace(0,link.L,link.nSegments+1); % Locate Disks at Segment boundaries
-  
-    % Cell array of function handles; defines the individual cable paths
-    link.tendonActuation = elara.ContinuousTendonActuation(LTermination, sDisks, x_td_funs);
-
+    % Initialize tendon configuration object
+    link.tendonActuation = elara.ContinuousTendonActuation( ...
+        LTermination, link.L, link.nSegments, x_td_funs);
 
     %% Define TCP
     link.hasTCP = true;

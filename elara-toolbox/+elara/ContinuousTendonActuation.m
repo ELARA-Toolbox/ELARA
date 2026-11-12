@@ -1,19 +1,24 @@
 classdef ContinuousTendonActuation < elara.abstract.TendonActuation
+    %% Class defining tendon actuation with continuously routed tendons
+    % (e.g., inside channels)
     properties (Constant)
-        tendonActuationType = 'continuous';
+        tendonActuationType = "continuous";
     end
     methods
-        function obj = ContinuousTendonActuation(LTermination, sDisks, x_td_funs,x_td_ds_funs, x_td_dds_funs)
+        function obj = ContinuousTendonActuation(LTermination, L, nSegments, x_td_funs, x_td_ds_funs, x_td_dds_funs)
             arguments
-                % Vector of lengths, at which the cables terminate (nCables,1)
-                LTermination (:,1) double
-                
-                % s Position of Disks (zero position not included
-                sDisks          (:,1) double 
+                % Vector of lengths, at which the cables terminate (nTendons,1)
+                LTermination    (:,1) double
+
+                % Overall beam length
+                L               (1,1) double
+
+                % Number of discrete segments of the beam
+                nSegments       (1,1) double
 
                 % Cell array of function handles that define the cable path (cable
                 % position relative to the backbone/centerline) over beam length
-                % dimensions (nCables, 1)
+                % dimensions (nTendons, 1)
                 % The functions must have the form
                 %           [x;y;z] = f(s)
                 % where f : R -> R^3 returns the cable path at s
@@ -22,14 +27,18 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
                 % First and second derivatives of the cable path functions w.r.t. s
                 x_td_ds_funs     (:,1) cell = {}
                 x_td_dds_funs    (:,1) cell = {}
-      
+
             end
-            if isempty(x_td_ds_funs) 
+
+            % Compute disc arc-length locations (at the beam nodes)
+            sDisks = linspace(0,L,nSegments+1).';
+
+            if isempty(x_td_ds_funs)
                 s = sym("s");
                 x_td_ds_funs = cellfun( ...
-                @(x) matlabFunction( diff(x(s), s, 1), "Vars", s ), ...
-                x_td_funs, ...
-                'UniformOutput', false);
+                    @(x) matlabFunction( diff(x(s), s, 1), "Vars", s ), ...
+                    x_td_funs, ...
+                    'UniformOutput', false);
             end
             if isempty(x_td_dds_funs)
                 s = sym("s");
@@ -38,23 +47,24 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
                     x_td_funs, ...
                     'UniformOutput', false);
             end
-             % Make sure function array sizes match
+
+            % Make sure function array sizes match
             assert(length(x_td_funs) == length(x_td_ds_funs));
             assert(length(x_td_funs) == length(x_td_dds_funs));
             assert(length(x_td_funs) == length(LTermination));
-            
+
             obj.sDisks = sDisks;
 
             nDisks  = length(sDisks);
             nTendons = length(x_td_funs);
 
-            % Compute relative transformation / position of the cable path
+            % Compute relative transformation / position of the tendon path
             % at the nodes
             obj.gBackboneTendon = repmat(eye(4), [1,1,nTendons,nDisks]);
-           % x_cm = zeros(3, nNodes, nCables);
-            
+            % x_cm = zeros(3, nNodes, nTendons);
+
             obj.terminationDisks = zeros(nTendons, 1);
-            
+
             for iTendon = 1:nTendons
                 % Tendon positions
                 xBackboneTendons = cell2mat( ...
@@ -62,13 +72,13 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
                     'UniformOutput', false).' ...
                     );
 
-                %%% Tangential cable path rotation matrices (Frenet-Serret
+                %%% Tangential tendon path rotation matrices (Frenet-Serret
                 %%% frames)
                 R = zeros(3, 3, nDisks);
 
                 % Get function handles
-                f_ds  = x_td_ds_funs{iTendon}; 
-                f_dds = x_td_dds_funs{iTendon}; 
+                f_ds  = x_td_ds_funs{iTendon};
+                f_dds = x_td_dds_funs{iTendon};
 
                 % Compute basis vectors of the Frenet-Serret frame
                 for iDisk = 1:nDisks
@@ -92,10 +102,10 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
                     R(:,:,iDisk) = [b,n,t];
                 end
 
-                % Cable mount transformations
+                % Tendon mount transformations
                 obj.gBackboneTendon(1:3,4, iTendon, :) = xBackboneTendons;
                 obj.gBackboneTendon(1:3,1:3, iTendon, :) = R;
-                
+
                 % Compute Disk at which each tendon ends
                 obj.terminationDisks(iTendon) = find(sDisks >= LTermination(iTendon) , 1);
             end
