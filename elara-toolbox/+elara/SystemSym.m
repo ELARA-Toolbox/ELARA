@@ -619,10 +619,10 @@ classdef SystemSym < elara.abstract.System
             % Currently supports actuated screw joints (for physical
             % joints) and continuously and discretely routed tendon
             % actuation.
-            % Assigns 1s for the inputs that correspond to joint actuation
-            % and calls the tendon input matrix function for one link
-            % depending on if the tendon is routed continuously or
-            % discretely.
+            % Assigns ones for the inputs that correspond to actuated
+            % (physical) joints and calls the tendon input matrix functions 
+            % for flexible link depending on the tendon routing type 
+            % (continuous or discrete).
             arguments
                 system  (1,1) elara.SystemSym
 
@@ -635,15 +635,17 @@ classdef SystemSym < elara.abstract.System
 
             B = cell(system.nFrames,system.nInputs);
 
-            % Compute blocks of B corresponding to each link            
+            % Compute blocks of B corresponding to each link
             for iLink = 1:system.nLinks
                 linkFrames = system.linkFrameIndices(1,iLink): ...
                     system.linkFrameIndices(2,iLink);
 
                 %%% Joint actuation for actuated screw joints
                 % Check if the link has an actuated physical joint
-                if system.frames.jointType(linkFrames(1)) == 1
+                if system.frames.jointType(linkFrames(1)) == 1 ...
+                        && system.frames.uIndices(1,linkFrames(1))
                     B{linkFrames(1), system.frames.getUIndices(linkFrames(1))} = 1;
+
                 end
 
                 %%% Tendon actuation for flexible links
@@ -669,7 +671,7 @@ classdef SystemSym < elara.abstract.System
                             computeTendonInputMatrixElementDiscrete( ...
                             iLink,q,beamFrames,uIndices);
                     otherwise
-                        % not defined (error)                        
+                        % not defined (error)
                 end
             end
         end
@@ -758,19 +760,19 @@ classdef SystemSym < elara.abstract.System
             zerosOfQ = elara.internal.math.getZeros(q);
 
             xi = system.getLinkDeformations(q,iLink);
-           
-       
+
+
             % Builds input matrix from disk interval to disk interval
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
-                
+
                 firstSection = system.iTendonSectionsBetweenDisks(1,iDisk);
                 lastSection = system.iTendonSectionsBetweenDisks(2,iDisk);
                 nSections = system.nTendonSectionsBetweenDisks(iDisk);
                 iSections = firstSection:lastSection;
 
                 iTendons = find(system.tendonIsActive(1:nTendons, iDisk));
-                
+
                 if isempty(iTendons)
                     continue;
                 end
@@ -779,7 +781,7 @@ classdef SystemSym < elara.abstract.System
 
                 g_tau = elara.SE3.Element();
                 tau_part = cell(nSections);
-                
+
                 % Backward pass: compute the transformation between the first and second
                 % disk position along the backbone and build the derivative part
                 for i = nSections:-1:1
@@ -789,12 +791,12 @@ classdef SystemSym < elara.abstract.System
                     ds = system.lTendonSection(iSection);
 
                     dsxi = ds * xi(:,iFrameLocal);
-                    
+
                     dtau = ds * f.SE3.dcay(-dsxi(1:3),-dsxi(4:6)) ...
                         * system.frames.Ba(iFrame);
-                    
+
                     tau_part{i} = f.SE3.AdInv(g_tau.R, g_tau.x)*dtau;
-                    
+
                     [R, p] = f.SE3.cay(dsxi(1:3),dsxi(4:6));
                     g_section = elara.SE3.Element(R,p);
                     g_tau = g_section * g_tau;
@@ -806,26 +808,26 @@ classdef SystemSym < elara.abstract.System
                     iTendon = iTendons(j);
                     p_td_1 = system.gBackboneTendon(iTendon, iDisk).x;
                     p_td_2 = system.gBackboneTendon(iTendon, iDisk + 1).x;
-               
+
                     p_help1 = g_tau.R.'*(g_tau.x - p_td_1);
                     p_help2 = p_td_2 + p_help1;
-                
+
                     l_tendon = norm(p_help2);
                     td_part = [cross(p_td_2, p_help1); p_help2].'/l_tendon;
                     for i = 1:nSections
-                         iSection = iSections(i);
-                         iFrame = system.tendonSectionFrameIndex(iSection);
-                         iFrameLocal = find(beamFrames == iFrame, 1);
-                    
-                         if isempty(BLink{iFrameLocal, iTendon})
-                             BLink{iFrameLocal, iTendon} = zerosOfQ(nFrameDofs,1);
-                         end
+                        iSection = iSections(i);
+                        iFrame = system.tendonSectionFrameIndex(iSection);
+                        iFrameLocal = find(beamFrames == iFrame, 1);
 
-                         % Add effect of disk interval to B
-                         BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * tau_part{i}).'; 
+                        if isempty(BLink{iFrameLocal, iTendon})
+                            BLink{iFrameLocal, iTendon} = zerosOfQ(nFrameDofs,1);
+                        end
+
+                        % Add effect of disk interval to B
+                        BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * tau_part{i}).';
                     end
                 end
-                
+
             end
         end
     end

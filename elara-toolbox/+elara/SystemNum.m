@@ -568,10 +568,10 @@ classdef SystemNum < elara.abstract.System
             % Currently supports actuated screw joints (for physical
             % joints) and continuously and discretely routed tendon
             % actuation.
-            % Assigns 1s for the inputs that correspond to joint actuation
-            % and calls the tendon input matrix function for one link
-            % depending on if the tendon is routed continuously or
-            % discretely.
+            % Assigns ones for the inputs that correspond to actuated
+            % (physical) joints and calls the tendon input matrix functions 
+            % for flexible link depending on the tendon routing type 
+            % (continuous or discrete).
             arguments
                 system  (1,1) elara.SystemNum
 
@@ -591,9 +591,10 @@ classdef SystemNum < elara.abstract.System
 
                 %%% Joint actuation for actuated screw joints
                 % Check if the link has an actuated physical joint
-                if system.frames.jointType(linkFrames(1)) == 1
+                if system.frames.jointType(linkFrames(1)) == 1 ...
+                        && system.frames.uIndices(1,linkFrames(1))
                     B(system.frames.getQIndices(linkFrames(1)), ...
-                        system.frames.getUIndices(linkFrames(1))) = 1;
+                        system.frames.uIndices(1,linkFrames(1))) = 1;
                 end
 
                 %%% Tendon actuation for flexible links

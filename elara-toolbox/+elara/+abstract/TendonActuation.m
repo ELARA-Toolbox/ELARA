@@ -10,8 +10,7 @@ classdef (Abstract) TendonActuation
         % Local Transformations from Backbone to Tendons
         gBackboneTendon (4,4, :, :) % 4 x 4 x nTendons x nDisks
 
-        % Local arc-length positions of the tendon-routing disks.
-        % If empty, the beam-frame positions are used during assembly.
+        % Local arc-length positions of the tendon-routing disks
         sDisks           (:,1) double {mustBeNonnegative}
 
         % Disk at which each tendon terminates
