@@ -237,15 +237,14 @@ x_td_funs = {
     @(s) [ r; 0; 0]
     @(s) [-r; 0; 0]
 };
-sDisks = linspace(0, beam.L, beam.nSegments + 1).';
 LTermination = [beam.L; beam.L];
 
 beam.tendonActuation = elara.ContinuousTendonActuation( ...
-    LTermination, sDisks, x_td_funs);
+    LTermination, beam.L, beam.nSegments, x_td_funs);
 ```
 
 A specified termination length is snapped to the nearest beam node, so the beam discretization should contain a node sufficiently close to each intended termination point. Straight and helical full-length paths are illustrated in `systemDef_continuum_manipulator.m`. The continuum-robot reference listed under [Further Reading](index.md#further-reading) provides additional modeling context.
-The constructor can also receive first and second derivatives of `x_td_funs` as its fourth and fifth arguments; when omitted, they are generated symbolically.
+The constructor can also receive first and second derivatives of `x_td_funs` as its fifth and sixth arguments; when omitted, they are generated symbolically.
 
 #### Discrete tendon actuation
 
