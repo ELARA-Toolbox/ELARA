@@ -8,13 +8,13 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
         function obj = ContinuousTendonActuation(LTermination, L, nSegments, x_td_funs, x_td_ds_funs, x_td_dds_funs)
             arguments
                 % Vector of lengths, at which the cables terminate (nTendons,1)
-                LTermination    (:,1) double
+                LTermination    (:,1) double {mustBeFinite,mustBePositive}
 
                 % Overall beam length
-                L               (1,1) double
+                L               (1,1) double {mustBeFinite,mustBePositive}
 
                 % Number of discrete segments of the beam
-                nSegments       (1,1) double
+                nSegments       (1,1) double {mustBeFinite,mustBePositive}
 
                 % Cell array of function handles that define the cable path (cable
                 % position relative to the backbone/centerline) over beam length
@@ -88,26 +88,56 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
                     t(3) = 1;
                     t = t / norm(t);
 
-                    % Normal vector n
-                    if any(f_dds(sDisk))
-                        n = f_dds(sDisk) / norm(f_dds(sDisk));
-                    else
-                        n = [1;0;0];
+                    % Normal direction: component of the second derivative
+                    % perpendicular to the unit tangent.
+                    a = f_dds(sDisk);
+                    n = a - t * (t.' * a);
+
+                    % At zero curvature, choose a perpendicular reference direction.
+                    if norm(n) <= 100 * eps * norm(a)
+                        [~, iAxis] = min(abs(t));
+                        e = zeros(3,1);
+                        e(iAxis) = 1;
+                        n = e - t * (t.' * e);
                     end
+
+                    n = n / norm(n);
+
                     % Bi-normal vector b
                     b = cross(n, t);
+                    b = b / norm(b);
+
+                    % "Re-orthogonalize" the frame
+                    n = cross(t, b);
 
                     % Store in rotation matrix; z-axis is aligned with
                     % tangent vector
-                    R(:,:,iDisk) = [b,n,t];
+                    R(:,:,iDisk) = [b, n, t];
                 end
 
                 % Tendon mount transformations
                 obj.gBackboneTendon(1:3,4, iTendon, :) = xBackboneTendons;
                 obj.gBackboneTendon(1:3,1:3, iTendon, :) = R;
 
-                % Compute Disk at which each tendon ends
-                obj.terminationDisks(iTendon) = find(sDisks >= LTermination(iTendon) , 1);
+                % Compute disk at which each tendon ends
+                [~, obj.terminationDisks(iTendon)] = min(abs(sDisks - LTermination(iTendon)));
+
+                % For short tendons (shorter than the segment length), use
+                % the second disk to avoid zero-length tendons
+                obj.terminationDisks(iTendon) = max(obj.terminationDisks(iTendon), 2);
+            end
+
+            % Validate computed transformations
+            try
+                elara.internal.validation.mustBeSE3Matrix(obj.gBackboneTendon);
+            catch cause
+                exception = MException( ...
+                    "elara:ContinuousTendonActuation:InvalidRoutingTransforms", ...
+                    "Could not construct valid SE3 tendon routing transformations. " + ...
+                    "Check the supplied tendon path functions and their derivatives.");
+
+                exception = addCause(exception, cause);
+                throwAsCaller(exception);
             end
 
         end
