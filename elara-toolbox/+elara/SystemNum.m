@@ -704,6 +704,8 @@ classdef SystemNum < elara.abstract.System
             nFrameDofs = system.frames.nDof(beamFrames(end));
             BLink = zeros(sum(system.frames.nDof(beamFrames)),nTendons);
 
+            Ba = system.frames.Ba(beamFrames(1));
+
             xi = system.getLinkDeformations(q,iLink);
             qLinkStart = double(system.frames.qIndices(1,beamFrames(1)) - 1);
 
@@ -722,11 +724,11 @@ classdef SystemNum < elara.abstract.System
                 end
 
                 g_tau = eye(4);
-                tau_part = zeros(6, nFrameDofs*nSections);
+                Adtau_matrix = zeros(6, nFrameDofs*nSections);
 
-                % Backward pass: compute the transformation between the first and second
+                % Forward pass: compute the transformation between the first and second
                 % disk position along the backbone and build the derivative part
-                for i = nSections:-1:1
+                for i = 1:nSections
                     iSection = iSections(i);
                     iFrame = system.tendonSectionFrameIndex(iSection);
                     iFrameLocal = find(beamFrames == iFrame, 1);
@@ -734,11 +736,10 @@ classdef SystemNum < elara.abstract.System
                     ds = system.lTendonSection(iSection);
                     dsxi = ds * xi(:,iFrameLocal);
 
-                    dtau = ds * elara.SE3.dcay(-dsxi) ...
-                        * system.frames.Ba(iFrame);
-                    tau_part(:,(i-1)*nFrameDofs+1:i*nFrameDofs) = elara.SE3.AdInv(g_tau)*dtau;
+                    dtau = ds * elara.SE3.dcay(dsxi)*Ba;
+                    Adtau_matrix(:,(i-1)*nFrameDofs+1:i*nFrameDofs) = elara.SE3.Ad(g_tau)*dtau;
 
-                    g_tau = elara.SE3.cay(dsxi) * g_tau;
+                    g_tau = g_tau * elara.SE3.cay(dsxi);
                 end
 
                 % Store the active tendon positions as one 3-by-nActiveTendons
@@ -748,15 +749,15 @@ classdef SystemNum < elara.abstract.System
 
                 % Compute the previous scalar tendon contribution for all
                 % active tendons column-wise.
-                p_help1 = g_tau(1:3,1:3).' * (g_tau(1:3,4) - p_td_1);
-                p_help2 = p_td_2 + p_help1;
-                td_part = ([cross(p_td_2, p_help1, 1); p_help2] ./ vecnorm(p_help2)).';
+                p_td = g_tau(1:3,1:3)*p_td_2  + (g_tau(1:3,4) - p_td_1);
+                l_td = vecnorm(p_td);
+                tendon_matrix = ([cross(p_td_1, p_td, 1); p_td] ./ l_td).';
 
                 lastFrame = system.tendonSectionFrameIndex(lastSection);
                 firstFrame = system.tendonSectionFrameIndex(firstSection);
                 iQ = (system.frames.qIndices(1, firstFrame):system.frames.qIndices(2,lastFrame)) - qLinkStart;
                 % Add effect of disk interval to B
-                BLink(iQ, iTendons) = BLink(iQ, iTendons) - (td_part * tau_part).';
+                BLink(iQ, iTendons) = BLink(iQ, iTendons) - (tendon_matrix * Adtau_matrix).';
 
             end
         end
