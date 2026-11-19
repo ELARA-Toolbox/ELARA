@@ -731,7 +731,7 @@ classdef SystemNum < elara.abstract.System
                 for i = 1:nSections
                     iSection = iSections(i);
                     iFrame = system.tendonSectionFrameIndex(iSection);
-                    iFrameLocal = find(beamFrames == iFrame, 1);
+                    iFrameLocal = iFrame - beamFrames(1) + 1;
 
                     ds = system.lTendonSection(iSection);
                     dsxi = ds * xi(:,iFrameLocal);

@@ -758,6 +758,7 @@ classdef SystemSym < elara.abstract.System
 
             BLink = cell(length(beamFrames),nTendons);
             zerosOfQ = elara.internal.math.getZeros(q);
+            Ba = system.frames.Ba(beamFrames(1));
 
             xi = system.getLinkDeformations(q,iLink);
 
@@ -780,26 +781,25 @@ classdef SystemSym < elara.abstract.System
                 nActiveTendons = length(iTendons);
 
                 g_tau = elara.SE3.Element();
-                tau_part = cell(nSections);
+                Adtau_part = cell(nSections);
 
-                % Backward pass: compute the transformation between the first and second
+                % Forward pass: compute the transformation between the first and second
                 % disk position along the backbone and build the derivative part
-                for i = nSections:-1:1
+                for i = 1:nSections
                     iSection = iSections(i);
                     iFrame = system.tendonSectionFrameIndex(iSection);
-                    iFrameLocal = find(beamFrames == iFrame, 1);
+                    iFrameLocal = iFrame - beamFrames(1) + 1;
                     ds = system.lTendonSection(iSection);
 
                     dsxi = ds * xi(:,iFrameLocal);
 
-                    dtau = ds * f.SE3.dcay(-dsxi(1:3),-dsxi(4:6)) ...
-                        * system.frames.Ba(iFrame);
+                    dtau = ds * f.SE3.dcay(dsxi(1:3),dsxi(4:6)) * Ba;
 
-                    tau_part{i} = f.SE3.AdInv(g_tau.R, g_tau.x)*dtau;
+                    Adtau_part{i} = f.SE3.Ad(g_tau.R, g_tau.x)*dtau;
 
                     [R, p] = f.SE3.cay(dsxi(1:3),dsxi(4:6));
                     g_section = elara.SE3.Element(R,p);
-                    g_tau = g_section * g_tau;
+                    g_tau = g_tau * g_section;
                 end
 
                 % Now add relative transformations between tendon and backbone where applicable
@@ -809,22 +809,20 @@ classdef SystemSym < elara.abstract.System
                     p_td_1 = system.gBackboneTendon(iTendon, iDisk).x;
                     p_td_2 = system.gBackboneTendon(iTendon, iDisk + 1).x;
 
-                    p_help1 = g_tau.R.'*(g_tau.x - p_td_1);
-                    p_help2 = p_td_2 + p_help1;
-
-                    l_tendon = norm(p_help2);
-                    td_part = [cross(p_td_2, p_help1); p_help2].'/l_tendon;
+                    p_td = g_tau.R*p_td_2 + (g_tau.x - p_td_1);
+                    l_tendon = norm(p_td);
+                    td_part = [cross(p_td_1, p_td); p_td].'/l_tendon;
                     for i = 1:nSections
                         iSection = iSections(i);
                         iFrame = system.tendonSectionFrameIndex(iSection);
-                        iFrameLocal = find(beamFrames == iFrame, 1);
+                        iFrameLocal = iFrame - beamFrames(1) + 1;
 
                         if isempty(BLink{iFrameLocal, iTendon})
                             BLink{iFrameLocal, iTendon} = zerosOfQ(nFrameDofs,1);
                         end
 
                         % Add effect of disk interval to B
-                        BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * tau_part{i}).';
+                        BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * Adtau_part{i}).';
                     end
                 end
 
