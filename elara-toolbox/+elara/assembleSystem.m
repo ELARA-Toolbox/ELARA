@@ -387,6 +387,8 @@ function sys = assembleSystem(links, sys)
             nDisks(iLink) = nDisksLink;
             sDisks = [sDisks; sDisksLink];
 
+            % Number disks consecutively in link order. Continuous routing
+            % uses the beam nodes as virtual disks.
             iDisks(1, iLink) = nDisksTotal + 1;
             iDisks(2, iLink) = nDisksTotal + nDisks(iLink);
             nDisksTotal = nDisksTotal + nDisks(iLink);
@@ -403,7 +405,8 @@ function sys = assembleSystem(links, sys)
                 actuatedFrames = linkFrames(2:end);
             end
 
-            % Split the space between consecutive disks at beam-frame boundaries.
+            % Index each interval by its starting disk and split it at
+            % interior beam nodes.
             % The global section cursor advances for every appended section,
             % including sections after an early tendon termination.
             for iDiskLocal = 1:nDisks(iLink)-1

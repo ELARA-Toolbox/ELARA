@@ -709,7 +709,8 @@ classdef SystemNum < elara.abstract.System
             xi = system.getLinkDeformations(q,iLink);
             qLinkStart = double(system.frames.qIndices(1,beamFrames(1)) - 1);
 
-            % Builds input matrix from disk interval to disk interval
+            % Loop over interval starts. The link's last disk supplies the
+            % final endpoint.
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
                 firstSection = system.iTendonSectionsBetweenDisks(1,iDisk);

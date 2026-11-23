@@ -763,7 +763,8 @@ classdef SystemSym < elara.abstract.System
             xi = system.getLinkDeformations(q,iLink);
 
 
-            % Builds input matrix from disk interval to disk interval
+            % Loop over interval starts. The link's last disk supplies the
+            % final endpoint.
             for iDisk = system.iTendonDisksInLink(1, iLink): ...
                     system.iTendonDisksInLink(2, iLink)-1
 
