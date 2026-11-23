@@ -145,6 +145,12 @@ classdef Simulation
 
                 % File name for the saved movie (full path)
                 opts.fileName       (1,1) string = "animation";
+
+                % Whether to display text label with current time
+                opts.displayTime    (1,1) logical = true;
+
+                % Whether to update axis limits automatically
+                opts.updateAxisLimits (1,1) logical = true;
             end
             fig = opts.figure;
             fig.NumberTitle = "off";
@@ -157,12 +163,15 @@ classdef Simulation
             end
             % Change docked figure windows to separate window?
 
-            MBVisAnim = elara.visualization.SystemVisualization(obj.system, obj.links);
+            MBVisAnim = elara.visualization.SystemVisualization( ...
+                obj.system, obj.links);
 
             MBVisAnim.animateSystem(obj.results, fig, ...
                 "saveMovie", opts.saveMovie, ...
                 "fileName", opts.fileName, ...
-                "frameRate", opts.frameRate);
+                "frameRate", opts.frameRate, ...
+                "displayTime", opts.displayTime, ...
+                "updateAxisLimits", opts.updateAxisLimits);
         end
 
         function [fig, vis] = drawSnapshots(obj, opts)

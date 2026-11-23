@@ -42,7 +42,7 @@ classdef SystemVisualization < handle
                 options.showJoints         (1,1) logical = true;
                 options.showTendons        (1,1) logical = true;
 
-                % Function handle for a color map used to specify link 
+                % Function handle for a color map used to specify link
                 % colors in the form colors = cmap(n), where n is the link
                 % index
                 options.linkColorMap       (1,1) function_handle = @lines;
@@ -192,18 +192,24 @@ classdef SystemVisualization < handle
                 systemVisualization
 
                 % SimResults object containing the simulation data
-                simRes          (1,1) elara.SimulationResults
+                simRes              (1,1) elara.SimulationResults
 
                 % Figure handle to the parent figure
                 fig
 
-                options.frameRate  (1,1) double = 30;
+                options.frameRate   (1,1) double = 30;
 
                 % Save animation to file?
-                options.saveMovie  (1,1) logical = false;
+                options.saveMovie   (1,1) logical = false;
 
                 % File name for the saved movie (full path)
-                options.fileName   (1,1) string = "animation";
+                options.fileName    (1,1) string = "animation";
+
+                % Whether to display text label with current time
+                options.displayTime (1,1) logical = true;
+
+                % Whether to update axis limits automatically
+                options.updateAxisLimits (1,1) logical = true;
             end
 
 
@@ -217,21 +223,25 @@ classdef SystemVisualization < handle
             %% Prepare animation
 
             % Add text for current time step
-            textTime = text(0,0,0.3,'', 'Interpreter', 'latex');
+            textTime = text(0,0,0.3,'', 'Interpreter', 'latex', ...
+                "Visible", options.displayTime);
 
             if ~strcmp(fig.WindowStyle, 'docked')
                 fig.WindowState = 'maximized';
             end
 
             %% Prepare axis limits
-            % Extra margin
-            margins = [-1, -1, -1; 1, 1, 1]*0.1;
+            if options.updateAxisLimits
+                % Extra margin
+                margins = [-1, -1, -1; 1, 1, 1]*0.1;
 
-            % Set limits
-            [xlimits, ylimits, zlimits] = getAxisLimits(systemVisualization, gQuery, margins);
-            xlim(xlimits);
-            ylim(ylimits);
-            zlim(zlimits);
+                % Set limits
+                [xlimits, ylimits, zlimits] = getAxisLimits( ...
+                    systemVisualization, gQuery, margins);
+                xlim(xlimits);
+                ylim(ylimits);
+                zlim(zlimits);
+            end
 
             %% Prepare video capture
             % for better performance
