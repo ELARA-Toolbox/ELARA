@@ -6,7 +6,10 @@ docPath = fullfile(elara.internal.getToolboxRootFolder, "doc");
 docdelete(docPath);
 
 %% Convert to HTML
-docconvert(fullfile(docPath, "*.md"), "Theme", "light");
+docconvert( ...
+    fullfile(docPath, "*.md"), ...
+    "Theme", "light", "Interpreter", "latex" ...
+    );
 
 % Note: If a 401 Unauthorized GitHub Error appears, it may be required to
 % set a new GitHub personal access token via 
