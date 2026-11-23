@@ -42,7 +42,7 @@ function f = secondOrderODEResidual(t, q, q_dot, q_ddot, u, system, simPars) %#c
     % Generalized forces (stress, dissipation and system inputs)
     f_gen = system.cSys .* (q - system.qRef) ...
         + system.dSys .* q_dot ...
-        - system.computeInputMatrix(q) * u;
+        - system.computeInputMatrix(q, g_rel) * u;
 
     % External frame forces from the environment
     f_frame_b = simPars.externalWrench_b.getCurrentWrench(system.nFrames, t);

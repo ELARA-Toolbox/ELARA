@@ -23,6 +23,7 @@ function f = getSE3FunctionsNumeric
     f.SE3.cay      = @caySE3Parts;
     f.SE3.cayInv   = @cayInvSE3Parts;
     f.SE3.dcay     = @dcaySE3Parts;
+    f.SE3.dcayDerivative = @dcayDerivativeSE3Parts;
     f.SE3.dcayInv  = @dcayInvSE3Parts;
     f.SE3.Ad       = @AdSE3Parts;
     f.SE3.AdInv    = @AdInvSE3Parts;
@@ -89,6 +90,10 @@ function T = dcaySE3Parts(om, v)
     T(1:3, 4:6) = zeros(3,3);
     T(4:6, 1:3) = 1 / (4 + om.'*om) * vH * ( 2*eye(3) + omH );
     T(4:6, 4:6) = eye(3) + ( 1 / (4 + om.'*om) * ( 2*omH + omH^2 ) );
+end
+
+function T = dcayDerivativeSE3Parts(om, v, om_dot, v_dot)
+    T = elara.SE3.dcayDerivative([om; v], [om_dot; v_dot]);
 end
 
 function T = dcayInvSE3Parts(om, v)

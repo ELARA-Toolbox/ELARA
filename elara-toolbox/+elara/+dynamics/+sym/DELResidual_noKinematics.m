@@ -42,7 +42,7 @@ function DEL_res_k = DELResidual_noKinematics(system, simPars, ...
     J_k = system.computeGeomJacobianFast(q_k, g_rel_k);
 
     % Input matrix
-    B_k = system.computeInputMatrixFast(g_rel_k);
+    B_k = system.computeInputMatrix(q_k, g_rel_k);
 
     % Generalized forces (stress and dissipation)
     f_gen_k =  system.cSys .* (q_k - system.qRef) ...

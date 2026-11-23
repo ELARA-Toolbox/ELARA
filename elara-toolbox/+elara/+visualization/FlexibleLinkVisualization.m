@@ -79,20 +79,28 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
             obj.beamVisualization.updateConfiguration(g);
 
             % Update tendons
-            nCables = length(obj.link.tendonActuation.x_td_funs);
-            if nCables && obj.showTendons
+            nTendons = 0;
+            if ~isempty(obj.link.tendonActuation)
+                nTendons = length(obj.link.tendonActuation.terminationDisks);
+            end
+            if nTendons && obj.showTendons
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
-                [g_cm, termNodes] = obj.link.tendonActuation.getNodeData( ...
-                    sBeamNodes);
-                for iC = 1:nCables
-                    g_c = zeros(4, 4, termNodes(iC));
+                sDisks = obj.link.tendonActuation.sDisks;
+                gDisks = elara.SE3.interpolateConfigurations( ...
+                    g, sBeamNodes.', sDisks);
+                gBackboneTendon = obj.link.tendonActuation.gBackboneTendon;
+                terminationDisks = obj.link.tendonActuation.terminationDisks;
 
-                    for iN = 1:termNodes(iC)
+                for iTendon = 1:nTendons
+                    g_c = zeros(4, 4, terminationDisks(iTendon));
+
+                    for iDisk = 1:terminationDisks(iTendon)
                         % Cable points initial configuration
-                        g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
+                        g_c(:,:,iDisk) = gDisks(:,:,iDisk) * ...
+                            gBackboneTendon(:,:,iTendon, iDisk);
                     end
-                    obj.tendonVisualization(iC).updateConfiguration(g_c);
+                    obj.tendonVisualization(iTendon).updateConfiguration(g_c);
                 end
             end
         end
@@ -131,31 +139,39 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                 );
 
             % Tendons
-            nCables = length(obj.link.tendonActuation.x_td_funs);
-            if nCables
-                colorsTendons = lines(nCables);
+            nTendons = 0;
+            if ~isempty(obj.link.tendonActuation)
+                nTendons = length(obj.link.tendonActuation.terminationDisks);
+            end
+            if nTendons
+                colorsTendons = lines(nTendons);
                 lBeam = obj.link.L/obj.link.nSegments;
                 sBeamNodes = 0:lBeam:obj.link.L;
-                [g_cm, termNodes] = obj.link.tendonActuation.getNodeData( ...
-                    sBeamNodes);
+                sDisks = obj.link.tendonActuation.sDisks;
+                gDisks = elara.SE3.interpolateConfigurations( ...
+                    g, sBeamNodes.', sDisks);
+                gBackboneTendon = obj.link.tendonActuation.gBackboneTendon;
+                terminationDisks = obj.link.tendonActuation.terminationDisks;
 
-                for iC = 1:nCables
-                    g_c = zeros(4, 4, termNodes(iC));
+                for iTendon = 1:nTendons
+                    g_c = zeros(4, 4, terminationDisks(iTendon));
 
-                    for iN = 1:termNodes(iC)
+                    for iDisk = 1:terminationDisks(iTendon)
                         % Cable points initial configuration
-                        g_c(:,:,iN) = g(:,:,iN) * g_cm(:,:,iN,iC);
+                        g_c(:,:,iDisk) = gDisks(:,:,iDisk) * ...
+                            gBackboneTendon(:,:,iTendon,iDisk);
                     end
 
-                    obj.tendonVisualization(iC) = elara.visualization.ElasticBeam( g_c, ...
+                    isContinuousActuation = obj.link.tendonActuation.tendonActuationType == "continuous";
+                    obj.tendonVisualization(iTendon) = elara.visualization.ElasticBeam( g_c, ...
                         "edgeAlpha", 0, ...
                         "FaceAlpha", 0, ...
                         "DrawEdges", false, ...
                         "drawCenterline", true, ...
                         "drawCrossSections", true, ...
                         "showFrames", false, ...
-                        "interpolateBeam", true, ...
-                        "Color", colorsTendons(iC,:), ...
+                        "interpolateBeam", isContinuousActuation, ...
+                        "Color", colorsTendons(iTendon,:), ...
                         "Height", 0.003, "Width", 0.003, ...
                         "showFrames", false, ...
                         "Visible", obj.showTendons...

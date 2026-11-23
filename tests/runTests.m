@@ -10,12 +10,16 @@
 
 %% Run Cayley Map Tests
 result = runtests('CayleyMapTests');
-disp( table(result) ); 
+disp( table(result) );
 
 %% Run Exponential Map Tests
 result = runtests('ExpMapTests');
-disp( table(result) ); 
+disp( table(result) );
 
 %% Run Numeric/Symbolic System Function Tests
 result = runtests('SystemFunctionTests');
-disp( table(result) ); 
+disp( table(result) );
+
+%% Run Tendon Routing Regression Tests
+result = runtests('TendonRoutingTests');
+disp( table(result) );

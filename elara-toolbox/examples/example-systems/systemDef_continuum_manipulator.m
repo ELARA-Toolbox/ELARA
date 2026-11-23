@@ -66,23 +66,20 @@ function link = systemDef_continuum_manipulator(opts)
         ];
 
 
-    %% Set Up Cable Configuration
+    %% Set Up Tendon Configuration
+    LTermination = [link.L, link.L, link.L,link.L];
 
-    % Cell array of function handles; defines the individual cable paths
-    link.tendonActuation.x_td_funs = {
+    % Cell array of function handles; defines the individual tendon paths
+    x_td_funs = {
         @(s)x_m_fun_straight(s,0.02, 0)
         @(s)x_m_fun_straight(s,0.02, 120)
         @(s)x_m_fun_straight(s,0.02, 240)
         @(s)x_m_fun_helical(s, 0.02, link.L)
         };
 
-    % Compute derivatives of cable path functions
-    link.tendonActuation = link.tendonActuation.getSymbolicPathDerivatives;
-
-    % Lengths at which the cables terminate along the link length
-    link.tendonActuation.LTermination = [
-        link.L, link.L, link.L,link.L
-        ];
+    % Initialize tendon configuration object
+    link.tendonActuation = elara.ContinuousTendonActuation( ...
+        LTermination, link.L, link.nSegments, x_td_funs);
 
     %% Define TCP
     link.hasTCP = true;

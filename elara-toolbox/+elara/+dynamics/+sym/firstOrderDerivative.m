@@ -57,7 +57,7 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
 
     % Input term
     f_gen_C = cell(system.nFrames, 1);
-    B = system.computeInputMatrix(q);
+    B = system.computeInputMatrix(q, g_rel);
     for iFrm = 1:system.nFrames
         for iInput = 1:system.nInputs
             if ~isempty(B{iFrm, iInput})
