@@ -125,5 +125,5 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars) %#codegen
     % Note: Additional argument 'symbolicqr' required to allow expansion of
     % the MX graph to SX when defining an NLP solver with "expand = true"
     % See https://github.com/casadi/casadi/wiki/FAQ:-how-to-resolve-'eval_sx'-not-defined%3F
-    f_fo = [q_dot; -inv(M, 'symbolicqr')*f_gen];
+    f_fo = [q_dot; -solve(M, f_gen, 'symbolicqr')];
 end
