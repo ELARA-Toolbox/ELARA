@@ -7,11 +7,11 @@ classdef SimulationResults
     % Technical University of Munich
     properties
         %% Simulation Results Data
-        eta   (6,:,:)   double  % se(3) frame velocities   (6, nFrames, nTimes)
-        g     (4,4,:,:) double  % Frame configurations     (4, 4, nFrames, nTimes)
-        q     (:,:)     double  % Generalized coordinates  (nDoF, nTimes)
-        q_dot (:,:)     double  % Generalized velocities   (nDoF, nTimes)
-        tout  (:,1)     double  % Time values              (nTimes, 1)
+        eta   (6,:,:)   double  % se(3) frame velocities   (6, nFrames, nSteps)
+        g     (4,4,:,:) double  % Frame configurations     (4, 4, nFrames, nSteps)
+        q     (:,:)     double  % Generalized coordinates  (nDoF, nSteps)
+        q_dot (:,:)     double  % Generalized velocities   (nDoF, nSteps)
+        tout  (:,1)     double  % Time values              (nSteps, 1)
 
 
         %% System Energies corresponding to the Simulation Results
@@ -22,14 +22,14 @@ classdef SimulationResults
 
         %% Solver Metadata for Implicit Solvers
 
-        % Number of implicit-solver iterations (1, nTimes)
+        % Number of implicit-solver iterations (1, nSteps)
         solverIterations (1,:) double
 
-        % Residual error after implicit-solver convergence (1, nTimes)
+        % Residual error after implicit-solver convergence (1, nSteps)
         solverResidual   (1,:) double
 
         % Exit flag of the implicit solver (Note: Meaning can depend on the
-        % solver used) (1, nTimes)
+        % solver used) (1, nSteps)
         solverExitFlag   (1,:) double
 
         %% Overall Simulation Metadata
@@ -52,11 +52,11 @@ classdef SimulationResults
                 % Time vector
                 tout    (:,1) double
 
-                % Configurations at the times in tout, (nDoF, nTimes)
+                % Configurations at the times in tout, (nDoF, nSteps)
                 q       (:,:) double
 
                 % Generalized velocities at the times in tout,
-                % (nDoF, nTimes)
+                % (nDoF, nSteps)
                 % Optional: if not given, they are computed via finite
                 % differences.
                 q_dot   (:,:) double = nan;
