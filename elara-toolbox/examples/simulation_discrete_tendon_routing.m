@@ -15,16 +15,20 @@ addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-syste
 
 link = systemDef_continuum_manipulator;
 
-% Reuse the tendon frames from the continuum-manipulator definition at its
-% disk locations, but model their routing as discrete tendon attachments.
-continuousTendonActuation = link.tendonActuation;
-nDisks = numel(continuousTendonActuation.sDisks);
-nTendons = numel(continuousTendonActuation.terminationDisks);
-terminationDisks = nDisks * ones(nTendons, 1);
+d_tendon = 0.02;
 
-link.tendonActuation = elara.DiscreteTendonActuation( ...
-    terminationDisks, continuousTendonActuation.sDisks, ...
-    continuousTendonActuation.gBackboneTendon);
+nDisks = 10;
+nTendons = 3;
+
+gBackboneTendon = repmat(eye(4), 1,1, nTendons, nDisks);
+gBackboneTendon(1:3,4,1,:) = repmat(d_tendon * [1; 0; 0], 1,1, nDisks);
+gBackboneTendon(1:3,4,2,:) = repmat(d_tendon * [cos(pi/3); sin(pi/3); 0],1,1,nDisks);
+gBackboneTendon(1:3,4,3,:) = repmat(d_tendon * [cos(pi/3); -sin(pi/3); 0],1,1,nDisks);
+
+terminationDisks = nDisks * ones(nTendons,1);
+sDisks = linspace(0, link.L,nDisks);
+
+link.tendonActuation = elara.DiscreteTendonActuation( terminationDisks, sDisks, gBackboneTendon);
 
 MBSim = elara.Simulation(link, "displayInfo", true);
 
@@ -48,7 +52,7 @@ title("Initial Configuration")
 % System inputs
 % The discrete model applies tendon loads at disk locations, so use a
 % lower input level than the continuous-routing example.
-uConst = [0,1.5,1.5,2].';
+uConst = [0,1.5,2].';
 MBSim.parameters.uSampleTimes = linspace(0, MBSim.parameters.tEnd, 100);
 MBSim.parameters.uSampleValues = repmat( ...
     ((1-cos(pi*MBSim.parameters.uSampleTimes ./ MBSim.parameters.tEnd))/2).', ...

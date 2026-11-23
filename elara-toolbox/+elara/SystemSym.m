@@ -781,6 +781,7 @@ classdef SystemSym < elara.abstract.System
                 nActiveTendons = length(iTendons);
 
                 g_tau = elara.SE3.Element();
+                % One 6-by-nFrameDofs differential-transform block per section.
                 Adtau_part = cell(nSections);
 
                 % Forward pass: compute the transformation between the first and second
@@ -811,6 +812,7 @@ classdef SystemSym < elara.abstract.System
 
                     p_td = g_tau.R*p_td_2 + (g_tau.x - p_td_1);
                     l_tendon = norm(p_td);
+                    % 1-by-6 tendon-length gradient for the current tendon.
                     td_part = [cross(p_td_1, p_td); p_td].'/l_tendon;
                     for i = 1:nSections
                         iSection = iSections(i);
@@ -821,7 +823,7 @@ classdef SystemSym < elara.abstract.System
                             BLink{iFrameLocal, iTendon} = zerosOfQ(nFrameDofs,1);
                         end
 
-                        % Add effect of disk interval to B
+                        % Contract the tendon gradient with this section's derivative block.
                         BLink{iFrameLocal, iTendon} = BLink{iFrameLocal, iTendon} - (td_part * Adtau_part{i}).';
                     end
                 end

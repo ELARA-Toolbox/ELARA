@@ -250,19 +250,23 @@ The constructor can also receive first and second derivatives of `x_td_funs` as 
 
 `elara.DiscreteTendonActuation` models a tendon as a straight line between its contact points on two consecutive spacer disks. Provide the ordered spacer-disk positions, the last contacted disk for each tendon, and the backbone-to-tendon transforms at every contact. `gBackboneTendon` has size `4 x 4 x nTendons x nDisks`; `terminationDisks(i)` is the final disk contact of tendon `i`.
 
-The following setup mirrors `test_.m` by reusing the contact transforms from a continuous reference link:
-
 ```matlab
-referenceLink = systemDef_continuum_manipulator("nSegments", 5);
-helper = referenceLink.tendonActuation;
+link = systemDef_continuum_manipulator("nSegments", 5);
 
-nDisks = 6;
-gBackboneTendon = helper.gBackboneTendon(:, :, :, 1:nDisks);
-terminationDisks = nDisks * ones(size(gBackboneTendon, 3), 1);
-sDisks = linspace(0, beam.L, nDisks).';
+d_tendon = 0.02;
 
-beam.tendonActuation = elara.DiscreteTendonActuation( ...
-    terminationDisks, sDisks, gBackboneTendon);
+nDisks = 10;
+nTendons = 3;
+
+gBackboneTendon = repmat(eye(4), 1,1, nTendons, nDisks);
+gBackboneTendon(1:3,4,1,:) = repmat(d_tendon * [1; 0; 0], 1,1, nDisks);
+gBackboneTendon(1:3,4,2,:) = repmat(d_tendon * [cos(pi/3); sin(pi/3); 0],1,1,nDisks);
+gBackboneTendon(1:3,4,3,:) = repmat(d_tendon * [cos(pi/3); -sin(pi/3); 0],1,1,nDisks);
+
+terminationDisks = nDisks * ones(nTendons,1);
+sDisks = linspace(0, link.L, nDisks);
+
+link.tendonActuation = elara.DiscreteTendonActuation( terminationDisks, sDisks, gBackboneTendon);
 ```
 
 Use monotonically increasing `sDisks`, and ensure that every termination-disk index refers to an entry in `sDisks`. Unlike the continuous model, the discrete model does not require disk locations to coincide with beam-frame positions. The continuum-robot reference listed under [Further Reading](index.md#further-reading) provides additional modeling context.

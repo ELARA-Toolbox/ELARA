@@ -395,7 +395,7 @@ function sys = assembleSystem(links, sys)
             iSectionsBetweenDisksLink = zeros(2, nDisks(iLink));
 
             % Check if current link is a cantilever link:
-            % Then, the first joint may have cable actuation;
+            % Then, the first joint may have tendon actuation;
             % otherwise, the second joint is the earliest to may have it
             if ~links(iLink).parentLink && sys.isCantilever
                 actuatedFrames = linkFrames;

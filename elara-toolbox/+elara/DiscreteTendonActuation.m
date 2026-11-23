@@ -11,7 +11,9 @@ classdef DiscreteTendonActuation < elara.abstract.TendonActuation
                 sDisks              (:,1) double {mustBeNonnegative} % nDisks x 1
                 gBackboneTendons    (4,4,:,:) double % 4 x 4 x nTendons x nDisks
             end
+            
             nDisks = length(sDisks);
+
             assert(nDisks >= 2, ...
                 'Discrete tendon routing requires at least two disks.');
             assert(all(isfinite(sDisks)) && all(diff(sDisks) > 0), ...
