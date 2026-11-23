@@ -1,7 +1,15 @@
-function [qOpt, uOpt] = computeTCPSteadyState(OCP)
-    %% Compute a static configuration and controls for a specified TCP position
+function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
+    %% Compute a static equilibrium for the problem's desired TCP position
+    % The equilibrium satisfies the static force balance, workspace
+    % constraints, control bounds, and configured final TCP objective or
+    % constraint of the optimal-control problem.
     arguments
         OCP (1,1) elara.ocp.Problem
+
+        % Squared-norm weights of the optimization problem,
+        % ordered as in Problem.finalCostWeights:
+        % [controls, coordinates, TCP position error]
+        opts.costWeights (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
     end
 
     %% Get variables
@@ -25,7 +33,6 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
     opti = casadi.Opti();
     q = opti.variable(systemSym.nDoF,1);
     u = opti.variable(systemSym.nInputs,1);
-
 
     % Statics/force balance constraint
     [res_statics, g] = elara.statics.sym.residual(systemSym, simPars, q, u);
@@ -57,15 +64,11 @@ function [qOpt, uOpt] = computeTCPSteadyState(OCP)
     end
 
     % Objective function
-    a1 = 1e8;
-    a2 = 1;
-    a3 = 100000;
-    
-    J = a2 * 1/2*sumsqr(u) ...
-        + a3 * 1/2 * sumsqr(q);
+    J = opts.costWeights(1) * 1/2*sumsqr(u) ...
+        + opts.costWeights(2) * 1/2 * sumsqr(q);
 
     if OCP.finalCostActive(end) || OCP.runningCostActive(end)
-        J = J + a1 * 1/2*sumsqr((OCP.x_TCP_F - g_TCP.x));
+        J = J + opts.costWeights(3) * 1/2*sumsqr((OCP.x_TCP_F - g_TCP.x));
     end
 
     opti.minimize(J);

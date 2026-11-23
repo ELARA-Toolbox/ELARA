@@ -224,6 +224,16 @@ For difficult point-to-point problems, `elara.ocp.computeInitialGuessInvDyn` con
 
 The helper can target `qF`, a final TCP position, or configured TCP waypoints. Its optional higher-resolution trajectory generation and forward-simulation settings are illustrated in the examples and described in the source comments.
 
+The static configuration search has its own objective weights, independent of the trajectory's running and final costs. Set `staticCostWeights` to a three-element vector ordered as `[controls; coordinates; TCP position error]`. The default is `[1; 1e5; 1e8]`. For example:
+
+```matlab
+[qInit, qDotInit, uNodeInit] = elara.ocp.computeInitialGuessInvDyn( ...
+    problem, "staticCostWeights", [1e-6; 1e-3; 1e2], ...
+    "invDynMethod", "ODE", "createDebugPlots", false);
+```
+
+The same weights apply to each static TCP waypoint; they are unused when `qF` is supplied. To solve a static problem directly, use `elara.ocp.computeStaticEquilibriumTCPPos(problem, "costWeights", weights)`. These problems can have multiple local minima, so reducing a regularization weight alone does not guarantee a better initial configuration.
+
 The returned node input can be converted to the active control parameterization as follows:
 
 ```matlab

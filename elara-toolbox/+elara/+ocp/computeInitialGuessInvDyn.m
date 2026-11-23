@@ -23,6 +23,10 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
         opts.invDynMethod   (1,1) string {mustBeMember(opts.invDynMethod, ["DEL", "ODE"])} = "DEL";
 
         opts.createDebugPlots (1,1) logical = true;
+
+        % Static-equilibrium objective weights used for each TCP waypoint:
+        % [controls; coordinates; TCP position error]. Ignored if qF is set.
+        opts.staticCostWeights (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
     end
 
     fprintf("\nGenerating initial guess.\n");
@@ -55,7 +59,8 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
 
             fprintf("Computing optimal steady-state configuration...\n\n");
 
-            [qF, uF] = elara.ocp.computeStaticEquilibrium(OCP_stat);
+            [qF, uF] = elara.ocp.computeStaticEquilibriumTCPPos(OCP_stat, ...
+                "costWeights", opts.staticCostWeights);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
             disp("Computed static controls (N or Nm):")
