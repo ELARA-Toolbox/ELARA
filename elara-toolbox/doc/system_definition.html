@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.7" name="generator"/><meta charset="utf-8"/><title>Defining Multibody Systems</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Defining Multibody Systems</h1></div>
+<!DOCTYPE html><html><head><meta content="MATLAB R2025b with MATLAB DocMaker 0.8.0" name="generator"/><meta charset="utf-8"/><title>Defining Multibody Systems</title><link href="resources/github-markdown-light.css" rel="stylesheet"/><link href="resources/matlaby.css" rel="stylesheet"/><link href="resources/copycode.css" rel="stylesheet"/></head><body class="markdown-body"><main class="markdown-body"><div><div class="markdown-heading"><h1 class="heading-element">Defining Multibody Systems</h1></div>
 <p>An ELARA model is an ordered array of rigid and flexible links connected in a fixed-base, open-tree topology. Branches are allowed, but closed kinematic loops are not.
 Each link is attached to its parent by a one-degree-of-freedom screw joint. Alternatively, a flexible root link can represent a cantilever beam fixed directly to the base.</p>
 <div class="markdown-heading"><h2 class="heading-element">Modeling Concept</h2></div>
@@ -265,21 +265,26 @@ LTermination <span class="pl-k">=</span> [<span class="pl-smi">beam</span>.L; <s
 beam.tendonActuation <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ContinuousTendonActuation( ...
     <span class="pl-smi">LTermination</span>, <span class="pl-smi">beam</span>.L, <span class="pl-smi">beam</span>.nSegments, <span class="pl-smi">x_td_funs</span>);</pre></div>
 <p>A specified termination length is snapped to the nearest beam node, so the beam discretization should contain a node sufficiently close to each intended termination point. Straight and helical full-length paths are illustrated in <code>systemDef_continuum_manipulator.m</code>. The continuum-robot reference listed under <a href="index.html#further-reading">Further Reading</a> provides additional modeling context.
-The constructor can also receive first and second derivatives of <code>x_td_funs</code> as its fourth and fifth arguments; when omitted, they are generated symbolically.</p>
+The constructor can also receive first and second derivatives of <code>x_td_funs</code> as its fifth and sixth arguments; when omitted, they are generated symbolically.</p>
 <div class="markdown-heading"><h4 class="heading-element">Discrete tendon actuation</h4></div>
 <p><code>elara.DiscreteTendonActuation</code> models a tendon as a straight line between its contact points on two consecutive spacer disks. Provide the ordered spacer-disk positions, the last contacted disk for each tendon, and the backbone-to-tendon transforms at every contact. <code>gBackboneTendon</code> has size <code>4 x 4 x nTendons x nDisks</code>; <code>terminationDisks(i)</code> is the final disk contact of tendon <code>i</code>.</p>
-<p>The following setup mirrors <code>test_.m</code> by reusing the contact transforms from a continuous reference link:</p>
-<div class="highlight highlight-source-matlab"><pre>referenceLink <span class="pl-k">=</span> systemDef_continuum_manipulator(<span class="pl-s"><span class="pl-pds">"</span>nSegments<span class="pl-pds">"</span></span>, <span class="pl-c1">5</span>);
-helper <span class="pl-k">=</span> <span class="pl-smi">referenceLink</span>.tendonActuation;
+<div class="highlight highlight-source-matlab"><pre>link <span class="pl-k">=</span> systemDef_continuum_manipulator(<span class="pl-s"><span class="pl-pds">"</span>nSegments<span class="pl-pds">"</span></span>, <span class="pl-c1">5</span>);
 
-nDisks <span class="pl-k">=</span> <span class="pl-c1">6</span>;
-gBackboneTendon <span class="pl-k">=</span> <span class="pl-smi">helper</span>.gBackboneTendon(<span class="pl-k">:</span>, <span class="pl-k">:</span>, <span class="pl-k">:</span>, <span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-smi">nDisks</span>);
-terminationDisks <span class="pl-k">=</span> <span class="pl-smi">nDisks</span> <span class="pl-k">*</span> ones(size(<span class="pl-smi">gBackboneTendon</span>, <span class="pl-c1">3</span>), <span class="pl-c1">1</span>);
-sDisks <span class="pl-k">=</span> linspace(<span class="pl-c1">0</span>, <span class="pl-smi">beam</span>.L, <span class="pl-smi">nDisks</span>)<span class="pl-k">.'</span>;
+d_tendon <span class="pl-k">=</span> <span class="pl-c1">0.02</span>;
 
-beam.tendonActuation <span class="pl-k">=</span> <span class="pl-smi">elara</span>.DiscreteTendonActuation( ...
-    <span class="pl-smi">terminationDisks</span>, <span class="pl-smi">sDisks</span>, <span class="pl-smi">gBackboneTendon</span>);</pre></div>
-<p>Use monotonically increasing <code>sDisks</code>, and ensure that every termination-disk index refers to an entry in <code>sDisks</code>. Unlike the continuous model, the discrete model does not require disk locations to coincide with beam-frame positions. The continuum-robot reference listed under <a href="index.html#further-reading">Further Reading</a> provides additional modeling context.</p>
+nDisks <span class="pl-k">=</span> <span class="pl-c1">10</span>;
+nTendons <span class="pl-k">=</span> <span class="pl-c1">3</span>;
+
+gBackboneTendon <span class="pl-k">=</span> repmat(eye(<span class="pl-c1">4</span>), <span class="pl-c1">1</span>,<span class="pl-c1">1</span>, <span class="pl-smi">nTendons</span>, <span class="pl-smi">nDisks</span>);
+gBackboneTendon(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">3</span>,<span class="pl-c1">4</span>,<span class="pl-c1">1</span>,<span class="pl-k">:</span>) <span class="pl-k">=</span> repmat(<span class="pl-smi">d_tendon</span> <span class="pl-k">*</span> [<span class="pl-c1">1</span>; <span class="pl-c1">0</span>; <span class="pl-c1">0</span>], <span class="pl-c1">1</span>,<span class="pl-c1">1</span>, <span class="pl-smi">nDisks</span>);
+gBackboneTendon(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">3</span>,<span class="pl-c1">4</span>,<span class="pl-c1">2</span>,<span class="pl-k">:</span>) <span class="pl-k">=</span> repmat(<span class="pl-smi">d_tendon</span> <span class="pl-k">*</span> [cos(<span class="pl-c1">pi</span><span class="pl-k">/</span><span class="pl-c1">3</span>); sin(<span class="pl-c1">pi</span><span class="pl-k">/</span><span class="pl-c1">3</span>); <span class="pl-c1">0</span>],<span class="pl-c1">1</span>,<span class="pl-c1">1</span>,<span class="pl-smi">nDisks</span>);
+gBackboneTendon(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">3</span>,<span class="pl-c1">4</span>,<span class="pl-c1">3</span>,<span class="pl-k">:</span>) <span class="pl-k">=</span> repmat(<span class="pl-smi">d_tendon</span> <span class="pl-k">*</span> [cos(<span class="pl-c1">pi</span><span class="pl-k">/</span><span class="pl-c1">3</span>); <span class="pl-k">-</span>sin(<span class="pl-c1">pi</span><span class="pl-k">/</span><span class="pl-c1">3</span>); <span class="pl-c1">0</span>],<span class="pl-c1">1</span>,<span class="pl-c1">1</span>,<span class="pl-smi">nDisks</span>);
+
+terminationDisks <span class="pl-k">=</span> <span class="pl-smi">nDisks</span> <span class="pl-k">*</span> ones(<span class="pl-smi">nTendons</span>,<span class="pl-c1">1</span>);
+sDisks <span class="pl-k">=</span> linspace(<span class="pl-c1">0</span>, <span class="pl-smi">link</span>.L, <span class="pl-smi">nDisks</span>);
+
+link.tendonActuation <span class="pl-k">=</span> <span class="pl-smi">elara</span>.DiscreteTendonActuation( <span class="pl-smi">terminationDisks</span>, <span class="pl-smi">sDisks</span>, <span class="pl-smi">gBackboneTendon</span>);</pre></div>
+<p>Use monotonically increasing <code>sDisks</code>, and ensure that every termination-disk index refers to an entry in <code>sDisks</code>. The discrete spacer disks can be located at arbitrary positions along the beam, i.e., disk locations do not have to coincide with beam-frame positions.</p>
 <div class="markdown-heading"><h2 class="heading-element">Assembling a System</h2></div>
 <p>Once the link array is complete, it is converted into the compact system representation used by the numerical algorithms. Construction performs four main tasks:</p>
 <ul>
