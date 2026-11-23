@@ -33,18 +33,20 @@ classdef RigidLinkVisualization < elara.abstract.LinkVisualization
 
                 % Additional drawing options
                 options.showJoint      (1,1) matlab.lang.OnOffSwitchState = true;
+                options.showJointFrame (1,1) matlab.lang.OnOffSwitchState = true;
                 options.showTCPFrame   (1,1) matlab.lang.OnOffSwitchState = true;                
                 options.Name           (1,1) string = "";
                 options.showLinkFrame  (1,1) matlab.lang.OnOffSwitchState = true;
                 options.Color          (3,1) double = lines(1);
             end
 
-            obj.link       = link;
-            obj.showJoint     = options.showJoint;
-            obj.showTCPFrame  = options.showTCPFrame;            
-            obj.Name          = options.Name;
-            obj.showLinkFrame = options.showLinkFrame;
-            obj.Color         = options.Color;
+            obj.link           = link;
+            obj.showJoint      = options.showJoint;
+            obj.showJointFrame = options.showJointFrame;
+            obj.showTCPFrame   = options.showTCPFrame;            
+            obj.Name           = options.Name;
+            obj.showLinkFrame  = options.showLinkFrame;
+            obj.Color          = options.Color;
 
             obj = drawLink(obj);
             obj.configurationTransform.Matrix = g;

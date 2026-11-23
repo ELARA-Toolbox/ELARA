@@ -20,6 +20,9 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
         % Draw the link's joint?
         showJoint       (1,1) matlab.lang.OnOffSwitchState = true;
 
+        % Show the link's joint frame?
+        showJointFrame  (1,1) matlab.lang.OnOffSwitchState = true;
+
         % Draw the link's TCP frame (if defined)?
         showTCPFrame    (1,1) matlab.lang.OnOffSwitchState = true;
     end
@@ -67,7 +70,7 @@ classdef (Abstract) LinkVisualization < handle & matlab.mixin.Heterogeneous
                 "name", sprintf("$J_{%s}$",obj.Name),  ...
                 "AxisColors", repmat(obj.Color.', [3,1]), ...
                 "parent", parent(1), ...
-                "Visible", obj.showJoint);
+                "Visible", obj.showJoint && obj.showJointFrame);
 
             % For revolute joints: Draw joint
             if any(obj.link.jointAxis(1:3))

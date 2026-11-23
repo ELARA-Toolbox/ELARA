@@ -34,6 +34,7 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
 
                 % Additional drawing options
                 opts.showJoint      (1,1) matlab.lang.OnOffSwitchState = true;
+                opts.showJointFrame (1,1) matlab.lang.OnOffSwitchState = true;
                 opts.showTCPFrame   (1,1) matlab.lang.OnOffSwitchState = true;
                 opts.showTendons    (1,1) matlab.lang.OnOffSwitchState = true;
                 opts.showBeamFrames (1,1) matlab.lang.OnOffSwitchState = false;
@@ -41,10 +42,11 @@ classdef FlexibleLinkVisualization < elara.abstract.LinkVisualization
                 opts.Name           (1,1) string = "";
             end
 
-            obj.link      = link;
-            obj.showJoint    = opts.showJoint;
-            obj.showTCPFrame = opts.showTCPFrame;
-            obj.showTendons  = opts.showTendons;
+            obj.link           = link;
+            obj.showJoint      = opts.showJoint;
+            obj.showJointFrame = opts.showJointFrame;
+            obj.showTCPFrame   = opts.showTCPFrame;
+            obj.showTendons    = opts.showTendons;
             obj.showBeamFrames = opts.showBeamFrames;
             obj.Color = opts.Color;
             obj.Name  = opts.Name;
