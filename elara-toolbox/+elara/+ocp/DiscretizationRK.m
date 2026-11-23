@@ -34,7 +34,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
                     x_i = (1 - cRK(i)) * x(:,k)   + cRK(i) * x(:,k+1);
 
                     % Accumulate weighted stage cost
-                    J = J{1} + OCP.h * bRK(i) * sumsqr(x_i);
+                    J = J + OCP.h * bRK(i) * sumsqr(x_i);
                 end
             end
 
@@ -58,7 +58,7 @@ classdef DiscretizationRK < elara.abstract.OCPDiscretizationODE
             for k = 1:OCP.nSteps
                 for i = 1:length(bRK) % Loop over Runge-Kutta stages
                     % Accumulate weighted stage cost
-                    J{1} = J{1} + OCP.h * bRK(i) * sumsqr(x_C{i, k});
+                    J = J + OCP.h * bRK(i) * sumsqr(x_C{i, k});
                 end
             end
         end
