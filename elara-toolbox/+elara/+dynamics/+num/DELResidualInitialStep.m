@@ -23,7 +23,7 @@ function [res_0, eta_0] = DELResidualInitialStep(system, h, simPars, q_0, q_1, u
     g_rel_1 = system.computeJointTransformations(q_1);
 
     % Velocities
-    eta_0 = system.computeDiscreteAbsoluteVelocities(g_rel_0,  g_rel_1, h);
+    eta_0 = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_0,  g_rel_1, h);
 
     % Evaluate DEL
     res_0 = elara.dynamics.num.DELResidualInitialStep_noKinematics(system, h, ...

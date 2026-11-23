@@ -132,10 +132,10 @@ classdef (Abstract) System
         computeGeomJacobianAccelerationBiasMatrix
         computeGeomJacobianTimeDerivativeFast
         computeGeomJacobianTimeDerivative
-        computeInputMatrix
+        computeInputMatrixFast
         computeMassMatrixFast
         computeMassMatrix
-        computeDiscreteAbsoluteVelocities
+        computeDiscreteAbsoluteVelocitiesFast
     end
 
     methods (Abstract, Hidden)

@@ -224,12 +224,12 @@ for iSystem = 1:numel(systemDefinitions)
 
     [~, g_rel_kNum] = systemNum.computeFwdKin(q_k);
     [~, g_rel_k1Num] = systemNum.computeFwdKin(q_k1);
-    etaNum = systemNum.computeDiscreteAbsoluteVelocities( ...
+    etaNum = systemNum.computeDiscreteAbsoluteVelocitiesFast( ...
         g_rel_kNum, g_rel_k1Num, h);
 
     [~, g_rel_kSym] = systemSym.computeFwdKin(q_k);
     [~, g_rel_k1Sym] = systemSym.computeFwdKin(q_k1);
-    etaSym = systemSym.computeDiscreteAbsoluteVelocities( ...
+    etaSym = systemSym.computeDiscreteAbsoluteVelocitiesFast( ...
         g_rel_kSym, g_rel_k1Sym, h);
     etaSymNum = cell2mat(etaSym.');
 

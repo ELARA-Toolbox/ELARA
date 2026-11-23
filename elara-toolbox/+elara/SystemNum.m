@@ -525,7 +525,7 @@ classdef SystemNum < elara.abstract.System
             M = computeMassMatrixFast(system, J);
         end
 
-        function eta_k = computeDiscreteAbsoluteVelocities(system, g_rel_k, g_rel_k1, h)
+        function eta_k = computeDiscreteAbsoluteVelocitiesFast(system, g_rel_k, g_rel_k1, h)
             %% Compute discrete absolute velocities in the interval (k,k+1)
             % i.e., compute absolute body-fixed velocities eta in se(3)
             % (vector form) from given relative transformations at time
@@ -563,14 +563,33 @@ classdef SystemNum < elara.abstract.System
             end
         end
 
-        function B = computeInputMatrix(system, q, g_rel)
+        function [eta_k, g_rel_k, g_rel_k1] = computeDiscreteAbsoluteVelocities(system, q_k, q_k1, h)
+            %% Compute discrete absolute velocities in the interval (k,k+1)
+            arguments
+                system      (1,1) elara.SystemNum
+
+                % System coordinates at time step k  (nDoF, 1)
+                q_k         (:,1) double
+
+                % System coordinates at time step k+1 (nDoF, 1)
+                q_k1        (:,1) double
+
+                % Time step
+                h           (1,1) double
+            end
+            g_rel_k  = system.computeJointTransformations(q_k);
+            g_rel_k1 = system.computeJointTransformations(q_k1);
+            eta_k = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k,g_rel_k1,h);
+        end
+
+        function B = computeInputMatrixFast(system, q, g_rel)
             %% Compute the system generalized-force input matrix
             % Currently supports actuated screw joints (for physical
             % joints) and continuously and discretely routed tendon
             % actuation.
             % Assigns ones for the inputs that correspond to actuated
-            % (physical) joints and calls the tendon input matrix functions 
-            % for flexible link depending on the tendon routing type 
+            % (physical) joints and calls the tendon input matrix functions
+            % for flexible link depending on the tendon routing type
             % (continuous or discrete).
             arguments
                 system  (1,1) elara.SystemNum
@@ -621,6 +640,18 @@ classdef SystemNum < elara.abstract.System
                         % not defined (error)
                 end
             end
+        end
+
+        function [B, g_rel] = computeInputMatrix(system, q)
+            %% Compute the system generalized-force input matrix
+            arguments
+                system  (1,1) elara.SystemNum
+
+                % System coordinates (nDoF, 1)
+                q       (:,1) double
+            end
+            g_rel = system.computeJointTransformations(q);
+            B = system.computeInputMatrixFast(q, g_rel);
         end
     end
 

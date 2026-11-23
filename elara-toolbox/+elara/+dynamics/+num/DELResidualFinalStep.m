@@ -23,7 +23,7 @@ function [res_N, eta_N0] = DELResidualFinalStep(system, h, simPars, q_N0, q_N, u
     p_N = system.computeMassMatrixFast(J_N) * qDotEnd;
 
     % Velocities
-    eta_N0 = system.computeDiscreteAbsoluteVelocities(g_rel_N0,  g_rel_N, h);
+    eta_N0 = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_N0,  g_rel_N, h);
 
     % Frame forces at last step
     f_frame_N_b_ext = zeros(6, system.nFrames);
@@ -35,7 +35,7 @@ function [res_N, eta_N0] = DELResidualFinalStep(system, h, simPars, q_N0, q_N, u
     f_gen_N = ...
         + a * system.cSys .* (q_N - system.qRef) ...
         + a * system.dSys .* (q_N - q_N0)/h ...
-        - a * system.computeInputMatrix(q_N, g_rel_N) * u_N;
+        - a * system.computeInputMatrixFast(q_N, g_rel_N) * u_N;
     
     % DEL Eqs. / Legendre transform at last step
     res_N = -h*f_gen_N - p_N;

@@ -67,7 +67,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     %% Initial step (k,k+1) = (0,1) (indices (1,2))
     [g_k, g_rel_k] = system.computeFwdKin(q{1});
     [g_k1, g_rel_k1] = system.computeFwdKin(q{2});
-    eta_k = system.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
+    eta_k = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k, g_rel_k1, h);
 
     c_DEL{1} = elara.dynamics.sym.DELResidualInitialStep_noKinematics( system, simPars, ...
         q{1}, q{2}, g_k, g_rel_k, eta_k, u{1}, OCP.qDot0, h, aFirstLast);
@@ -109,7 +109,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
         g_rel_k = g_rel_k1;
 
         [g_k1, g_rel_k1] = system.computeFwdKin(q{k+1});
-        eta_k = system.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
+        eta_k = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k, g_rel_k1, h);
 
         if opts.useCasadiStepFunctions
             c_DEL{k} = stepFun(q{k-1}, q{k}, q{k+1}, u{k});
@@ -177,7 +177,7 @@ function [c, lb_c, ub_c, g, c_DEL, c_WS] = constraintFunDEL(OCP, q, u, opts)
     if ~isempty(OCP.qDotF)
         g_rel_N  = system.computeJointTransformations(q{nSteps});
         [g_N1, g_rel_N1] = system.computeFwdKin(q{nSteps+1});
-        eta_N = system.computeDiscreteAbsoluteVelocities(g_rel_N, g_rel_N1, h);
+        eta_N = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_N, g_rel_N1, h);
 
         c_DEL_N1 = elara.dynamics.sym.DELResidualFinalStep_noKinematics( system, simPars, ...
             q{nSteps}, q{nSteps+1}, g_N1, g_rel_N1, ...

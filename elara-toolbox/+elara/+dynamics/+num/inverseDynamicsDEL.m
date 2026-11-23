@@ -35,7 +35,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
 
     [g_k, g_rel_k]  = system.computeFwdKin(q(:,1));
 
-    B_1 = system.computeInputMatrix(q(:,1), g_rel_k);
+    B_1 = system.computeInputMatrixFast(q(:,1), g_rel_k);
     isFullyActuated = rank(B_1) == system.nDoF;
 
 
@@ -46,7 +46,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
 
     % DEL residual
     [g_k1, g_rel_k1] = system.computeFwdKin(q(:,2));
-    eta_k = system.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
+    eta_k = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k, g_rel_k1, h);
     res_0 = elara.dynamics.num.DELResidualInitialStep_noKinematics( ...
         system, h, simPars, ...
         q(:,1), q(:,2), g_k, g_rel_k, eta_k, uZero, qd(:,1), a);
@@ -72,7 +72,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
         g_rel_k = g_rel_k1;
 
         [g_k1, g_rel_k1] = system.computeFwdKin(q(:,k+1));
-        eta_k = system.computeDiscreteAbsoluteVelocities(g_rel_k, g_rel_k1, h);
+        eta_k = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k, g_rel_k1, h);
 
         % External frame forces from the environment
         f_frame_k_b_ext = simPars.externalWrench_b.getCurrentWrench(system.nFrames, tout(k));
@@ -83,7 +83,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
             q(:,k-1), q(:,k), q(:,k+1), g_k, g_rel_k, eta_k, eta_k0, ...
             uZero, f_frame_k_b_ext, f_frame_k_s_ext, h, a);
 
-        B_k = system.computeInputMatrix(q(:,k), g_rel_k);
+        B_k = system.computeInputMatrixFast(q(:,k), g_rel_k);
 
         % Compute Inputs
         if isFullyActuated
@@ -103,7 +103,7 @@ function [u, solInfo] = inverseDynamicsDEL(system, simPars, q, qd, h, lbu, ubu)
         system, h, simPars, q(:,nSteps), q(:,nSteps+1), uZero, qd(:,nSteps+1), a);
 
     g_rel_k1 = system.computeJointTransformations(q(:,nSteps+1));
-    B_k1 = system.computeInputMatrix(q(:,nSteps+1), g_rel_k1);
+    B_k1 = system.computeInputMatrixFast(q(:,nSteps+1), g_rel_k1);
 
     % Compute Inputs
     if isFullyActuated

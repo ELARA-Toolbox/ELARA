@@ -108,7 +108,7 @@ function testInvDynSystem(links,tEnd,h, lbu, ubu, opts)
     % Initial step
     [g_0, g_rel_0] = sim.system.computeFwdKin(q(:,1));
     [~  , g_rel_1] = sim.system.computeFwdKin(q(:,2));
-    eta_0 = sim.system.computeDiscreteAbsoluteVelocities(g_rel_0,g_rel_1, h);
+    eta_0 = sim.system.computeDiscreteAbsoluteVelocitiesFast(g_rel_0,g_rel_1, h);
     res_DEL(:,1) = elara.dynamics.num.DELResidualInitialStep_noKinematics( ...
         sim.system, h, sim.parameters, q(:,1), q(:,2), g_0, g_rel_0, eta_0, ...
         u_DEL(:,1), qd(:,1), a);

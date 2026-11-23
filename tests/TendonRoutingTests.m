@@ -16,7 +16,7 @@ assert(isequal(systemNum.tendonIsActive(2,iDisks(1):iDisks(2)), ...
 
 q = zeros(systemNum.nDoF, 1);
 gRelNum = systemNum.computeJointTransformations(q);
-BNum = systemNum.computeInputMatrix(q, gRelNum);
+BNum = systemNum.computeInputMatrixFast(q, gRelNum);
 assert(isequal(size(BNum), [systemNum.nDoF, systemNum.nInputs]));
 
 %% Build the same input matrix with CasADi MX coordinates
@@ -25,7 +25,7 @@ assert(isequal(size(BNum), [systemNum.nDoF, systemNum.nInputs]));
 systemSym = elara.SystemSym(link);
 qMX = casadi.MX.sym('q_tendon_routing', systemSym.nDoF, 1);
 gRelMX = systemSym.computeJointTransformations(qMX);
-BMX = systemSym.computeInputMatrix(qMX, gRelMX);
+BMX = systemSym.computeInputMatrixFast(qMX, gRelMX);
 nonemptyBlocks = BMX(~cellfun(@isempty, BMX));
 assert(~isempty(nonemptyBlocks));
 assert(isa(nonemptyBlocks{1}, 'casadi.MX'));
@@ -58,7 +58,7 @@ assert(size(multiLinkSystem.tendonIsActive, 2) == 2*nDisks);
 
 qMulti = zeros(multiLinkSystem.nDoF, 1);
 gRelMulti = multiLinkSystem.computeJointTransformations(qMulti);
-BMulti = multiLinkSystem.computeInputMatrix(qMulti, gRelMulti);
+BMulti = multiLinkSystem.computeInputMatrixFast(qMulti, gRelMulti);
 assert(isequal(size(BMulti), ...
     [multiLinkSystem.nDoF, multiLinkSystem.nInputs]));
 
@@ -77,7 +77,7 @@ rigidFlexibleSystem = elara.SystemNum(links);
 qRigidFlexible = zeros(rigidFlexibleSystem.nDoF, 1);
 gRelRigidFlexible = rigidFlexibleSystem.computeJointTransformations( ...
     qRigidFlexible);
-BRigidFlexible = rigidFlexibleSystem.computeInputMatrix( ...
+BRigidFlexible = rigidFlexibleSystem.computeInputMatrixFast( ...
     qRigidFlexible, gRelRigidFlexible);
 assert(isequal(size(BRigidFlexible), ...
     [rigidFlexibleSystem.nDoF, rigidFlexibleSystem.nInputs]));
@@ -94,7 +94,7 @@ link2.isCantilever = false;
 tailSystem = elara.SystemNum([link1; link2]);
 qTail = zeros(tailSystem.nDoF, 1);
 gRelTail = tailSystem.computeJointTransformations(qTail);
-BTail = tailSystem.computeInputMatrix(qTail, gRelTail);
+BTail = tailSystem.computeInputMatrixFast(qTail, gRelTail);
 assert(isequal(size(BTail), [tailSystem.nDoF, tailSystem.nInputs]));
 
 %% Reject invalid discrete-routing indices before assembly

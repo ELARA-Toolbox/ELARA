@@ -64,7 +64,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData, JGeom_k] = solveImplicitDELBroyde
 
     %% Initial function evaluation
     g_rel_k1 = system.computeJointTransformations(q_k1);
-    eta_k    = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+    eta_k    = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k,  g_rel_k1, h);
     resDEL = MBSDynamics_DEL_implicitFun( ...
         system, JGeom_k, h, f_frame_k_b, f_gen_k, eta_k, q_k1-q_k, a ...
         );
@@ -101,7 +101,7 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData, JGeom_k] = solveImplicitDELBroyde
 
             % Compute new residual
             g_rel_k1 = system.computeJointTransformations(q_k1);
-            eta_k    = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+            eta_k    = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k,  g_rel_k1, h);
             resDEL = MBSDynamics_DEL_implicitFun( ...
                 system, JGeom_k, h, f_frame_k_b, f_gen_k, eta_k, q_k1-q_k, a ...
                 );

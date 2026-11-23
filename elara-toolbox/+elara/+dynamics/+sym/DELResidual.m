@@ -32,8 +32,8 @@ function DEL_res_k = DELResidual(system, simPars, q_k0, q_k, q_k1, u_k, h, a)
     g_rel_k0 = system.computeJointTransformations(q_k0);
     g_rel_k1 = system.computeJointTransformations(q_k1);
 
-    eta_k0 = system.computeDiscreteAbsoluteVelocities(g_rel_k0, g_rel_k, h);
-    eta_k  = system.computeDiscreteAbsoluteVelocities(g_rel_k,  g_rel_k1, h);
+    eta_k0 = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k0, g_rel_k, h);
+    eta_k  = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_k,  g_rel_k1, h);
 
     %% External frame forces from the environment
     % % NOTE: May be replaced with symbolic variables or similar.

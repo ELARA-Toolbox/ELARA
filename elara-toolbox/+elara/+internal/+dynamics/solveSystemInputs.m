@@ -22,7 +22,7 @@ function [u, solInfo] = solveSystemInputs(system, res_k, q_k, lb, ub)
 
     % Coefficient matrix C
     g_rel_k = system.computeJointTransformations(q_k);
-    C = -system.computeInputMatrix(q_k, g_rel_k);
+    C = -system.computeInputMatrixFast(q_k, g_rel_k);
 
     % Vector of right-hand-sides
     d = res_k;

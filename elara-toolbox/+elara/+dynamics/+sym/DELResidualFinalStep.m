@@ -29,7 +29,7 @@ function DEL_res_N = DELResidualFinalStep( ...
     g_rel_N0 = system.computeJointTransformations(q_N0);
 
     % Compute absolute velocities
-    eta_N0 = system.computeDiscreteAbsoluteVelocities(g_rel_N0, g_rel_N, h);
+    eta_N0 = system.computeDiscreteAbsoluteVelocitiesFast(g_rel_N0, g_rel_N, h);
 
     %% Get residual
     DEL_res_N = elara.dynamics.sym.DELResidualFinalStep_noKinematics( ...
