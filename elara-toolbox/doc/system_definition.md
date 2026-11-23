@@ -269,7 +269,7 @@ sDisks = linspace(0, link.L, nDisks);
 link.tendonActuation = elara.DiscreteTendonActuation( terminationDisks, sDisks, gBackboneTendon);
 ```
 
-Use monotonically increasing `sDisks`, and ensure that every termination-disk index refers to an entry in `sDisks`. Unlike the continuous model, the discrete model does not require disk locations to coincide with beam-frame positions. The continuum-robot reference listed under [Further Reading](index.md#further-reading) provides additional modeling context.
+Use monotonically increasing `sDisks`, and ensure that every termination-disk index refers to an entry in `sDisks`. Unlike the continuous model, the discrete model does not require disk locations to coincide with beam-frame positions. 
 
 ## Assembling a System
 
