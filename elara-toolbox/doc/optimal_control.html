@@ -258,6 +258,11 @@ problem <span class="pl-k">=</span> <span class="pl-smi">problem</span>.initSolv
         <span class="pl-s"><span class="pl-pds">"</span>invDynMethod<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>ODE<span class="pl-pds">"</span></span>, ...
         <span class="pl-s"><span class="pl-pds">"</span>createDebugPlots<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>);</pre></div>
 <p>The helper can target <code>qF</code>, a final TCP position, or configured TCP waypoints. Its optional higher-resolution trajectory generation and forward-simulation settings are illustrated in the examples and described in the source comments.</p>
+<p>The static configuration search has its own objective weights, independent of the trajectory's running and final costs. Set <code>staticCostWeights</code> to a three-element vector ordered as <code>[controls; coordinates; TCP position error]</code>. The default is <code>[1; 1e5; 1e8]</code>. For example:</p>
+<div class="highlight highlight-source-matlab"><pre>[<span class="pl-smi">qInit</span>, <span class="pl-smi">qDotInit</span>, <span class="pl-smi">uNodeInit</span>] <span class="pl-k">=</span> <span class="pl-smi">elara</span>.ocp.computeInitialGuessInvDyn( ...
+    <span class="pl-smi">problem</span>, <span class="pl-s"><span class="pl-pds">"</span>staticCostWeights<span class="pl-pds">"</span></span>, [<span class="pl-c1">1e-6</span>; <span class="pl-c1">1e-3</span>; <span class="pl-c1">1e2</span>], ...
+    <span class="pl-s"><span class="pl-pds">"</span>invDynMethod<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>ODE<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>createDebugPlots<span class="pl-pds">"</span></span>, <span class="pl-c1">false</span>);</pre></div>
+<p>The same weights apply to each static TCP waypoint; they are unused when <code>qF</code> is supplied. To solve a static problem directly, use <code>elara.ocp.computeStaticEquilibriumTCPPos(problem, "costWeights", weights)</code>. These problems can have multiple local minima, so reducing a regularization weight alone does not guarantee a better initial configuration.</p>
 <p>The returned node input can be converted to the active control parameterization as follows:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-k">if</span> <span class="pl-smi">problem</span>.useSplineInputs
     B <span class="pl-k">=</span> <span class="pl-smi">problem</span>.getInputSplineBasisMatrix;
@@ -325,4 +330,4 @@ sim.results <span class="pl-k">=</span> <span class="pl-smi">elara</span>.Simula
 <code>optimal_control_continuum_manipulator.m</code>  tendon actuation, inverse-dynamics initial guess, and VI transcription.</li>
 </ul>
 <p>They can be used as templates for combining the settings introduced above.</p>
-<p>See also <a href="system_definition.html">Defining Multibody Systems</a>, <a href="ocp_discretization.html">Choosing an OCP Discretization</a>, and <a href="visualization.html">Visualizing Systems and Results</a>.</p></div></main><script src="resources/copycode.js">//</script></body></html>
+<p>See also <a href="system_definition.html">Defining Multibody Systems</a>, <a href="ocp_discretization.html">Choosing an OCP Discretization</a>, and <a href="visualization.html">Visualizing Systems and Results</a>.</p></div></main><script src="resources/mathjax-config.js">//</script><script src="resources/tex-mml-chtml.js">//</script></body></html>

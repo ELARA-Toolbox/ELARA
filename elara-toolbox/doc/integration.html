@@ -111,7 +111,7 @@ $$</p>
 <ul>
 <li>
 <p>The primary solver setting is the time step <code>h</code>, which determines both the accuracy (integration error) and the computation time of the integrator.</p>
-<p><strong>Important:</strong> For numerically stiff systems, there is usually a <em>maximum time step</em> $h_{max}$, which can not be exceeded for the solver to run successfully. For larger time steps $h &gt; h_{max}$, the implicit solver will not converge, and the simulation will fail.</p>
+<p><strong>Important:</strong> For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which can not be exceeded for the solver to run successfully. For larger time steps $h &gt; h_{max}$, the implicit solver will not converge, and the simulation will fail.</p>
 <ul>
 <li>
 <p>Hence, if the variational integrator does not run for a specific system, the first thing to try is usually decreasing the time step, e.g., by factors of 2 or 10.</p>
@@ -208,4 +208,4 @@ $$</p>
 <p>Compiled MEX functions can reduce integration runtime. Each integrator checks whether its required functions are available in the <code>elara.mex</code> namespace and otherwise uses the MATLAB implementation. The optional MEX functions can be compiled once with <code>elara.build</code>; solver configuration and result formats remain unchanged.</p>
 <div class="markdown-heading"><h2 class="heading-element">Implementing a Custom Integrator</h2></div>
 <p>To add a custom integrator, derive a class from <code>elara.abstract.Integrator</code> and implement the constant <code>type</code> and the methods <code>simulateSystem</code> and <code>plotSolverStats</code>. ODE-style implementations may instead derive from <code>elara.abstract.IntegratorODE</code> to reuse the mass-matrix option and ODE statistics plot. The resulting object can then be assigned directly to <code>simulation.integrator</code>.</p>
-<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="visualization.html">Visualizing Systems and Results</a>, and the simulation scripts in the <code>examples</code> folder.</p></div></main><script src="resources/copycode.js">//</script></body></html>
+<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="visualization.html">Visualizing Systems and Results</a>, and the simulation scripts in the <code>examples</code> folder.</p></div></main><script src="resources/mathjax-config.js">//</script><script src="resources/tex-mml-chtml.js">//</script></body></html>

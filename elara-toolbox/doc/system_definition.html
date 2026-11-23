@@ -151,10 +151,10 @@ link.bBoxSize <span class="pl-k">=</span> [
 </table>
 <p>The six deformation components are ordered as two bending components, torsion, two shear components, and extension. The deformation of segment $i$ is decomposed as</p>
 <p>$$
-\boldsymbol{\xi}<em>i
-= B_a\boldsymbol{\psi}<em>i + B_c B_c^{\mathsf T}\boldsymbol{\xi}</em>{\mathrm{ref},i},
+\boldsymbol{\xi}_i
+= B_a\boldsymbol{\psi}_i + B_c B_c^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i},
 \qquad
-\boldsymbol{q}</em>{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
+\boldsymbol{q}_{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
 $$</p>
 <p>The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Both bases must have orthonormal columns, be mutually orthogonal, and together span all six deformation directions. Current validation uses exact matrix comparisons, so exact selection matrices such as the examples below are recommended instead of numerically approximated bases.</p>
 <p>Common choices are:</p>
@@ -310,8 +310,7 @@ JDot <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeGe
 JBias <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeGeomJacobianAccelerationBiasMatrix( ...
     <span class="pl-smi">q</span>, <span class="pl-smi">qDot</span>, <span class="pl-smi">eta</span>);
 M <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeMassMatrix(<span class="pl-smi">q</span>);
-gRel <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeJointTransformations(<span class="pl-smi">q</span>);
-B <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeInputMatrix(<span class="pl-smi">q</span>, <span class="pl-smi">gRel</span>);
+B <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.computeInputMatrix(<span class="pl-smi">q</span>);
 
 theta <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.getJointAngles(<span class="pl-smi">q</span>);
 xi <span class="pl-k">=</span> <span class="pl-smi">systemNum</span>.getLinkDeformations(<span class="pl-smi">q</span>, <span class="pl-smi">iLink</span>);</pre></div>
@@ -329,8 +328,8 @@ along a trajectory, differentiating the body-fixed twist gives</p>
 \dot{\eta}_i
 = J_i(q) \ddot{q} + \dot{J}_i(q,\dot{q}) \dot{q},
 $$</p>
-<p>where $\dot{J}<em>i(q,\dot{q})$ is the time derivative of the geometric Jacobian $J_i(q)$.
-<code>computeGeomJacobianTimeDerivative</code> returns the true matrix $\dot J_i$, obtained by differentiating every block of the geometric Jacobian. ELARA also provides <code>computeGeomJacobianAccelerationBiasMatrix</code>, which returns a velocity-dependent factorization $J</em>{\mathrm{bias},i}$ satisfying</p>
+<p>where $\dot{J}_i(q,\dot{q})$ is the time derivative of the geometric Jacobian $J_i(q)$.
+<code>computeGeomJacobianTimeDerivative</code> returns the true matrix $\dot J_i$, obtained by differentiating every block of the geometric Jacobian. ELARA also provides <code>computeGeomJacobianAccelerationBiasMatrix</code>, which returns a velocity-dependent factorization $J_{\mathrm{bias},i}$ satisfying</p>
 <p>$$
 J_{\mathrm{bias},i} \dot{q} = \dot{J}_i \dot{q}.
 $$</p>
@@ -348,4 +347,4 @@ $$</p>
 <code>systemDef_continuum_manipulator.m</code>  attached payload and tendon actuation.</li>
 </ul>
 <p>These functions are designed to be copied and adapted when a new model is started.</p>
-<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="optimal_control.html">Solving Optimal-Control Problems</a>, and <a href="visualization.html">Visualizing Systems and Results</a>.</p></div></main><script src="resources/copycode.js">//</script></body></html>
+<p>See also <a href="simulation.html">Running Numerical Simulations</a>, <a href="optimal_control.html">Solving Optimal-Control Problems</a>, and <a href="visualization.html">Visualizing Systems and Results</a>.</p></div></main><script src="resources/mathjax-config.js">//</script><script src="resources/tex-mml-chtml.js">//</script></body></html>
