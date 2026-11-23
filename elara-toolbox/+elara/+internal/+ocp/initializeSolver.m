@@ -92,7 +92,10 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
         udd_C = cell(size(B,1),1);
         for iStep = 1:size(B,1)
             for iCP = 1:OCP.nInputSplinePoints
-                if any(B(iStep,iCP))
+                % A basis function can vanish while its derivatives do not,
+                % especially at clamped endpoints. Keep the union of their
+                % supports so constant controls have zero derivative costs.
+                if any([B(iStep,iCP), B_dt(iStep,iCP), B_ddt(iStep,iCP)])
                     if isempty(u_C{iStep})
                         u_C{iStep}   = B(iStep, iCP) * z_C{iCP};
                         ud_C{iStep}  = B_dt(iStep, iCP) * z_C{iCP};
