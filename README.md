@@ -31,7 +31,7 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 
 Optional dependencies:
 
-- CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with version `3.7.2`)
+- CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with version `3.8.2`)
 - MATLAB Coder and a supported C++ compiler for optional MEX generation
 - Symbolic Math Toolbox for tendon-path derivatives
 - Robotics System Toolbox, Optimization Toolbox, and Mapping Toolbox for selected optimal-control helpers; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
@@ -160,8 +160,8 @@ These contributions are marked in the comments.
 - For a release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates the corresponding `.mltbx` file.
 The version number in the script must be incremented manually.
 
-- HTML documentation is generated from the markdown source files under `elara-toolbox/doc` using [MATLAB DocMaker](https://github.com/mathworks/docmaker/tree/master), which must be installed on the system.
-Run `tools/buildDocs.m` to build the HTML files.
+- HTML documentation is generated from the markdown source files under `elara-toolbox/doc` using [MATLAB DocMaker](https://github.com/mathworks/docmaker/tree/master) (tested with version 0.8), which must be installed on the system.
+Run `tools/buildDocs.m` to build the HTML files.
 
 ## Contact & Support
 
