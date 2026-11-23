@@ -434,7 +434,6 @@ function sys = assembleSystem(links, sys)
             end
             nSectionsBetweenDisks = [nSectionsBetweenDisks nSectionsBetweenDisksLink];
 
-
             sys.frames.uIndices(1,actuatedFrames) = lastIndexU;
             sys.frames.uIndices(2,actuatedFrames) = lastIndexU + nTendons - 1;
             lastIndexU = lastIndexU + nTendons;
@@ -444,8 +443,6 @@ function sys = assembleSystem(links, sys)
             nSectionsInLink(iLink) = sum(nSectionsBetweenDisksLink);
             iSectionsBetweenDisks = [iSectionsBetweenDisks iSectionsBetweenDisksLink];
         end
-
-
     end
     sys.nTendonDisksInLink = nDisks;
     sys.iTendonDisksInLink = iDisks;
@@ -457,7 +454,7 @@ function sys = assembleSystem(links, sys)
     sys.tendonSectionFrameIndex = frameIndexSection;
 
     % Number of system inputs
-    sys.nInputs =  max(sys.frames.uIndices(2,:));
+    sys.nInputs = max(sys.frames.uIndices(2,:));
 
 
     %% Compute data for tendon actuation

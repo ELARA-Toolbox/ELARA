@@ -8,25 +8,25 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
     %    final configuration.
     % 3. Compute the corresponding control trajectory by inverse dynamics.
     arguments
-        OCP     (1,1) elara.ocp.Problem
+        OCP                     (1,1) elara.ocp.Problem
 
-        opts.doIDForwardSim (1,1) logical = false;
+        opts.doIDForwardSim     (1,1) logical = false;
 
         % Sample time used for trajectory generation, inverse dynamics,
         % and the optional forward simulation. It must divide the OCP time
         % horizon into an integer number of intervals.
-        opts.h              (1,1) double {mustBePositive} = OCP.h;
+        opts.h                  (1,1) double {mustBePositive} = OCP.h;
 
         % Method to compute inverse dynamics
         % DEL: With DEL/variational integrator (discrete-time)
         % ODE: With ODE (continuous-time)
-        opts.invDynMethod   (1,1) string {mustBeMember(opts.invDynMethod, ["DEL", "ODE"])} = "DEL";
+        opts.invDynMethod       (1,1) string {mustBeMember(opts.invDynMethod, ["DEL", "ODE"])} = "DEL";
 
-        opts.createDebugPlots (1,1) logical = true;
+        opts.createDebugPlots   (1,1) logical = true;
 
         % Static-equilibrium objective weights used for each TCP waypoint:
         % [controls; coordinates; TCP position error]. Ignored if qF is set.
-        opts.staticCostWeights (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
+        opts.staticCostWeights  (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
     end
 
     fprintf("\nGenerating initial guess.\n");

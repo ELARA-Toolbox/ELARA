@@ -51,7 +51,8 @@ function DEL_res_k = DELResidual_noKinematics(system, simPars, ...
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_k_b = elara.dynamics.sym.bodyFixedFrameForces(system, g_k, f_frame_k_s_ext, simPars.g);
+    f_frame_k_b = elara.dynamics.sym.bodyFixedFrameForces( ...
+        system, g_k, f_frame_k_s_ext, simPars.g);
 
 
     %% Evaluate DEL / Compute Residual

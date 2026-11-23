@@ -55,7 +55,6 @@ classdef (Abstract) System
         % 0 = no tendon actuation, 1 = continuous, 2 = discrete.
         tendonActuationType (1,:) double {mustBeMember(tendonActuationType, [0,1,2])}
 
-
         % Number of tendon-routing disks on each link.
         % Size (1, nLinks).
         nTendonDisksInLink (1,:) double
