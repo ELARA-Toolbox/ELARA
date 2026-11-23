@@ -1,7 +1,7 @@
-%% Optimal Control / Trajectory Generation for a Rigid Two-Link Robot
+%% Optimal Control / Trajectory Generation for a Rigid Three-Link Robot
 % In this example, the robot must follow a prescribed TCP trajectory while
-% avoiding an obstacle in the workspace. The workspace constraints are 
-% enforced at the discretization nodes
+% avoiding an obstacle in the workspace. The workspace constraints are
+% enforced at the discretization nodes.
 % For comparison, the problem is solved with an RK2 and the VI
 % discretization.
 %
@@ -23,7 +23,7 @@ COMPUTE_IG = 1;
 
 %% Define System
 
-links = systemDef_rigid_robot("d", 0);
+links = systemDef_rigid_robot("d", 0.1);
 
 
 %% Define OCP
@@ -40,18 +40,18 @@ OCP.uMax = ones(OCP.systemNum.nInputs,1)*100;
 
 % End time, sample time
 OCP.h = 1e-2;
-OCP.tEnd = 2;
+OCP.tEnd = 2.4;
 
 % Desired TCP position
 OCP.x_TCP_F = [0.7; 0.2; 0.3];
 
-% Running cost
+% Balance tracking accuracy against joint and control smoothness.
 OCP.runningCostWeights = [
-    1e-2/2 % Norm u
+    1e-3   % Norm u
     1e-5   % Norm u_dot
-    1e-5   % Norm u_ddot
-    1e-5   % Norm q_ddot
-    1e4    % TCP error
+    1e-4   % Norm u_ddot
+    5e-1   % Norm q_ddot
+    3e5    % TCP error
     ];
 OCP.runningCostActive = logical(OCP.runningCostWeights); % Defines which cost terms are active
 
@@ -59,24 +59,30 @@ OCP.runningCostActive = logical(OCP.runningCostWeights); % Defines which cost te
 OCP.finalCostActive = zeros(3,1); % Defines which cost terms are active
 
 OCP.addTCPFinalTimeConstraint = false;
-OCP.tPreAct  = 5*2^-5;
-OCP.tPostAct = 2*2^-5;
+% The standard inverse-dynamics guess starts ahead of the TCP reference.
+% This helps it select a small-rotation motion from the upright start.
+OCP.tPreAct  = 0.1;
+OCP.tPostAct = 0.3;
 
-OCP.qMin = ones(OCP.systemNum.nDoF, 1)*-2*pi;
-OCP.qMax = ones(OCP.systemNum.nDoF, 1)*2*pi;
+% Coordinate bounds: Limit first axis to avoid large unnecessary rotations
+OCP.qMin = -[pi/4; 2*pi; 2*pi];
+OCP.qMax = +[pi/4; 2*pi; 2*pi];
 
 % Control trajectory parameterization with splines
 OCP.useSplineInputs = true;
 OCP.nInputSplinePoints = 30;
 OCP.inputSplineOrder = 3;
 
-% NLP object / solver options
-OCP.nlpOptions.expand = false;
+% NLP object/solver options
+% Expand the CasADi MX graph; this results in longer NLP construction time,
+% but significantly faster solution
+OCP.nlpOptions.expand = true;
 
 
 %% Generate desired TCP trajectory
 % As a linear point-to–point trajectory
-OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(OCP);
+OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(OCP, ...
+    "tPreAct", 0.3, "tPostAct", OCP.tPostAct);
 
 
 %% Define Workspace
@@ -84,9 +90,9 @@ OCP.x_TCP_traj = elara.ocp.computeLinearReferenceTCPTrajectory(OCP);
 % Add an obstacle in the workspace represented by a simple box
 OCP.workspace = elara.Workspace;
 OCP.workspace = OCP.workspace.addBoxSideLengths( ...
-    [0.35, 0.1, 1.0], ...  % Box center position
+    [0.4, 0.17, 0.8], ... % Box center position
     zeros(3,1), ...       % Rotation (Euler angles)
-    [0.25, 0.3, 0.3], ... % Side lengths
+    [0.2, 0.2, 0.2], ...  % Side lengths
     0 ...                 % Object type: obstacle (type 0)
     );
 
@@ -179,7 +185,8 @@ disp("Objective ODE initial guess:")
 disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Cost", "Final Cost"]));
 
 % Solve ODE OCP
-[x_sol, u_sol, u_sol_z] = OCP_ODE.solve(x_init, u_init_z);
+[x_sol, u_sol, u_sol_z, ~, stats_ODE] = OCP_ODE.solve(x_init, u_init_z);
+assert(stats_ODE.success, "RK2 solve failed: %s", stats_ODE.return_status);
 
 q_sol = x_sol(1:OCP.systemNum.nDoF,:);
 q_dot_sol = x_sol(OCP.systemNum.nDoF+1:end,:);
@@ -204,7 +211,7 @@ OCP_DEL.Name ="VI";
 OCP_DEL.discretization = elara.ocp.DiscretizationVI;
 
 % Initialize DEL solver; again inspect the constraint Jacobian
-OCP_DEL = OCP_DEL.initSolver("showDebugPlots", true);
+OCP_DEL = OCP_DEL.initSolver("showDebugPlots", true, "useCasadiStepFunctions", true);
 
 % Solve DEL OCP
 % with weights and x_TCP specified in OCP object
@@ -217,7 +224,8 @@ disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Co
 % Plot constraint residuals of the initial guess
 OCP_DEL.plotConstraintResiduals(q_init, u_init_z, "figureName", "Constr. Res. IG");
 
-[q_sol, u_sol, u_sol_z] = OCP_DEL.solve(q_init, u_init_z);
+[q_sol, u_sol, u_sol_z, ~, stats_DEL] = OCP_DEL.solve(q_init, u_init_z);
+assert(stats_DEL.success, "VI solve failed: %s", stats_DEL.return_status);
 
 % Plot solution data
 OCP_DEL.plotConstraintResiduals(q_sol, u_sol_z, "figureName", "Constr. Res. Solution");
@@ -249,16 +257,20 @@ gTCPDes = elara.SE3.matrix(eye(3), OCP_DEL.x_TCP_F);
 fig = elara.visualization.initializeAxes( ...
     'Name', "Snapshots Solution", "NumberTitle", "off");
 elara.visualization.CoordinateFrame(gTCPDes);
+OCP.workspace.visualize("createFigure", false);
+plot3(OCP.x_TCP_traj(1,:), OCP.x_TCP_traj(2,:), OCP.x_TCP_traj(3,:), "k--");
 MBSimOCP.drawSnapshots("figure", fig, "nSnapShots", 20);
 
 % Animate results
-fig = elara.visualization.initializeAxes('Name', "Animation Solution");
+[fig, ax] = elara.visualization.initializeAxes('Name', "Animation Solution");
+xlim(ax,[-0.2, 0.8]);
+ylim(ax,[-0.2, 0.3]);
+zlim(ax,[0, 1.3]);
 elara.visualization.CoordinateFrame(gTCPDes);
-MBSimOCP.animateSimResults("figure", fig, "saveMovie", false, ...
-    "fileName", "example_optControl_rigidRobot");
-xlim([-0.2, 0.8]);
-ylim([-0.2, 0.3]);
-zlim([0, 1]);
+OCP.workspace.visualize("createFigure", false);
+plot3(OCP.x_TCP_traj(1,:), OCP.x_TCP_traj(2,:), OCP.x_TCP_traj(3,:), "k--");
+MBSimOCP.animateSimResults("figure", fig, "updateAxisLimits", false, ...
+    "saveMovie", false, "fileName", "example_optControl_rigidRobot");
 
 
 %% End script

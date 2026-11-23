@@ -14,7 +14,7 @@ addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-syste
 %% Script settings
 
 % False = use zero initial guess
-COMPUTE_IG = 1;
+COMPUTE_IG = true;
 
 %% Define System
 
@@ -38,7 +38,7 @@ OCP.h = 2^-6;
 OCP.tEnd = 2;
 
 % Desired TCP position
-OCP.x_TCP_F = [0.55; 0.3; 0.05];
+OCP.x_TCP_F = [0.35; -0.25; 0.3];
 
 % Running cost
 OCP.runningCostWeights = [ % Weights
@@ -54,7 +54,7 @@ OCP.runningCostActive = logical(OCP.runningCostWeights);  % Defines which cost t
 OCP.finalCostWeights = [ % Weights
     0     % Norm u
     0     % Norm q
-    1e5   % TCP Error
+    1e8   % TCP Error
     ];
 OCP.finalCostActive = logical(OCP.finalCostWeights);  % Defines which cost terms are active
 
@@ -64,8 +64,10 @@ OCP.useSplineInputs = true;
 OCP.inputSplineOrder = 3;
 OCP.nInputSplinePoints = 30;
 
-% NLP object / solver options
-OCP.nlpOptions.expand = false;
+% NLP object/solver options
+% Expand the CasADi MX graph; this results in longer NLP construction time,
+% but significantly faster solution
+OCP.nlpOptions.expand = true;
 
 %% Visualize reference configuration and target position
 
@@ -75,8 +77,8 @@ MBSim = OCP.getSimulationObject;
 MBSim.visualizeSystemRefConf();
 elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 OCP.workspace.visualize("createFigure", false);
-xlim([-0.1,0.7]);
-ylim([-0.1,0.5]);
+xlim([-0.1,0.5]);
+ylim([-0.1,0.4]);
 zlim([0,0.8]);
 
 %% Compute Initial Guess
@@ -85,13 +87,17 @@ OCP.tPreAct  = 0;
 OCP.tPostAct = 0;
 
 if COMPUTE_IG
+    % A smaller deformation penalty and a scaled static objective help the
+    % initial guess find a helical equilibrium instead of the planar branch.
+    % Static weights: [control effort; deformation; TCP position error].
     [q_init, ~, u_init, MBSimIG, qOptStatic] = elara.ocp.computeInitialGuessInvDyn( ...
-        OCP, "invDynMethod", "ODE", "createDebugPlots", true);
+        OCP, "invDynMethod", "ODE", "createDebugPlots", false, ...
+        "staticCostWeights", [1e-6; 1e-3; 1e3]);
 
     MBSim.visualizeSystemConfig(qOptStatic, "figureName", "Vis. Optimal Static Config.");
 
     % Animate results
-    fig = elara.visualization.initializeAxes('Name', "Animation Initial Guess");
+    fig = elara.visualization.initializeAxes("Name", "Animation Initial Guess");
     elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
     OCP.workspace.visualize("createFigure", false);
     MBSimIG.animateSimResults("figure", fig);
@@ -177,8 +183,12 @@ fig = elara.visualization.initializeAxes( ...
     'Name', "Snapshots Solution", "NumberTitle", "off");
 elara.visualization.CoordinateFrame(gTCPDes);
 MBSimOCP.drawSnapshots("figure", fig, "nSnapShots", 20);
-TCPTraj = squeeze(MBSimOCP.results.g(1:3,4,end,:));
+% Include the TCP's offset from the last backbone frame.
+gTCP = pagemtimes(MBSimOCP.results.g(:,:,OCP.systemNum.indexTCPFrame,:), ...
+    OCP.systemNum.g_B_TCP);
+TCPTraj = squeeze(gTCP(1:3,4,1,:));
 plot3(TCPTraj(1,:),TCPTraj(2,:),TCPTraj(3,:), '-o');
+fprintf("Final TCP position error: %.3f mm\n", 1e3*norm(TCPTraj(:,end)-OCP.x_TCP_F));
 
 % Animate results
 fig = elara.visualization.initializeAxes('Name', "Animation Solution");
