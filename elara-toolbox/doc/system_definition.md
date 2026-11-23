@@ -304,8 +304,7 @@ JDot = systemNum.computeGeomJacobianTimeDerivative(q, qDot);
 JBias = systemNum.computeGeomJacobianAccelerationBiasMatrix( ...
     q, qDot, eta);
 M = systemNum.computeMassMatrix(q);
-gRel = systemNum.computeJointTransformations(q);
-B = systemNum.computeInputMatrix(q, gRel);
+B = systemNum.computeInputMatrix(q);
 
 theta = systemNum.getJointAngles(q);
 xi = systemNum.getLinkDeformations(q, iLink);
