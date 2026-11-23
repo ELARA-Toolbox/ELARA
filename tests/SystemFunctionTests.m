@@ -260,7 +260,7 @@ for iSystem = 1:numel(systemDefinitions)
     % Direct evaluation through the symbolic system
     residualSymDirect = full(elara.dynamics.sym.DELResidual( ...
         systemSym, parameters, q_k0, q_k, q_k1, u_k, h, a));
-    errorDELDirect = max(abs(residualNum(:) - residualSymDirect(:) / h));
+    errorDELDirect = max(abs(residualNum(:) - residualSymDirect(:)));
     assert(errorDELDirect <= tolDEL, sprintf( ...
         "%s: Direct DEL residual error %.3e exceeds tolerance %.3e.", ...
         systemNames(iSystem), errorDELDirect, tolDEL));
@@ -277,7 +277,7 @@ for iSystem = 1:numel(systemDefinitions)
         {qSym_k0, qSym_k, qSym_k1, uSym_k}, {residualSym});
     residualSymGraph = full(residualFunction(q_k0, q_k, q_k1, u_k));
 
-    errorDELGraph = max(abs(residualNum(:) - residualSymGraph(:) / h));
+    errorDELGraph = max(abs(residualNum(:) - residualSymGraph(:)));
     assert(errorDELGraph <= tolDEL, sprintf( ...
         "%s: CasADi DEL residual error %.3e exceeds tolerance %.3e.", ...
         systemNames(iSystem), errorDELGraph, tolDEL));

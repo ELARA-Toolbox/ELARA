@@ -8,18 +8,22 @@
 % TUM School of Engineering and Design
 % Technical University of Munich
 
-%% Run Cayley Map Tests
+%% Cayley Map Tests
 result = runtests('CayleyMapTests');
 disp( table(result) );
 
-%% Run Exponential Map Tests
+%% Exponential Map Tests
 result = runtests('ExpMapTests');
 disp( table(result) );
 
-%% Run Numeric/Symbolic System Function Tests
+%% Numeric/Symbolic System Function Tests
 result = runtests('SystemFunctionTests');
 disp( table(result) );
 
-%% Run Tendon Routing Regression Tests
+%% Inverse Dynamics Tests
+result = runtests('InverseDynamicsTests');
+disp( table(result) );
+
+%% Tendon Routing Regression Tests
 result = runtests('TendonRoutingTests');
 disp( table(result) );
