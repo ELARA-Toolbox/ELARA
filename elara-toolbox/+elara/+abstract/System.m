@@ -57,18 +57,19 @@ classdef (Abstract) System
 
 
         % Number of tendon-routing disks on each link.
-        % Dimensions: (1, nLinks)
+        % Size (1, nLinks).
         nTendonDisksInLink (1,:) double
 
-        % Local arc-length positions of tendon-routing disks.
-        % Dimensions: (1, nDisks)
-        % Tendon-routing arrays are disk-indexed. With N disks, columns
-        % 1:N-1 describe the path from disk i to disk i + 1; column N is
-        % zero/inactive.
+        % Link-local arc length at each global disk index.
+        % Size (1, nDisksTotal), where nDisksTotal counts all disks in the System.
         sTendonDisk        (1,:) double
 
-        % Whether a tendon is active from disk i to disk i + 1.
-        % Dimensions: (nTendonsMax, nTendonDisksTotal)
+        % Rows index tendons within a link. Columns index disks globally.
+        % An entry is true if the tendon spans the interval from the
+        % indexed disk to the next disk on that link.
+        % Each link's last disk has an all-false column.
+        % Size (nTendonsMax, nDisksTotal), where nTendonsMax is the
+        % largest tendon count across links.
         tendonIsActive (:,:) logical
 
         %% TCP data
@@ -81,27 +82,33 @@ classdef (Abstract) System
     end
 
     properties (Hidden)
-        % Global disk-index range for each link.
-        % Dimensions: (2, nLinks)
+        % Global disk index range for each link.
+        % Size (2, nLinks).
         iTendonDisksInLink (2,:) double
 
-        % Dimensions: (1, nLinks)
+        % Routing section count per link. For continuous routing, this
+        % equals the link's nSegments.
+        % Size (1, nLinks).
         nTendonSectionsInLink     (1,:) double
 
-        % Length of each flattened routing integration section.
-        % Dimensions: (1, nTendonSections)
+        % Reference backbone arc length per global routing section.
+        % Size (1, nTendonSections), with nTendonSections the total count.
         lTendonSection           (1,:) double
 
-        % Global frame index associated with each integration section.
-        % Dimensions: (1, nTendonSections)
+        % Global beam-frame index per global routing section.
+        % Size (1, nTendonSections).
         tendonSectionFrameIndex  (1,:) double
 
-        % First and last section index between consecutive disks.
-        % Dimensions: (2,nTendonDisksTotal); final-disk columns are unused.
+        % Global index range of the sections between two adjacent spacer discs
+        % The column number is the global index of the first disk.
+        % Both entries are zero for the last disk of each link.
+        % Size (2, nDisksTotal).
         iTendonSectionsBetweenDisks   (2,:) double
 
-        % Number of integration sections between consecutive disks.
-        % Dimensions: (1,nTendonDisksTotal); final-disk entries are zero.
+        % Number of sections between two adjacent disks, stored at the global index
+        % of its starting disk.
+        % The last disk of each link has a count of zero.
+        % Size (1, nDisksTotal).
         nTendonSectionsBetweenDisks   (1,:) double
     end
 
