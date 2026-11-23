@@ -28,6 +28,9 @@ elara-toolbox/+elara/+mex/**
 # Generated helpsearch folders
 helpsearch*/
 
+# MathJax extensions, which are downloaded when the HTML docs are generated
+elara-toolbox/doc/resources/input/**
+
 # Code generation folders
 slprj/
 sccprj/
