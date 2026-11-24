@@ -162,6 +162,8 @@ The version number in the script must be incremented manually.
 
 - HTML documentation is generated from the markdown source files under `elara-toolbox/doc` using [MATLAB DocMaker](https://github.com/mathworks/docmaker/tree/master) (tested with version 0.8), which must be installed on the system.
 Run `tools/buildDocs.m` to build the HTML files.
+The build copies the MathJax `boldsymbol` extension from `elara-toolbox/doc/third-party/mathjax` into the generated documentation resources.
+Commit the generated HTML and resources, including the extension, so users can view the documentation without installing DocMaker or rebuilding it.
 
 ## Contact & Support
 
