@@ -13,6 +13,19 @@
 ELARA, short for **Efficient Lie-group Algorithms for Flexible Robotic Analysis and Control**, is a MATLAB toolbox for the simulation and optimal control of robotic multibody systems consisting of rigid and highly flexible links.
 It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrically exact beam models, structure-preserving variational integration, and CasADi-based direct optimal control.
 
+<p align="center">
+  <img src="doc/.assets/example-1.gif" width="15.3%" alt="Simulation example 1"/>
+  <img src="doc/.assets/example-3.gif" width="24.5%" alt="Simulation example 3"/>
+  <img src="doc/.assets/example-4.gif" width="35.2%" alt="Simulation example 4"/>
+  <img src="doc/.assets/example-5.gif" width="19%" alt="Simulation example 5"/>
+</p>
+
+<p align="center">
+  <img src="doc/.assets/example-2.gif" width="24.3%" alt="Simulation example 2"/>
+  <img src="doc/.assets/example-peter-tr.gif" width="28.4%" alt="PETER tracking"/>
+  <img src="doc/.assets/example-peter-val.jpg" width="41.3%" alt="PETER validation"/>
+</p>
+
 ## Features
 
 - Supports rigid-flexible multibody systems with open-tree kinematics consisting of rigid links, flexible beam links, and one-DoF revolute or finite-pitch screw joints
