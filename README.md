@@ -14,17 +14,17 @@ ELARA, short for **Efficient Lie-group Algorithms for Flexible Robotic Analysis 
 It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrically exact beam models, structure-preserving variational integration, and CasADi-based direct optimal control.
 
 <p align="center">
-  <img src="doc/.assets/example-videos/example-1.gif" width="16.9%" alt="Simulation example 1"/>
-  <img src="doc/.assets/example-videos/example-2.gif" width="32.97%" alt="Simulation example 2"/>
-  <img src="doc/.assets/example-videos/example-3.gif" width="27.11%" alt="Simulation example 3"/>
-  <img src="doc/.assets/example-videos/example-4.gif" width="21.02%" alt="Optimal Control example 1"/>
+  <img src="doc/.assets/example-videos/example-1.gif" width="16.21%" alt="Simulation example 1"/>
+  <img src="doc/.assets/example-videos/example-2.gif" width="31.63%" alt="Simulation example 2"/>
+  <img src="doc/.assets/example-videos/example-3.gif" width="26.00%" alt="Simulation example 3"/>
+  <img src="doc/.assets/example-videos/example-4.gif" width="20.16%" alt="Optimal Control example 1"/>
 </p>
 
 <p align="center">
-  <img src="doc/.assets/example-videos/example-5.gif" width="10.54%" alt="Optimal Control example 2"/>
-  <img src="doc/.assets/example-videos/example-6.gif" width="15.41%" alt="Optimal Control example 3"/>
-  <img src="doc/.assets/example-videos/example-peter-tr.gif" width="27.80%" alt="PETER tracking"/>
-  <img src="doc/.assets/example-videos/example-peter-val.jpg" width="44.24%" alt="PETER validation"/>
+  <img src="doc/.assets/example-videos/example-5.gif" width="10.11%" alt="Optimal Control example 2"/>
+  <img src="doc/.assets/example-videos/example-6.gif" width="14.78%" alt="Optimal Control example 3"/>
+  <img src="doc/.assets/example-videos/example-peter-tr.gif" width="26.67%" alt="PETER tracking"/>
+  <img src="doc/.assets/example-videos/example-peter-val.jpg" width="42.44%" alt="PETER validation"/>
 </p>
 
 ## Features
