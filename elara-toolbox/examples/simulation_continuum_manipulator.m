@@ -13,7 +13,7 @@ addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-syste
 
 %% Define System
 
-links = systemDef_continuum_manipulator;
+links = systemDef_continuum_manipulator("nSegments",6);
 MBSim = elara.Simulation(links, "displayInfo", true);
 
 % Visualize reference configuration
@@ -35,7 +35,7 @@ title("Initial Configuration")
 
 % System inputs
 tAct = 2.5;
-uConst = [0,15,15,30].';
+uConst = [0,15,5,50].';
 MBSim.parameters.uSampleTimes  = linspace(0, tAct, 100);
 MBSim.parameters.uSampleValues = repmat(((1-cos(pi*MBSim.parameters.uSampleTimes ./ tAct ))/2).', [4,1]) .* uConst;
 
@@ -49,7 +49,7 @@ xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("Inputs $u$", "Interpreter", "latex");
 legend(arrayfun(@(x) sprintf("Input $u_%d$", x), 1:MBSim.system.nInputs), "Interpreter", "latex");
 
-%% Integration with variational integrator
+% Integration with variational integrator
 
 MBSimVI = MBSim;
 
@@ -71,7 +71,7 @@ elara.plot.energies(MBSimVI.results);
 % Animate results
 MBSimVI.animateSimResults("figureName", "AnimVI");
 
-
+return;
 %% Integration with ODE solver
 
 MBSimODE = MBSim;

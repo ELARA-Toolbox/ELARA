@@ -1,8 +1,8 @@
 function link = systemDef_continuum_manipulator(opts)
     %% Define MBS System: One-link continuum manipulator
     arguments
-        opts.d      (6,1) double = ones(6,1)*5e-3;
-        opts.nSegments   (1,1) uint8  = 5;
+        opts.d              (6,1) double {mustBeNonzero,mustBeFinite} = ones(6,1)*5e-3;
+        opts.nSegments      (1,1) uint8 {mustBePositive,mustBeFinite} = 5;
     end
 
     link =  elara.FlexibleLink;

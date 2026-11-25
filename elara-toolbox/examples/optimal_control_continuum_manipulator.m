@@ -18,12 +18,12 @@ COMPUTE_IG = true;
 
 %% Define System
 
-links = systemDef_continuum_manipulator("nSegments", 4);
+link = systemDef_continuum_manipulator("nSegments", 5);
 
 
 %% Define OCP
 
-OCP = elara.ocp.Problem(links);
+OCP = elara.ocp.Problem(link);
 
 OCP.q0    = zeros(OCP.systemNum.nDoF,1);
 OCP.qDot0 = zeros(OCP.systemNum.nDoF,1); % Initial velocity
@@ -38,7 +38,7 @@ OCP.h = 2^-6;
 OCP.tEnd = 2;
 
 % Desired TCP position
-OCP.x_TCP_F = [0.35; -0.25; 0.3];
+OCP.x_TCP_F = [-0.3; -0.1; 0.35];
 
 % Running cost
 OCP.runningCostWeights = [ % Weights
@@ -69,6 +69,11 @@ OCP.nInputSplinePoints = 30;
 % but significantly faster solution
 OCP.nlpOptions.expand = true;
 
+% Use a fixed common objective scale instead of guess-dependent scaling.
+% This improves conditioning without changing the cost ratios or minimizer.
+OCP.nlpOptions.ipopt.nlp_scaling_method = 'none';
+OCP.nlpOptions.ipopt.obj_scaling_factor = 1e-2;
+
 %% Visualize reference configuration and target position
 
 % Get Simulation object from OCP
@@ -77,8 +82,8 @@ MBSim = OCP.getSimulationObject;
 MBSim.visualizeSystemRefConf();
 elara.visualization.CoordinateFrame(elara.SE3.matrix(eye(3), OCP.x_TCP_F));
 OCP.workspace.visualize("createFigure", false);
-xlim([-0.1,0.5]);
-ylim([-0.1,0.4]);
+xlim([min(0,OCP.x_TCP_F(1))-0.1, max(0,OCP.x_TCP_F(1))+0.1]);
+ylim([min(0,OCP.x_TCP_F(2))-0.1, max(0,OCP.x_TCP_F(2))+0.1]);
 zlim([0,0.8]);
 
 %% Compute Initial Guess
