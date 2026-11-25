@@ -309,7 +309,6 @@ classdef SystemVisualization < handle
                     v = VideoWriter(options.fileName, 'MPEG-4');
                     v.Quality = 100;
                     v.FrameRate = options.frameRate;
-                    v.Quality = 95;
                     open(v);
                     for iFrame = 1:length(animFrame)
                         writeVideo(v,animFrame(iFrame));
