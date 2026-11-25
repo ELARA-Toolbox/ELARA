@@ -21,10 +21,10 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 </p>
 
 <p align="center">
-  <img src="doc/.assets/example-videos/example-5.gif" width="10.11%" alt="Optimal Control example 2"/>
-  <img src="doc/.assets/example-videos/example-6.gif" width="14.78%" alt="Optimal Control example 3"/>
-  <img src="doc/.assets/example-videos/example-peter-tr.gif" width="26.67%" alt="PETER tracking"/>
-  <img src="doc/.assets/example-videos/example-peter-val.jpg" width="42.44%" alt="PETER validation"/>
+  <img src="doc/.assets/example-videos/example-5.gif" width="12.80%" alt="Optimal Control example 2"/>
+  <img src="doc/.assets/example-videos/example-6.gif" width="14.31%" alt="Optimal Control example 3"/>
+  <img src="doc/.assets/example-videos/example-peter-tr.gif" width="25.81%" alt="PETER tracking"/>
+  <img src="doc/.assets/example-videos/example-peter-val.jpg" width="41.08%" alt="PETER validation"/>
 </p>
 
 ## Features
