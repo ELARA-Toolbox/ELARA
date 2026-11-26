@@ -27,3 +27,7 @@ disp( table(result) );
 %% Tendon Routing Regression Tests
 result = runtests('TendonRoutingTests');
 disp( table(result) );
+
+%% Simulation Regression Tests
+result = runtests('SimulationRegressionTests');
+disp( table(result) );
