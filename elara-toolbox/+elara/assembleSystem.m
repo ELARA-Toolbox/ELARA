@@ -224,12 +224,10 @@ function sys = assembleSystem(links, sys)
         else
             %%% Flexible link
 
-            % Get factors for node masses
+            % Trapezoidal weights for all physical beam nodes. A clamped
+            % base node is omitted below through nodeIndices.
             nNodes = length(linkFrames);
-            factors = [0.5;ones(nNodes-1,1);0.5];
-
-            % If beam is the first link in the system and it's a cantilever
-            % beam, the factor of the first node is one
+            factors = [0.5; ones(links(iLink).nSegments-1,1); 0.5];
 
             % Get local node indices that include the first node;
             % for cantilever beams, the node index of the first frame is 2
@@ -247,7 +245,7 @@ function sys = assembleSystem(links, sys)
                 iCurNode = nodeIndices(iFrm);
 
                 if isempty(links(iLink).M_a)
-                    MGen(:,:,iCurFrame)          = l*factors(iCurNode)*links(iLink).beamParameters.Mgen;
+                    MGen(:,:,iCurFrame)     = l*factors(iCurNode)*links(iLink).beamParameters.Mgen;
                     sys.frames.m(iCurFrame) = l*factors(iCurNode)*links(iLink).beamParameters.m;
                 else
                     MGen(:,:,iCurFrame) = ...
