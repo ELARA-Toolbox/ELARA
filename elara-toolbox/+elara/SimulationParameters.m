@@ -8,17 +8,17 @@ classdef SimulationParameters
     properties
         % Initial relative coordinates for the simulation
         % dimensions (nDoF, 1)
-        q0      (:,1)   double
+        q0      (:,1) double {mustBeFinite}
 
         % Initial coordinate velocities for the simulation
         % dimensions (nDoF, 1)
-        qDot0   (:,1)   double
+        qDot0   (:,1) double {mustBeFinite}
 
         % Simulation end time (= length of the simulation)
-        tEnd    (1,1)   double = 1;
+        tEnd    (1,1) double {mustBePositive,mustBeFinite} = 1;
 
         % Gravity constant
-        g       (1,1)   double  = 9.81;
+        g       (1,1) double {mustBeNonnegative,mustBeFinite} = 9.81;
 
         %% System Inputs u
 

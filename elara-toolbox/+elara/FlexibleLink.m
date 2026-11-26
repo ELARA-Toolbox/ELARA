@@ -11,25 +11,25 @@ classdef FlexibleLink < elara.abstract.Link
 
         % Applicable only for the first link:
         % Defines whether or not the beam has a joint or is fixed
-        isCantilever    (1,1) logical
+        isCantilever    (1,1) logical = false;
 
         %% Flexible Link properties
 
         % Number of segments in the discretized beam
-        nSegments   (1,1) double {mustBeNonnegative}
+        nSegments   (1,1) double {mustBePositive} = 5;
 
         % Length of the beam (from first to last cross section)
-        L           (1,1) double {mustBeNonnegative}
+        L           (1,1) double {mustBePositive} = 1;
 
         % Selection matrices for reduced (constrained) beam models
-        Ba          (6,:) double
-        Bc          (6,:) double
+        Ba          (6,:) double = eye(6);
+        Bc          (6,:) double = zeros(6,0);
 
         % Beam material
         beamParameters      (1,1) elara.BeamParameters
 
         % Discrete deformations in the reference configuration (6,nSegments)
-        xiRef               (6,:) double
+        xiRef               (6,:) double = repmat([0;0;0;0;0;1], [1,5]);
 
         %%% For continuum manipulators
         % Configuration object for cable actuation

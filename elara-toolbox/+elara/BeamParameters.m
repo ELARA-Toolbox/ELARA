@@ -6,22 +6,27 @@ classdef BeamParameters
     % TUM School of Engineering and Design
     % Technical University of Munich
     properties
-        % Beam Geometry
-        height      (1,1) double   % Height
-        width      (1,1) double   % Width
+        %%% Beam Geometry
+        height  (1,1) double {mustBePositive,mustBeFinite} = 1e-2;
+        width   (1,1) double {mustBePositive,mustBeFinite} = 1e-2;
 
-        % Mixed parameters
-        m       (1,1) double   % Cross-Section mass (per unit length)
-        J       (3,3) double   % Cross-Section inertia tensor
+        %%% Mixed parameters
+        % Cross-Section mass (per unit length)
+        m       (1,1) double {mustBePositive,mustBeFinite} = 1;
 
-        Cgen    (6,6) double   % Stiffness matrix
+        % Cross-Section inertia tensor
+        J       (3,3) double {mustBeFinite} = eye(3);
 
-        Mgen    (6,6) double   % Generalized cross-section mass matrix
-        MgenInv (6,6) double
+        % Stiffness matrix
+        Cgen    (6,6) double {mustBeFinite} = eye(6); 
+
+        % Generalized cross-section mass matrix
+        Mgen    (6,6) double {mustBeFinite} = eye(6);
+        MgenInv (6,6) double {mustBeFinite} = eye(6);
 
         % Linear strain rate damping coefficient (for all segments)
         % for Kelvin-Voigt type damping
-        d       (6,1) double = zeros(6,1);
+        d       (6,1) double {mustBeNonnegative,mustBeFinite} = zeros(6,1);
     end
 
     methods
