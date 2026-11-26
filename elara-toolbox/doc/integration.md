@@ -56,6 +56,8 @@ simulation = simulation.simulateSystem;
 | `JacobianIterationThreshold` | 3 to 5 | Recompute the Jacobian after a step whose iteration count exceeds this value. |
 | `useFirstOrderDissipation` | `true` | Use the more robust but less accurate rectangle-rule approximation for dissipation. |
 
+The time step and residual tolerances must be positive and finite. `maxIterations` and `JacobianIterationThreshold` must be finite, nonnegative integers; zero remains a valid setting.
+
 `useFirstOrderDissipation = false` uses a trapezoidal dissipation term and is second order even when damping is present. `true` is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.
 
 The generated time grid is
@@ -71,7 +73,7 @@ When the exact endpoint matters, `h` should be chosen so that it divides `tEnd`.
 
 - The primary solver setting is the time step `h`, which determines both the accuracy (integration error) and the computation time of the integrator.
 
-   __Important:__ For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which can not be exceeded for the solver to run successfully. For larger time steps $h > h_{max}$, the implicit solver will not converge, and the simulation will fail. 
+   __Important:__ For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which cannot be exceeded for the solver to run successfully. For larger time steps $h > h_{max}$, the implicit solver will not converge, and the simulation will fail.
    
    - Hence, if the variational integrator does not run for a specific system, the first thing to try is usually decreasing the time step, e.g., by factors of 2 or 10.
    
@@ -85,7 +87,7 @@ When the exact endpoint matters, `h` should be chosen so that it divides `tEnd`.
   This means that much larger time steps can be used, which can significantly decrease computation time.
   
 - The setting `tolerance` determines the residual threshold for the solution of the implicit system of equations.
-  Adjusting this value is often advantageous for either increased numerical efficiency (since higher tolerances usually mean less solver iterations and thus less computation time), or increased robustness.
+  Adjusting this value is often advantageous for either increased numerical efficiency (since higher tolerances usually mean fewer solver iterations and thus less computation time), or increased robustness.
   In some cases, adjusting this value may allow the solver to run successfully when it failed for the default settings.
   However, it depends on the specific system, which values result in the highest stability.  
   
@@ -100,12 +102,37 @@ When the exact endpoint matters, `h` should be chosen so that it divides `tEnd`.
   - `JacobianIterationThreshold` defines how often the Jacobian of the implicit system of equations (i.e., the DEL Jacobian) is recomputed during integration.
    To increase performance, the Jacobian is not computed in each time step; it is only recomputed if the number of iterations in the last time step exceeds `JacobianIterationThreshold`.
    Otherwise, the Jacobian of the last time step is reused.
-   Reusing the old Jacobian is a compromise between the computational cost of recomputing the exact Jacobian (which is expensive) and a few additional solver iterations caused by a slightly inaccarute Jacobian.
-   There is usually an optimal value to achieve the highest perfomance, which often lies between 3 and 5.
+   Reusing the old Jacobian is a compromise between the computational cost of recomputing the exact Jacobian (which is expensive) and a few additional solver iterations caused by a slightly inaccurate Jacobian.
+   There is usually an optimal value to achieve the highest performance, which often lies between 3 and 5.
    In some cases, this mechanism can impact the stability of the integrator, and using a smaller number (or even 0 to disable the feature) may help.
 
 
-### Practical Quick-Start Guide for the Variational integrator
+### Integration Status
+
+All integrators set the scalar flag `simulation.results.simulationStatus`:
+
+| Value | Meaning |
+|---|---|
+| `0` | Failed or incomplete simulation.|
+| `1` | Successful simulation at the requested solver tolerances. |
+| `2` | Successful VI simulation in which at least one step exceeded `tolerance` but was accepted under `toleranceLimit`. |
+
+The VI routine stops on an unacceptable or nonfinite residual and returns the trajectory through the last accepted node. It retains the failed attempt's solver diagnostics at that node. If the initial step fails, only the initial configuration is returned. Final interval velocities are undefined and stored as `NaN`.
+
+Failed runs issue `elara:IntegrationFailed` and return the available results. Invalid inputs that prevent execution still raise errors; in particular, the time grid must contain at least one interval. The ODE interfaces report `1` when the requested end time is reached, and `0` for an early return.
+
+Check the status before using partial results in post-processing:
+
+```matlab
+simulation = simulation.simulateSystem;
+if simulation.results.simulationStatus == 0
+    disp("Simulation did not complete.");
+end
+```
+
+The VI warning is independent of `showConsoleOutput` and can be disabled with `warning("off", "elara:IntegrationFailed")`. Failed VI runs skip accurate timing with `timeit`. Raw integration results and imported trajectories retain the default status `0` until assessed by an integrator.
+
+### Practical Quick-Start Guide for the Variational Integrator
 
 1. If the system is dissipative, decide whether the focus is on accuracy (low integration error), or on computational time. For accuracy, set `useFirstOrderDissipation` to `false`, otherwise to `true`.
    For conservative (non-dissipative) systems, skip this step, as this setting only influences the dissipation term.
@@ -113,7 +140,7 @@ When the exact endpoint matters, `h` should be chosen so that it divides `tEnd`.
 2. Start with a fairly large time step `h`, e.g., the default value. If the integration does not succeed or the results show signs of instability (which may be the case for numerically stiff systems), decrease `h` until the integration completes successfully.
 Otherwise, choose `h` according to the requirements on integration error and run time.
 
-3. For highest performance, adjust `tolerance`, which may allow to run the simulation with a larger time step or a smaller number of iterations, resulting in faster run times.
+3. For highest performance, adjust `tolerance`, which may allow the simulation to run with a larger time step or a smaller number of iterations, resulting in faster run times.
 
 4. For complex cases, you can further adjust `toleranceLimit` and the other settings mentioned above.
 

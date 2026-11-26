@@ -14,15 +14,16 @@ The documentation is intentionally task-oriented. Complete argument lists and im
 
 ## Requirements and Setup
 
-ELARA requires MATLAB R2025b or later. Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:
+Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:
 
-* CasADi is required for optimal control and other symbolic optimization workflows; version 3.7.2 is tested for this release.
-* MATLAB Coder and a supported C++ compiler enable faster MEX implementations of performance-critical simulation functions.
-* Symbolic Math Toolbox is used by the tendon-path derivative helper.
+* CasADi is required for optimal control and other symbolic optimization workflows.
+* MATLAB Coder and a supported C++ compiler are required to compile the MEX functions of performance-critical simulation functions.
+* Symbolic Math Toolbox is used by the tendon-path derivative helper, including the supplied continuum-manipulator system definition.
 * Robotics System Toolbox is used for minimum-jerk TCP trajectories and rotated workspace boxes.
 * Optimization Toolbox, Mapping Toolbox, and Robotics System Toolbox are used by the inverse-dynamics initial-guess helpers.
+* Optimization Toolbox is also required for the static equilibrium solve in `simulation_chiemsee_lecture_notes.m`.
 
-These other products are not required for the basic MATLAB simulation workflow.
+For details on the specific software versions, see [README requirements](https://github.com/ELARA-Toolbox/ELARA#requirements).
 
 After installation, the active configuration can be checked with:
 

@@ -48,7 +48,7 @@ Optional dependencies:
 - CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with version `3.8.2`)
 - MATLAB Coder and a supported C++ compiler for optional MEX generation
 - Symbolic Math Toolbox for tendon-path derivatives
-- Robotics System Toolbox, Optimization Toolbox, and Mapping Toolbox for selected optimal-control helpers; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
+- Robotics System Toolbox, Optimization Toolbox, and Mapping Toolbox for selected helpers and examples; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
 
 ### Toolbox Installation
 
@@ -56,7 +56,7 @@ There are several convenient ways to install ELARA:
 
 - MATLAB Add-On Explorer (recommended): ELARA can be found by searching for its name and selecting **Install**. The same installation is available through [MATLAB File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/183990-elara-flexible-robot-simulation-and-control-toolbox).
 - Packaged toolbox file: download the toolbox file `elara-toolbox.mltbx` from the release page, then double-click on it or run `matlab.addons.install("elara-toolbox.mltbx")`.
-- Local repository clone: the folder `elara-toolbox`, including its subfolders, can be added to the MATLAB path.
+- Local repository clone: Clone or download the repository, and add the folder `elara-toolbox` (including its subfolders) to the MATLAB path.
 
 ### Optional Components
 

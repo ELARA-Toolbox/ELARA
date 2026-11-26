@@ -25,7 +25,7 @@ g_{p(i),i}(q_i)
 $$
 
 where $g_{\mathrm{ref},i}$ is the joint transformation in the reference configuration for $q_i = 0$.
-The screw axis $X_i$ defines whether the joint is a revolute, prismatic, or screw joint.
+The screw axis $X_i$ defines a revolute or finite-pitch screw joint. Pure prismatic joints are currently not supported.
 
 ### Flexible Links
 
@@ -228,7 +228,7 @@ The type of actuation is specified with the link property `beam.tendonActuation`
 
 #### Continuous tendon actuation
 
-`elara.ContinuousTendonActuation` models tendons that continuously routed along the backbone for their active length. 
+`elara.ContinuousTendonActuation` models tendons that are continuously routed along the backbone for their active length.
 Each tendon path is defined by a function of arc length `s` that returns the tendon position relative to the beam backbone. The model stores one path and one termination length for each tendon. The required derivatives may be provided directly or generated with the symbolic helper:
 
 ```matlab
@@ -329,7 +329,7 @@ along a trajectory, differentiating the body-fixed twist gives
 
 $$
 \dot{\eta}_i
-= J_i(q) \ddot{q} + \dot{J}_i(q,\dot{q}) \dot{q},
+= J_i(q) \ddot{q} + \dot{J}_i(q,\dot{q}) \dot{q},
 $$
 
 where $\dot{J}_i(q,\dot{q})$ is the time derivative of the geometric Jacobian $J_i(q)$.

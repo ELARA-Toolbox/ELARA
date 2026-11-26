@@ -153,6 +153,7 @@ The most useful result fields are:
 | `solverIterations` | 1-by-`nTimes` | Iterations of an implicit solver, when available. |
 | `solverResidual` | 1-by-`nTimes` | Final implicit residual, when available. |
 | `solverExitFlag` | 1-by-`nTimes` | Implicit-solver status, when available. |
+| `simulationStatus` | scalar | `0`: failed or not yet assessed; `1`: successful; `2`: successful with relaxed VI tolerance. See [Integration Status](integration.md#integration-status). |
 | `computationTime` | scalar | Measured integration time. |
 
 Energy fields are populated only after energy post-processing:
@@ -191,6 +192,7 @@ Most simulation issues can be traced to dimensions, reference configurations, in
 * **Unexpected flexible-link shape:** for precurved beams, $q=0$ differs from the stress-free vector `qRef`.
 * **Input starts or ends abruptly:** samples may be added over the full simulation interval, or the sampled signal can intentionally be combined with `uConst`.
 * **Implicit solver does not converge:** the variational-integrator step size should normally be reduced before residual tolerances are loosened.
+  The VI wrapper returns partial results and a warning; inspect `sim.results.simulationStatus` before continuing post-processing.
 * **Simulation method appears to have no effect:** the returned value may not have been retained; for example, `sim = sim.simulateSystem` is required.
 
 Integrator-specific convergence problems are discussed in more detail under [Choosing an Integration Method](integration.md).
@@ -206,5 +208,6 @@ The simulation examples demonstrate the main model and integration combinations:
 * `simulation_chiemsee_lecture_notes.m` — precurvature, equilibrium, external wrenches, energies, projections, and snapshots.
 
 The individual scripts also show suitable parameter and visualization settings for each system type.
+
 
 See also [Defining Multibody Systems](system_definition.md) and [Choosing an Integration Method](integration.md).
