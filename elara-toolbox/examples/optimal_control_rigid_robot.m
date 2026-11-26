@@ -4,6 +4,8 @@
 % enforced at the discretization nodes.
 % For comparison, the problem is solved with an RK2 and the VI
 % discretization.
+% Requires CasADi and Robotics System Toolbox for trajectory generation and
+% workspace geometry. See doc/index.md for initial-guess helper dependencies.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control

@@ -1,4 +1,6 @@
 %% Optimal Control / Trajectory Generation for a Simple Planar Robot
+% Requires CasADi. Enabling COMPUTE_IG also uses the inverse-dynamics
+% initial-guess helpers; their optional dependencies are listed in doc/index.md.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control

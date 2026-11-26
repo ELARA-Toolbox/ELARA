@@ -1,4 +1,5 @@
 %% Example Simulation of a one-link tendon-actuated continuum manipulator
+% Requires Symbolic Math Toolbox to generate the tendon-path derivatives.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
@@ -7,6 +8,11 @@
 
 clear
 close all
+
+%% Script settings
+
+% Also simulate the problem with ode15s?
+RUN_ODE = true;
 
 % Make sure example system folder is on the path
 addpath(fullfile(elara.internal.getToolboxRootFolder, "examples", "example-systems"));
@@ -49,7 +55,7 @@ xlabel("time $t$ in s", "Interpreter", "latex");
 ylabel("Inputs $u$", "Interpreter", "latex");
 legend(arrayfun(@(x) sprintf("Input $u_%d$", x), 1:MBSim.system.nInputs), "Interpreter", "latex");
 
-% Integration with variational integrator
+%% Integration with variational integrator
 
 MBSimVI = MBSim;
 
@@ -71,27 +77,28 @@ elara.plot.energies(MBSimVI.results);
 % Animate results
 MBSimVI.animateSimResults("figureName", "AnimVI");
 
-return;
 %% Integration with ODE solver
 
-MBSimODE = MBSim;
+if RUN_ODE
+    MBSimODE = MBSim;
 
-% Solver settings
-MBSimODE.integrator = elara.integration.ODEDirect;
-MBSimODE.integrator.odeObject.Solver = "ode15s";
-MBSimODE.integrator.odeObject.AbsoluteTolerance = 1e-5;
-MBSimODE.integrator.odeObject.RelativeTolerance = 1e-5;
+    % Solver settings
+    MBSimODE.integrator = elara.integration.ODEDirect;
+    MBSimODE.integrator.odeObject.Solver = "ode15s";
+    MBSimODE.integrator.odeObject.AbsoluteTolerance = 1e-5;
+    MBSimODE.integrator.odeObject.RelativeTolerance = 1e-5;
 
-% Start integration
-MBSimODE = MBSimODE.simulateSystem;
+    % Start integration
+    MBSimODE = MBSimODE.simulateSystem;
 
-% Plotting
-MBSimODE.plotAll;
-MBSimODE = MBSimODE.computeEnergies;
-elara.plot.energies(MBSimODE.results);
+    % Plotting
+    MBSimODE.plotAll;
+    MBSimODE = MBSimODE.computeEnergies;
+    elara.plot.energies(MBSimODE.results);
 
-% Animate results
-MBSimODE.animateSimResults("figureName", "AnimODE");
+    % Animate results
+    MBSimODE.animateSimResults("figureName", "AnimODE");
+end
 
 
 %% End script

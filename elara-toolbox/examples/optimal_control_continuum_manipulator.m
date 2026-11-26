@@ -1,4 +1,7 @@
 %% Optimal Control / Trajectory Generation for a Continuum Manipulator
+% Requires CasADi, Symbolic Math Toolbox for tendon-path derivatives,
+% Robotics System Toolbox for trajectory generation, and Optimization Toolbox
+% for underactuated inverse dynamics.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control

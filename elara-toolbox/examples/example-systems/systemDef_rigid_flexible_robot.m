@@ -5,7 +5,7 @@ function links = systemDef_rigid_flexible_robot(opts)
     arguments
         opts.dJoints    (1,1) double = 1e-2;
         opts.dBeam      (6,1) double = ones(6,1)*5e-4;
-        opts.nSegments       (1,1) uint8  = 6;
+        opts.nSegments  (1,1) uint8  = 6;
     end
 
     % Rigid base links

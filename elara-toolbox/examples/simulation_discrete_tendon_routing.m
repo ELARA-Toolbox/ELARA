@@ -1,4 +1,6 @@
 %% Example Simulation of a Discrete Tendon-Routed Continuum Manipulator
+% Requires Symbolic Math Toolbox for the initial continuum-manipulator
+% system definition, before its tendon routing is replaced by discrete disks.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control

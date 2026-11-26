@@ -5,6 +5,7 @@
 % mounted at its end via a revolute joint.
 % The simulation starts in the equilibrium configuration, and the system is
 % excited by an external force at the start.
+% Requires Optimization Toolbox for the static equilibrium solve with fsolve.
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
