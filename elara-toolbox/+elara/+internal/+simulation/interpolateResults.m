@@ -16,11 +16,9 @@ function [gQuery, qQuery] = interpolateResults(system, simRes, tQuery)
         tQuery  (:,1) double
     end
 
-    % Get interpolated coordinate vector
-    qQuery = interpn( ...
-        1:size(simRes.q,1), simRes.tout, ...
-        simRes.q, ...
-        1:size(simRes.q,1), tQuery);
+    % Interpolate each generalized coordinate over time, including systems
+    % with only one degree of freedom.
+    qQuery = interp1(simRes.tout, simRes.q.', tQuery, 'linear').';
 
     % Forward kinematics at interpolated values
     gQuery = zeros(4,4, system.nFrames, numel(tQuery));
