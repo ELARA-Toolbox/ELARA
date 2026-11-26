@@ -46,6 +46,8 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
 
     % Number of integration steps
     nSteps = round( simPars.tEnd / h );
+    assert(nSteps >= 1, 'elara:InvalidTimeGrid', ...
+        'The time grid must contain at least one step. Reduce h or increase tEnd.');
 
     % Time vector (has length nSteps + 1)
     tout = (0:h:h*nSteps)';
@@ -125,13 +127,17 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
     %% Integration loop
 
     nStepsDone = nSteps;
+    if (solData_k.ExitFlag && solData_k.ImplicitError > solverConfig.toleranceLimit) ...
+            || ~isfinite(solData_k.ImplicitError)
+        nStepsDone = 0;
+    end
     forceSolverIteration = false;
 
     % Use rectangle rule in integration loop for better performance and
     % faster convergences
     aLoop = solverConfig.aTrapez;
 
-    for k = 2:nSteps
+    for k = 2:nStepsDone
         % Check the iteration count from the previous time step and recompute
         % Jacobian if necessary
         updateInvJacobian = ImplicitIterations(k-1) > solverConfig.JacobianIterationThreshold;
@@ -181,8 +187,8 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
         % Check if solver was successful; cancel simulation if residual is
         % above residual limit
         if ( solData_k.ExitFlag && solData_k.ImplicitError > solverConfig.toleranceLimit ) ...
-                || isnan(solData_k.ImplicitError)
-            nStepsDone = k;
+                || ~isfinite(solData_k.ImplicitError)
+            nStepsDone = k-1;
             break;
         end
     end
@@ -190,8 +196,8 @@ function simResults = integrateVIBroyden(system, simPars, solverConfig) %#codege
     % Discrete velocities at the final step:
     % Not defined since there is no future time step anymore
     % (velocity at k is the velocity in interval k, k+1)
-    eta(:,:,end) = nan(6, system.nFrames);
-    q_dot(:,end) = nan(system.nDoF, 1);
+    eta(:,:,nStepsDone+1) = nan(6, system.nFrames);
+    q_dot(:,nStepsDone+1) = nan(system.nDoF, 1);
 
 
     %% Assign to output object

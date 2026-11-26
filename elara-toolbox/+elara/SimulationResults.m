@@ -34,6 +34,10 @@ classdef SimulationResults
 
         %% Overall Simulation Metadata
 
+        % Overall status: 0 = failed or not yet simulated, 1 = successful,
+        % 2 = successful using toleranceLimit instead of tolerance (VI only).
+        simulationStatus (1,1) double = 0;
+
         % Total computational time of the simulation
         computationTime (1,1) double
     end

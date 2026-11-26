@@ -82,6 +82,7 @@ classdef ODEDirectFunctionBased < elara.abstract.IntegratorODE
                 );
             tFullODE = toc;
             simRes.computationTime = tSim;
+            simRes.simulationStatus = double(tout(end) >= MBSim.parameters.tEnd);
 
             if obj.showConsoleOutput
                 % Display metadata

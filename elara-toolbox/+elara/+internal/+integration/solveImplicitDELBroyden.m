@@ -114,15 +114,13 @@ function [q_k1, eta_k, g_rel_k1, H_k, solData, JGeom_k] = solveImplicitDELBroyde
                 solData.ExitFlag = 0;
                 solData.ImplicitIterations = iIteration;
                 break;
+            elseif ~isfinite(resNorm)
+                break;
             else
                 % Update approximation of the jacobian
                 s_k = q_k1 - q_k1_l0;
                 y_k = resDEL - resDEL_l0;
                 H_k = H_k + ((s_k - H_k*y_k) * (s_k.' * H_k)) / (s_k.' * H_k * y_k);
-                if any(isnan(H_k))
-                    % Exit with solver flag 1 = error
-                    break;
-                end
             end
         end
     else
