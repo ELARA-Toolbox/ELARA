@@ -32,7 +32,7 @@ opts.SupportedPlatforms.MatlabOnline = true;
 opts.MinimumMatlabRelease = "R2025b";
 opts.MaximumMatlabRelease = "";
 
-opts.OutputFile = "elara-toolbox.mltbx";
+opts.OutputFile = fullfile(toolboxFolder, "elara-toolbox.mltbx");
 
 %% Package Toolbox
 matlab.addons.toolbox.packageToolbox(opts);
