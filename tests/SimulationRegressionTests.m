@@ -317,31 +317,45 @@ verifyEqual(testCase, simulation.results.solverResidual(1), 0);
 verifyEqual(testCase, simulation.results.simulationStatus, 1);
 end
 
-function testHardLimitFailureWithFullTrajectoryAndSolverFlagZero(testCase)
-% Deliberately set the target above the hard limit for one pendulum interval.
-% The kernel can report local convergence and return the full sample count
-% while exceeding the hard limit. Neither observation may imply status 1.
+function testSmallerToleranceLimitIsRaisedBeforeIntegration(testCase)
+% A loose target used with the fixture's very strict hard limit must warn
+% and use the target as the effective limit for integration and assessment.
 simulation = makeSimulation;
 simulation.parameters.tEnd = simulation.integrator.h;
 simulation.integrator.tolerance = 1;
-simulation = simulateIgnoringFailureWarning(simulation);
+originalLimit = simulation.integrator.toleranceLimit;
+state = warning('on', 'elara:ToleranceLimitAdjusted');
+testCase.addTeardown(@() warning(state));
+[previousMessage, previousId] = lastwarn;
+testCase.addTeardown(@() lastwarn(previousMessage, previousId));
+lastwarn('');
+evalc('simulation = simulation.simulateSystem;');
+[~, identifier] = lastwarn;
+verifyEqual(testCase, identifier, 'elara:ToleranceLimitAdjusted');
 verifyEqual(testCase, numel(simulation.results.tout), 2);
 verifyEqual(testCase, simulation.results.solverExitFlag(1), 0);
 verifyGreaterThan(testCase, simulation.results.solverResidual(1), ...
-    simulation.integrator.toleranceLimit);
-verifyEqual(testCase, simulation.results.simulationStatus, 0);
+    originalLimit);
+verifyLessThanOrEqual(testCase, simulation.results.solverResidual(1), ...
+    simulation.integrator.tolerance);
+verifyEqual(testCase, simulation.results.simulationStatus, 1);
 end
 
-function testInconsistentTolerancesDoNotReportSuccess(testCase)
-% Both thresholds are loose enough for the one-step pendulum residual, but
-% tolerance > toleranceLimit is an invalid pair. This isolates the ordering
-% check from ordinary residual-based nonconvergence and must give status 0.
+function testConsistentToleranceLimitsDoNotWarn(testCase)
+% Equal and larger hard limits require no adjustment. An equilibrium run
+% isolates warning behavior from ordinary integration failure warnings.
 simulation = makeSimulation;
 simulation.parameters.tEnd = simulation.integrator.h;
-simulation.integrator.tolerance = 1;
-simulation.integrator.toleranceLimit = 0.1;
-simulation = simulateIgnoringFailureWarning(simulation);
-verifyEqual(testCase, simulation.results.simulationStatus, 0);
+simulation.parameters.g = 0;
+simulation.parameters.q0 = zeros(2,1);
+simulation.integrator.maxIterations = 0;
+state = warning('error', 'elara:ToleranceLimitAdjusted');
+testCase.addTeardown(@() warning(state));
+for limit = simulation.integrator.tolerance * [1, 2]
+    simulation.integrator.toleranceLimit = limit;
+    simulation = simulation.simulateSystem;
+    verifyEqual(testCase, simulation.results.simulationStatus, 1);
+end
 end
 
 %% Setting validation without assembling or simulating a physical system
