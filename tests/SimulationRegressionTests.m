@@ -442,6 +442,87 @@ for useMassMatrix = [false, true]
 end
 end
 
+function testODERejectsInvalidConstantInputs(testCase)
+% A one-input pendulum must reject two supplied torques before integration,
+% including when an existing MEX kernel would silently ignore the vector.
+for interface = ["object", "function"]
+    for useMassMatrix = [false, true]
+        simulation = makeODEInputSimulation(interface, useMassMatrix);
+        simulation.parameters.uConst = [100; 200];
+        verifyError(testCase, @() simulation.simulateSystem, ...
+            'elara:InvalidConstantInputDimensions');
+    end
+end
+end
+
+function testODERejectsInvalidSampledInputRows(testCase)
+% Every active sampled input needs one row per actuator. A wrong channel
+% count previously disabled the supplied trajectory without a diagnostic.
+for interface = ["object", "function"]
+    for useMassMatrix = [false, true]
+        simulation = makeODEInputSimulation(interface, useMassMatrix);
+        simulation.parameters.uSampleTimes = [0; 0.1; 0.2];
+        simulation.parameters.uSampleValues = ones(2,3);
+        verifyError(testCase, @() simulation.simulateSystem, ...
+            'elara:InvalidSampledInputDimensions');
+    end
+end
+end
+
+function testODERejectsMismatchedInputSampleCounts(testCase)
+% A trajectory with missing sample values must fail instead of producing
+% the unforced motion. Exercise both interfaces and both equation forms.
+for interface = ["object", "function"]
+    for useMassMatrix = [false, true]
+        simulation = makeODEInputSimulation(interface, useMassMatrix);
+        simulation.parameters.uSampleTimes = [0; 0.1; 0.2];
+        simulation.parameters.uSampleValues = [1, 2];
+        verifyError(testCase, @() simulation.simulateSystem, ...
+            'elara:InvalidInputSampleCount');
+    end
+end
+end
+
+function testODEInputsMatchAnalyticMotion(testCase)
+% With gravity and damping off, the one-link pendulum obeys I*q_ddot=u(t).
+% Constant plus linearly sampled torque therefore gives a cubic q(t).
+% Also preserve the documented behavior that either empty sampled-input
+% array disables that contribution, even if the other array is populated.
+% Columns: constant input, sample times, sample values, total u(0), du/dt.
+cases = {
+    [],  [],             [],                  0,   0
+    0.3, [],             [],                  0.3, 0
+    [],  [0; 0.1; 0.2],  [0.2, 0.35, 0.5],    0.2, 1.5
+    0.3, [0; 0.1; 0.2],  [0.2, 0.35, 0.5],    0.5, 1.5
+    0.3, [],             [1, 2; 3, 4],        0.3, 0
+    0.3, [0; 0.1; 0.2],  [],                  0.3, 0
+    };
+for interface = ["object", "function"]
+    for useMassMatrix = [false, true]
+        for k = 1:size(cases,1)
+            simulation = makeODEInputSimulation(interface, useMassMatrix);
+            simulation.parameters.uConst = cases{k,1};
+            simulation.parameters.uSampleTimes = cases{k,2};
+            simulation.parameters.uSampleValues = cases{k,3};
+            link = simulation.links;
+            inertia = link.J(2,2) + link.m*link.g_J_B(1,4)^2;
+            simulation = simulation.simulateSystem;
+            t = simulation.results.tout.';
+            q0 = simulation.parameters.q0;
+            qDot0 = simulation.parameters.qDot0;
+            expectedQ = q0 + qDot0*t + cases{k,4}/(2*inertia)*t.^2 ...
+                + cases{k,5}/(6*inertia)*t.^3;
+            expectedQDot = qDot0 + cases{k,4}/inertia*t ...
+                + cases{k,5}/(2*inertia)*t.^2;
+            verifyEqual(testCase, simulation.results.simulationStatus, 1);
+            verifyEqual(testCase, t(end), simulation.parameters.tEnd, 'AbsTol', 1e-12);
+            verifyEqual(testCase, simulation.results.q, expectedQ, 'AbsTol', 5e-8);
+            verifyEqual(testCase, simulation.results.q_dot, expectedQDot, 'AbsTol', 5e-8);
+        end
+    end
+end
+end
+
 function testEarlyODEReturnDoesNotReportSuccess(testCase)
 % A terminal event stops the two-link simulation at 0.075 s, before tEnd.
 % This produces an incomplete ODE trajectory deterministically, without
@@ -516,6 +597,28 @@ verifyTrue(testCase, isgraphics(animation, "figure"));
 end
 
 %% Shared physical fixtures and assertion utilities
+
+function simulation = makeODEInputSimulation(interface, useMassMatrix)
+% Single actuated link with constant joint inertia and no gravitational or
+% dissipative forces, so prescribed torque has a closed-form trajectory.
+links = systemDef_planarNLinkPendulum("nLinks", 1, "d", 0);
+simulation = elara.Simulation(links, "displayInfo", false);
+simulation.parameters.g = 0;
+simulation.parameters.q0 = 0.2;
+simulation.parameters.qDot0 = 0.3;
+simulation.parameters.tEnd = 0.2;
+if interface == "object"
+    simulation.integrator = elara.integration.ODEDirect;
+    simulation.integrator.odeObject.Solver = "ode15s";
+    simulation.integrator.odeObject.AbsoluteTolerance = 1e-10;
+    simulation.integrator.odeObject.RelativeTolerance = 1e-10;
+else
+    simulation.integrator = elara.integration.ODEDirectFunctionBased;
+    simulation.integrator.solverOptions = odeset('AbsTol', 1e-10, 'RelTol', 1e-10);
+end
+simulation.integrator.useMassMatrixForm = useMassMatrix;
+simulation.integrator.showConsoleOutput = false;
+end
 
 function beam = makeBeam(nSegments, isCantilever, payloadMass)
 % Straight, homogeneous 1.25 m beam along +z with rotational strain DoFs;

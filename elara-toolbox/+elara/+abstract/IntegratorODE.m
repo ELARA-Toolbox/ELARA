@@ -26,4 +26,29 @@ classdef (Abstract) IntegratorODE < elara.abstract.Integrator
                 "nameString", simulation.Name);
         end
     end
+
+    methods (Static, Access = protected)
+        function validateSystemInputs(system, simPars)
+            % Check fixed input dimensions before running an ODE integration.
+            arguments
+                system  (1,1) elara.SystemNum
+                simPars (1,1) elara.SimulationParameters
+            end
+
+            assert(isempty(simPars.uConst) || numel(simPars.uConst) == system.nInputs, ...
+                'elara:InvalidConstantInputDimensions', ...
+                'The constant-input vector must contain nInputs elements.');
+
+            % If either of the sampled-input arrays is empty,
+            % dynamic/sampled inputs are ignored in the ODE functions.
+            if ~isempty(simPars.uSampleValues) && ~isempty(simPars.uSampleTimes)
+                assert(size(simPars.uSampleValues,1) == system.nInputs, ...
+                    'elara:InvalidSampledInputDimensions', ...
+                    'The time-varying input matrix must have one row per system input.');
+                assert(size(simPars.uSampleValues,2) == numel(simPars.uSampleTimes), ...
+                    'elara:InvalidInputSampleCount', ...
+                    'The number of sample times must match the number of samples in uSampleValues.');
+            end
+        end
+    end
 end

@@ -26,6 +26,8 @@ classdef ODEDirectFunctionBased < elara.abstract.IntegratorODE
                 MBSim   (1,1) elara.Simulation
             end
 
+            obj.validateSystemInputs(MBSim.system, MBSim.parameters);
+
             % Check if compiled mex files are available
             if obj.useMassMatrixForm
                 useMex = elara.internal.isMexAvailable("elara.mex.firstOrderRHS_mex") ...

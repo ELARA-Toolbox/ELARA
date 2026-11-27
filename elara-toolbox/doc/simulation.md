@@ -80,6 +80,8 @@ $$
 
 where $\widetilde{u}_{\mathrm{sample}}$ is linearly interpolated between the supplied samples and evaluates to zero outside the sample interval.
 
+The ODE integrators validate input dimensions once before integration. A nonempty `uConst` must contain `nInputs` elements. When both sampled-input arrays are nonempty, `uSampleValues` must have `nInputs` rows and one column per entry in `uSampleTimes`. If either sampled-input array is empty, the sampled input is ignored.
+
 For example, a trajectory of control inputs can be specified as follows:
 
 ```matlab

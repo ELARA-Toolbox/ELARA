@@ -1,5 +1,7 @@
 function f_fo = firstOrderRHS(t, x, system, simPars) %#codegen
     %% Compute the Right-Hand Side of the EOMs in first-order form
+    % Input dimensions must match the system. The ODE integrators validate
+    % them once before integration; direct callers must ensure compatibility.
     arguments (Input)
         % Integration time (from ode solver)
         t           (1,1) double
@@ -38,16 +40,14 @@ function f_fo = firstOrderRHS(t, x, system, simPars) %#codegen
 
     %% Prepare system inputs
     % Constant inputs
-    if ~isempty(simPars.uConst) && size(simPars.uConst,1) == system.nInputs
+    if ~isempty(simPars.uConst)
         u_k = simPars.uConst;
     else
         u_k = zeros(system.nInputs, 1);
     end
 
     % Time-varying inputs
-    if (~isempty(simPars.uSampleValues) && size(simPars.uSampleValues,1) == system.nInputs ) && ...
-            ~isempty(simPars.uSampleTimes) && ...
-            size(simPars.uSampleValues,2) == size(simPars.uSampleTimes,1)
+    if ~isempty(simPars.uSampleValues) && ~isempty(simPars.uSampleTimes)
         u_k = u_k + interp1(simPars.uSampleTimes, simPars.uSampleValues.', t, 'linear', 0).';
     end
 
