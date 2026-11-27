@@ -1,8 +1,8 @@
 function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
     %% Compute a static equilibrium for the problem's desired TCP position
     % The equilibrium satisfies the static force balance, workspace
-    % constraints, control bounds, and configured final TCP objective or
-    % constraint of the optimal-control problem.
+    % constraints, coordinate and control bounds, and configured final TCP
+    % objective or constraint of the optimal-control problem.
     arguments
         OCP (1,1) elara.ocp.Problem
 
@@ -58,6 +58,14 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
     end
     if length(c_WSExt) %#ok<ISMT>
         opti.subject_to(c_WSExt <= -opts.safetyMargin);
+    end
+
+    % Coordinate limits
+    if ~isempty(OCP.qMin)
+        opti.subject_to(q >= OCP.qMin);
+    end
+    if ~isempty(OCP.qMax)
+        opti.subject_to(q <= OCP.qMax);
     end
 
     % Control limits
