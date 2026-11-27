@@ -116,7 +116,7 @@ A flexible link replaces a single rigid-body frame with a chain of beam cross-se
 |---|---|
 | `isCantilever` | Clamp the first node when this is the root link. |
 | `L`, `nSegments` | Beam length and spatial discretization. |
-| `Ba`, `Bc` | Orthonormal, complementary bases for allowed and constrained deformation modes. |
+| `Ba`, `Bc` | Complementary selection matrices for allowed and constrained deformation modes. |
 | `xiRef` | Reference deformation gradient, size `6`-by-`nSegments`. |
 | `beamParameters` | Material, cross-section, inertia, stiffness, and damping data. |
 | `tendonActuation` | Optional continuous or discrete tendon-actuation configuration. |
@@ -130,7 +130,7 @@ $$
 \boldsymbol{q}_{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
 $$
 
-The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Both bases must have orthonormal columns, be mutually orthogonal, and together span all six deformation directions. Current validation uses exact matrix comparisons, so exact selection matrices such as the examples below are recommended instead of numerically approximated bases.
+The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Each matrix must contain distinct columns of `eye(6)`, in any order, and together they must select all six components exactly once. Signed, rotated, and mixed deformation bases are not supported. The generalized coordinates themselves may take positive or negative values. Selection matrices are validated exactly.
 
 Common choices are:
 
@@ -176,7 +176,7 @@ Once the allowed beam deformations have been selected, the physical response is 
 * the area `A`, and
 * the second moments of area `I_x` and `I_y`, and the polar second moment `J_P`.
 
-The dimensions `height` and `width` are set separately for visualization. The vector `d` specifies Kelvin-Voigt damping coefficients for the six deformation modes; the resulting dissipative stress is proportional to the strain rate.
+The dimensions `height` and `width` are set separately for visualization. The vector `d` specifies Kelvin-Voigt damping coefficients for the six deformation modes; the resulting dissipative stress is proportional to the strain rate. `Cgen` must be diagonal, as produced by `computeParameters`; coupled material stiffness is not supported by the global coefficient-vector representation.
 
 The geometry and material parameters can be defined using a struct and the `computeParameters` method:
 
