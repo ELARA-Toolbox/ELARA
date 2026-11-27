@@ -100,6 +100,7 @@ simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.si
 </tr>
 </tbody>
 </table>
+<p>The time step and residual tolerances must be positive and finite. <code>maxIterations</code> and <code>JacobianIterationThreshold</code> must be finite, nonnegative integers; zero remains a valid setting.</p>
 <p><code>useFirstOrderDissipation = false</code> uses a trapezoidal dissipation term and is second order even when damping is present. <code>true</code> is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.</p>
 <p>The generated time grid is</p>
 <p>$$
@@ -111,7 +112,7 @@ $$</p>
 <ul>
 <li>
 <p>The primary solver setting is the time step <code>h</code>, which determines both the accuracy (integration error) and the computation time of the integrator.</p>
-<p><strong>Important:</strong> For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which can not be exceeded for the solver to run successfully. For larger time steps $h &gt; h_{max}$, the implicit solver will not converge, and the simulation will fail.</p>
+<p><strong>Important:</strong> For numerically stiff systems, there is usually a _maximum time step_ $h_{max}$, which cannot be exceeded for the solver to run successfully. For larger time steps $h &gt; h_{max}$, the implicit solver will not converge, and the simulation will fail.</p>
 <ul>
 <li>
 <p>Hence, if the variational integrator does not run for a specific system, the first thing to try is usually decreasing the time step, e.g., by factors of 2 or 10.</p>
@@ -130,7 +131,7 @@ This means that much larger time steps can be used, which can significantly decr
 </li>
 <li>
 <p>The setting <code>tolerance</code> determines the residual threshold for the solution of the implicit system of equations.
-Adjusting this value is often advantageous for either increased numerical efficiency (since higher tolerances usually mean less solver iterations and thus less computation time), or increased robustness.
+Adjusting this value is often advantageous for either increased numerical efficiency (since higher tolerances usually mean fewer solver iterations and thus less computation time), or increased robustness.
 In some cases, adjusting this value may allow the solver to run successfully when it failed for the default settings.
 However, it depends on the specific system, which values result in the highest stability.</p>
 </li>
@@ -148,14 +149,46 @@ However, it depends on the specific system, which values result in the highest s
 <p><code>JacobianIterationThreshold</code> defines how often the Jacobian of the implicit system of equations (i.e., the DEL Jacobian) is recomputed during integration.
 To increase performance, the Jacobian is not computed in each time step; it is only recomputed if the number of iterations in the last time step exceeds <code>JacobianIterationThreshold</code>.
 Otherwise, the Jacobian of the last time step is reused.
-Reusing the old Jacobian is a compromise between the computational cost of recomputing the exact Jacobian (which is expensive) and a few additional solver iterations caused by a slightly inaccarute Jacobian.
-There is usually an optimal value to achieve the highest perfomance, which often lies between 3 and 5.
+Reusing the old Jacobian is a compromise between the computational cost of recomputing the exact Jacobian (which is expensive) and a few additional solver iterations caused by a slightly inaccurate Jacobian.
+There is usually an optimal value to achieve the highest performance, which often lies between 3 and 5.
 In some cases, this mechanism can impact the stability of the integrator, and using a smaller number (or even 0 to disable the feature) may help.</p>
 </li>
 </ul>
 </li>
 </ul>
-<div class="markdown-heading"><h3 class="heading-element">Practical Quick-Start Guide for the Variational integrator</h3></div>
+<div class="markdown-heading"><h3 class="heading-element">Integration Status</h3></div>
+<p>All integrators set the scalar flag <code>simulation.results.simulationStatus</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Failed or incomplete simulation.</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Successful simulation at the requested solver tolerances.</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Successful VI simulation in which at least one step exceeded <code>tolerance</code> but was accepted under <code>toleranceLimit</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The VI routine stops on an unacceptable or nonfinite residual and returns the trajectory through the last accepted node. It retains the failed attempt's solver diagnostics at that node. If the initial step fails, only the initial configuration is returned. Final interval velocities are undefined and stored as <code>NaN</code>.</p>
+<p>Failed runs issue <code>elara:IntegrationFailed</code> and return the available results. Invalid inputs that prevent execution still raise errors; in particular, the time grid must contain at least one interval. The ODE interfaces report <code>1</code> when the requested end time is reached, and <code>0</code> for an early return.</p>
+<p>Check the status before using partial results in post-processing:</p>
+<div class="highlight highlight-source-matlab"><pre>simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.simulateSystem;
+<span class="pl-k">if</span> <span class="pl-smi">simulation</span>.results.simulationStatus <span class="pl-k">==</span> <span class="pl-c1">0</span>
+    disp(<span class="pl-s"><span class="pl-pds">"</span>Simulation did not complete.<span class="pl-pds">"</span></span>);
+<span class="pl-k">end</span></pre></div>
+<p>The VI warning is independent of <code>showConsoleOutput</code> and can be disabled with <code>warning("off", "elara:IntegrationFailed")</code>. Failed VI runs skip accurate timing with <code>timeit</code>. Raw integration results and imported trajectories retain the default status <code>0</code> until assessed by an integrator.</p>
+<div class="markdown-heading"><h3 class="heading-element">Practical Quick-Start Guide for the Variational Integrator</h3></div>
 <ol>
 <li>
 <p>If the system is dissipative, decide whether the focus is on accuracy (low integration error), or on computational time. For accuracy, set <code>useFirstOrderDissipation</code> to <code>false</code>, otherwise to <code>true</code>.
@@ -166,7 +199,7 @@ For conservative (non-dissipative) systems, skip this step, as this setting only
 Otherwise, choose <code>h</code> according to the requirements on integration error and run time.</p>
 </li>
 <li>
-<p>For highest performance, adjust <code>tolerance</code>, which may allow to run the simulation with a larger time step or a smaller number of iterations, resulting in faster run times.</p>
+<p>For highest performance, adjust <code>tolerance</code>, which may allow the simulation to run with a larger time step or a smaller number of iterations, resulting in faster run times.</p>
 </li>
 <li>
 <p>For complex cases, you can further adjust <code>toleranceLimit</code> and the other settings mentioned above.</p>

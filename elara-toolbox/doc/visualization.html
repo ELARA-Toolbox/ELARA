@@ -125,6 +125,7 @@ simulation.results <span class="pl-k">=</span> <span class="pl-smi">elara</span>
 <span class="pl-smi">simulation</span>.drawSnapshots;
 <span class="pl-smi">simulation</span>.animateSimResults;</pre></div>
 <p>If velocities are omitted, <code>fromStateTrajectory</code> estimates them using second- or fourth-order finite differences. For an ODE transcription, <code>qDotSol</code> can be passed as the fourth argument in the call above.</p>
+<p>Finite-difference estimation requires finite, strictly increasing, uniformly spaced sample times. The intervals are compared with their mean <code>h</code>, allowing deviations up to <code>1e-8*abs(h) + 8*eps(max(abs(tout)))</code> to accommodate small spacing differences and floating-point roundoff. A nonuniform grid raises <code>elara:NonuniformTimeGrid</code>. Nonuniform times are supported when velocities are supplied explicitly.</p>
 <div class="markdown-heading"><h2 class="heading-element">Workspace Graphics</h2></div>
 <p>Workspace geometry is often useful as a visual reference when inspecting an optimized motion. <code>problem.workspace.visualize</code> draws the configured interiors and obstacles as translucent polytopes and can either create a new figure or overlay the current axes:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-smi">problem</span>.workspace.visualize( ...

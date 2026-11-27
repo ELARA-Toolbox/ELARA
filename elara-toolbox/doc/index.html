@@ -9,15 +9,17 @@
 <p>The toolbox also supports modeling and optimal control of soft robots and continuum manipulators with tendon actuation.</p>
 <p>The documentation is intentionally task-oriented. Complete argument lists and implementation details are available through <code>help</code>, in the well-commented class and function files, and in the scripts in the <code>examples</code> folder.</p>
 <div class="markdown-heading"><h2 class="heading-element">Requirements and Setup</h2></div>
-<p>ELARA requires MATLAB R2025b or later. Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:</p>
+<p>MATLAB <code>R2025b</code> or later is required. Additional components are needed only for the workflows in which they are used:</p>
 <ul>
-<li>CasADi is required for optimal control and other symbolic optimization workflows; version 3.7.2 is tested for this release.</li>
-<li>MATLAB Coder and a supported C++ compiler enable faster MEX implementations of performance-critical simulation functions.</li>
-<li>Symbolic Math Toolbox is used by the tendon-path derivative helper.</li>
+<li>CasADi is required for optimal control and other symbolic optimization workflows.</li>
+<li>MATLAB Coder and a supported C++ compiler are required to compile the MEX functions of performance-critical simulation functions.</li>
+<li>Signal Processing Toolbox is used by the standalone SO(3)/SE(3) exponential-map utilities and their differentials (including <code>exp</code>, <code>dexp</code>, and <code>dexpInv</code>) through <code>sinc</code>, and by the corresponding tests. The core simulation workflow uses separate screw-exponential and Cayley-map implementations and does not require it.</li>
+<li>Symbolic Math Toolbox is used by the tendon-path derivative helper, including the supplied continuum-manipulator system definition.</li>
 <li>Robotics System Toolbox is used for minimum-jerk TCP trajectories and rotated workspace boxes.</li>
 <li>Optimization Toolbox, Mapping Toolbox, and Robotics System Toolbox are used by the inverse-dynamics initial-guess helpers.</li>
+<li>Optimization Toolbox is also required for the static equilibrium solve in <code>simulation_chiemsee_lecture_notes.m</code>.</li>
 </ul>
-<p>These other products are not required for the basic MATLAB simulation workflow.</p>
+<p>For details on the specific software versions, see <a href="https://github.com/ELARA-Toolbox/ELARA#requirements">README requirements</a>.</p>
 <p>After installation, the active configuration can be checked with:</p>
 <div class="highlight highlight-source-matlab"><pre><span class="pl-smi">elara</span>.setup</pre></div>
 <p>Missing MEX files or CasADi do not prevent use of the core MATLAB simulation implementation. The optional MEX functions can be built after configuring a C++ compiler:</p>

@@ -16,7 +16,7 @@ g_{p(i),i}(q_i)
 = g_{\mathrm{ref},i}\exp\left(\hat{X}_i q_i\right),
 $$</p>
 <p>where $g_{\mathrm{ref},i}$ is the joint transformation in the reference configuration for $q_i = 0$.
-The screw axis $X_i$ defines whether the joint is a revolute, prismatic, or screw joint.</p>
+The screw axis $X_i$ defines a revolute or finite-pitch screw joint. Pure prismatic joints are currently not supported.</p>
 <div class="markdown-heading"><h3 class="heading-element">Flexible Links</h3></div>
 <p>A flexible link is a spatially discretized, geometrically exact (Cosserat) beam: its cross-section frames form a serial chain, and each beam segment acts as a generalized joint. The coordinates of each segment are the allowed discrete deformations $q_i = \psi_i$.
 These coordinates define the segment's overall discrete deformation $\xi_i$, from which the transformation of a discrete cross-section relative to its predecessor is computed. For a segment of length $l$ and discrete deformation $\xi_i$, the corresponding update is</p>
@@ -133,7 +133,7 @@ link.bBoxSize <span class="pl-k">=</span> [
 <td>
 <code>Ba</code>, <code>Bc</code>
 </td>
-<td>Orthonormal, complementary bases for allowed and constrained deformation modes.</td>
+<td>Complementary selection matrices for allowed and constrained deformation modes.</td>
 </tr>
 <tr>
 <td><code>xiRef</code></td>
@@ -156,7 +156,7 @@ link.bBoxSize <span class="pl-k">=</span> [
 \qquad
 \boldsymbol{q}_{\mathrm{ref},i}=B_a^{\mathsf T}\boldsymbol{\xi}_{\mathrm{ref},i}.
 $$</p>
-<p>The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Both bases must have orthonormal columns, be mutually orthogonal, and together span all six deformation directions. Current validation uses exact matrix comparisons, so exact selection matrices such as the examples below are recommended instead of numerically approximated bases.</p>
+<p>The columns of $B_a$ select the deformation modes that remain free generalized coordinates, collected in $\boldsymbol{\psi}_i$. The complementary matrix $B_c$ selects modes that remain fixed at their reference values. For example, an inextensible Kirchhoff beam allows bending and torsion but constrains shear and extension. Each matrix must contain distinct columns of <code>eye(6)</code>, in any order, and together they must select all six components exactly once. Signed, rotated, and mixed deformation bases are not supported. The generalized coordinates themselves may take positive or negative values. Selection matrices are validated exactly.</p>
 <p>Common choices are:</p>
 <table>
 <thead>
@@ -217,7 +217,7 @@ beam.beamParameters <span class="pl-k">=</span> beamParams_spring_steel_round( .
 <li>the area <code>A</code>, and</li>
 <li>the second moments of area <code>I_x</code> and <code>I_y</code>, and the polar second moment <code>J_P</code>.</li>
 </ul>
-<p>The dimensions <code>height</code> and <code>width</code> are set separately for visualization. The vector <code>d</code> specifies Kelvin-Voigt damping coefficients for the six deformation modes; the resulting dissipative stress is proportional to the strain rate.</p>
+<p>The dimensions <code>height</code> and <code>width</code> are set separately for visualization. The vector <code>d</code> specifies Kelvin-Voigt damping coefficients for the six deformation modes; the resulting dissipative stress is proportional to the strain rate. <code>Cgen</code> must be diagonal, as produced by <code>computeParameters</code>; coupled material stiffness is not supported by the global coefficient-vector representation.</p>
 <p>The geometry and material parameters can be defined using a struct and the <code>computeParameters</code> method:</p>
 <div class="highlight highlight-source-matlab"><pre>radius <span class="pl-k">=</span> <span class="pl-c1">2e-3</span>;
 p <span class="pl-k">=</span> <span class="pl-smi">elara</span>.BeamParameters;
@@ -253,7 +253,7 @@ Supported are tendons that are routed either continuously along the backbone (e.
 In the overall system, each tendon-actuated flexible link contributes one input per tendon.</p>
 <p>The type of actuation is specified with the link property <code>beam.tendonActuation</code>:</p>
 <div class="markdown-heading"><h4 class="heading-element">Continuous tendon actuation</h4></div>
-<p><code>elara.ContinuousTendonActuation</code> models tendons that continuously routed along the backbone for their active length.
+<p><code>elara.ContinuousTendonActuation</code> models tendons that are continuously routed along the backbone for their active length.
 Each tendon path is defined by a function of arc length <code>s</code> that returns the tendon position relative to the beam backbone. The model stores one path and one termination length for each tendon. The required derivatives may be provided directly or generated with the symbolic helper:</p>
 <div class="highlight highlight-source-matlab"><pre>r <span class="pl-k">=</span> <span class="pl-c1">0.02</span>;
 x_td_funs <span class="pl-k">=</span> {

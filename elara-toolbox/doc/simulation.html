@@ -109,6 +109,7 @@ sim.parameters.uConst <span class="pl-k">=</span> zeros(<span class="pl-smi">sim
 u(t)=u_{\mathrm{const}}+\widetilde{u}_{\mathrm{sample}}(t),
 $$</p>
 <p>where $\widetilde{u}_{\mathrm{sample}}$ is linearly interpolated between the supplied samples and evaluates to zero outside the sample interval.</p>
+<p>The ODE integrators validate input dimensions once before integration. A nonempty <code>uConst</code> must contain <code>nInputs</code> elements. When both sampled-input arrays are nonempty, <code>uSampleValues</code> must have <code>nInputs</code> rows and one column per entry in <code>uSampleTimes</code>. If either sampled-input array is empty, the sampled input is ignored.</p>
 <p>For example, a trajectory of control inputs can be specified as follows:</p>
 <div class="highlight highlight-source-matlab"><pre>tInput <span class="pl-k">=</span> linspace(<span class="pl-c1">0</span>, <span class="pl-smi">sim</span>.parameters.tEnd, <span class="pl-c1">100</span>)<span class="pl-k">.'</span>;
 ramp <span class="pl-k">=</span> (<span class="pl-c1">1</span> <span class="pl-k">-</span> cos(<span class="pl-c1">pi</span><span class="pl-k">*</span><span class="pl-smi">tInput</span><span class="pl-k">/</span><span class="pl-smi">sim</span>.parameters.tEnd))/<span class="pl-c1">2</span>;
@@ -234,6 +235,12 @@ results <span class="pl-k">=</span> <span class="pl-smi">sim</span>.results;</pr
 <td>Implicit-solver status, when available.</td>
 </tr>
 <tr>
+<td><code>simulationStatus</code></td>
+<td align="right">scalar</td>
+<td>
+<code>0</code>: failed or not yet assessed; <code>1</code>: successful; <code>2</code>: successful with relaxed VI tolerance. See <a href="integration.html#integration-status">Integration Status</a>.</td>
+</tr>
+<tr>
 <td><code>computationTime</code></td>
 <td align="right">scalar</td>
 <td>Measured integration time.</td>
@@ -267,7 +274,8 @@ results <span class="pl-k">=</span> <span class="pl-smi">sim</span>.results;</pr
 <li>
 <strong>Input starts or ends abruptly:</strong> samples may be added over the full simulation interval, or the sampled signal can intentionally be combined with <code>uConst</code>.</li>
 <li>
-<strong>Implicit solver does not converge:</strong> the variational-integrator step size should normally be reduced before residual tolerances are loosened.</li>
+<strong>Implicit solver does not converge:</strong> the variational-integrator step size should normally be reduced before residual tolerances are loosened.
+The VI wrapper returns partial results and a warning; inspect <code>sim.results.simulationStatus</code> before continuing post-processing.</li>
 <li>
 <strong>Simulation method appears to have no effect:</strong> the returned value may not have been retained; for example, <code>sim = sim.simulateSystem</code> is required.</li>
 </ul>
