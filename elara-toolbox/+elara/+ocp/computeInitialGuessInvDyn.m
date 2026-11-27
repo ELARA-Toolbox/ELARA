@@ -13,9 +13,9 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
         opts.doIDForwardSim     (1,1) logical = false;
 
         % Sample time used for trajectory generation, inverse dynamics,
-        % and the optional forward simulation. It must divide the OCP time
-        % horizon into an integer number of intervals.
-        opts.h                  (1,1) double {mustBePositive} = OCP.h;
+        % and the optional forward simulation. It must divide the discretized
+        % OCP horizon into an integer number of intervals.
+        opts.h                  (1,1) double {mustBePositive,mustBeFinite} = OCP.h;
 
         % Method to compute inverse dynamics
         % DEL: With DEL/variational integrator (discrete-time)
@@ -104,8 +104,12 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
     % Include both interval endpoints so the final step can be evaluated
     % consistently.
     h_ID = opts.h;
-    nSteps_ID = round(OCP.tEnd/h_ID);
-    tout_ID = (0 : h_ID : h_ID*nSteps_ID).';
+    tEnd_ID = OCP.tout(end);
+    nSteps_ID = round(tEnd_ID/h_ID);
+    assert(nSteps_ID >= 1 && abs(nSteps_ID*h_ID - tEnd_ID) <= 8*eps(tEnd_ID), ...
+        'elara:InvalidTimeGrid', ...
+        "The initial-guess time step must divide the discretized OCP horizon.");
+    tout_ID = linspace(0, tEnd_ID, nSteps_ID + 1).';
 
     if isempty(OCP.qDot0)
         qDot0 = zeros(systemNum.nDoF,1);
@@ -125,33 +129,17 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
 
         tpts = [OCP.tout(1) + OCP.tPreAct; OCP.tout(end)-OCP.tPostAct];
 
-        assert(tpts(1) < tpts(2), ...
+        assert(tpts(1) >= tout_ID(1) && tpts(2) <= tout_ID(end) ...
+            && tpts(1) < tpts(2), ...
             'elara:InvalidActuationInterval', ...
-            "The pre- and post-actuation durations must leave a positive trajectory interval.");
-
-        [q_init_dyn, q_dot_init_dyn, q_ddot_init_dyn] = minjerkpolytraj( ...
-            qpts, tpts, round((tpts(2)-tpts(1))/h_ID) + 1, ...
-            "VelocityBoundaryCondition", qdpts);
-
-        q_init = [
-            repmat(OCP.q0, [1, round((tpts(1)-OCP.tout(1))/h_ID)]), ...
-            q_init_dyn, ...
-            repmat(qF, [1, round((OCP.tout(end)-tpts(2))/h_ID)]), ...
-            ];
-        q_dot_init = [
-            repmat(qDot0, [1, round((tpts(1)-OCP.tout(1))/h_ID)]), ...
-            q_dot_init_dyn, ...
-            repmat(qDotF, [1, round((OCP.tout(end)-tpts(2))/h_ID)]), ...
-            ];
-        q_ddot_init = [
-            zeros(systemNum.nDoF, round((tpts(1)-OCP.tout(1))/h_ID)), ...
-            q_ddot_init_dyn, ...
-            zeros(systemNum.nDoF, round((OCP.tout(end)-tpts(2))/h_ID)), ...
-            ];
+            "The pre- and post-actuation durations must be nonnegative and leave a positive trajectory interval.");
     else
-        [q_init, q_dot_init, q_ddot_init] = minjerkpolytraj(qStat, ...
-            OCP.x_TCP_timepoints, length(OCP.tout));
+        qpts = qStat;
+        tpts = OCP.x_TCP_timepoints;
+        qdpts = [];
     end
+    [q_init, q_dot_init, q_ddot_init] = elara.internal.ocp.minJerkTrajectory( ...
+        qpts, tpts, tout_ID, qdpts);
 
 
     if opts.createDebugPlots
@@ -203,7 +191,7 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
     MBSim.Name = "Initial Guess";
 
     % Specify simulation parameters
-    MBSim.parameters.tEnd  = OCP.tEnd;
+    MBSim.parameters.tEnd  = tout_ID(end);
     MBSim.parameters.q0    = OCP.q0;
     MBSim.parameters.qDot0 = qDot0;
 
@@ -243,8 +231,15 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
 
     if OCP.h ~= h_ID
         u_init     = interp1(tout_ID, uInit_ID.', OCP.tout, 'pchip').';
-        q_init     = interp1(tout_HF, q_init_HF.', OCP.tout, 'pchip').';
-        q_dot_init = interp1(tout_HF, q_dot_init_HF.', OCP.tout, 'pchip').';
+        if opts.doIDForwardSim
+            q_init     = interp1(tout_HF, q_init_HF.', OCP.tout, 'pchip').';
+            q_dot_init = interp1(tout_HF, q_dot_init_HF.', OCP.tout, 'pchip').';
+        else
+            % Sample the reference itself, also when the two grids do not
+            % share all OCP nodes.
+            [q_init, q_dot_init] = elara.internal.ocp.minJerkTrajectory( ...
+                qpts, tpts, OCP.tout, qdpts);
+        end
     else
         u_init     = uInit_ID;
         q_init     = q_init_HF;
