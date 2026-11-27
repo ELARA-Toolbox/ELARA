@@ -21,7 +21,7 @@ classdef FlexibleLink < elara.abstract.Link
         % Length of the beam (from first to last cross section)
         L           (1,1) double {mustBePositive} = 1;
 
-        % Selection matrices for reduced (constrained) beam models
+        % Complementary selection matrices for reduced (constrained) beam models
         Ba          (6,:) double = eye(6);
         Bc          (6,:) double = zeros(6,0);
 
@@ -71,12 +71,21 @@ classdef FlexibleLink < elara.abstract.Link
             r = size(link.Ba, 2); % Number of allowed deformation modes
             assert( size(link.Bc, 2) == 6-r, ...
                 "Selection matrix Bc has an incorrect number of columns." );
+            assert( all(link.Ba == 0 | link.Ba == 1, "all") ...
+                && all(link.Bc == 0 | link.Bc == 1, "all"), ...
+                'elara:InvalidSelectionMatrix', ...
+                'Ba and Bc must select columns of eye(6); signed or mixed deformation modes are not supported.');
             assert( all(link.Ba .' * link.Ba == eye(r), "all"), ...
                 "Selection matrix Ba must have orthonormal columns." );
             assert( all(link.Bc .' * link.Bc == eye(6-r), "all"), ...
                 "Selection matrix Bc must have orthonormal columns." );
             assert( all(link.Bc .' * link.Ba == zeros(6-r,r), "all"), ...
                 "Selection matrices Ba and Bc are not complementary." );
+
+            Cgen = link.beamParameters.Cgen;
+            assert( isequal(Cgen, diag(diag(Cgen))), ...
+                'elara:UnsupportedBeamStiffness', ...
+                'Cgen must be diagonal; coupled beam stiffness is not supported.');
         end
         function linkVis = getLinkVisualization(link, varargin)
             %% Initialize and return link visualization object
