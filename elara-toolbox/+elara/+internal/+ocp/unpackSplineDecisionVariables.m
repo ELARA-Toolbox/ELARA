@@ -50,8 +50,10 @@ function [q, z, qDot] = unpackSplineDecisionVariables(XVec, nSteps, nDoF, nInput
             z{iz} = XVec(indexMat_z(:,iz));
         end
     else
-        q = XVec(indexMat_q);
-        z = XVec(indexMat_z);
-        qDot = XVec(indexMat_qd);
+        % Vector indexing can preserve XVec's column orientation for a
+        % single coordinate or input. Restore each declared matrix shape.
+        q = reshape(XVec(indexMat_q), size(indexMat_q,1), size(indexMat_q,2));
+        z = reshape(XVec(indexMat_z), size(indexMat_z,1), size(indexMat_z,2));
+        qDot = reshape(XVec(indexMat_qd), size(indexMat_qd,1), size(indexMat_qd,2));
     end
 end
