@@ -118,6 +118,6 @@ A smaller `h` usually improves transcription accuracy but increases the number o
 
 The selected state discretization can be combined with either direct or spline-based control variables. With `useSplineInputs = false`, every method uses control variables at the state nodes. With splines, the optimization variables are control points, and ELARA evaluates the resulting trajectory at the times required by the selected dynamics and cost functions.
 
-Input limits for spline controls are enforced at the OCP nodes. A spline can overshoot between nodes, including at RK stage times. When strict continuous-time limits are required, increase the node density, inspect the reconstructed control, or add an application-specific margin.
+Input limits for spline controls are enforced at the OCP nodes. The current implicit-midpoint implementation instead checks the midpoints and final node, so other node values may violate the limits. A spline can also overshoot between checked times, including at RK stage times. When strict limits are required, increase the node density, inspect the reconstructed control at and between nodes, or add an application-specific margin.
 
 See also [Solving Optimal-Control Problems](optimal_control.md) and the three optimal-control scripts in the `examples` folder.

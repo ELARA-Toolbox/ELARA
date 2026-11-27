@@ -57,6 +57,7 @@ simulation = simulation.simulateSystem;
 | `useFirstOrderDissipation` | `true` | Use the more robust but less accurate rectangle-rule approximation for dissipation. |
 
 The time step and residual tolerances must be positive and finite. `maxIterations` and `JacobianIterationThreshold` must be finite, nonnegative integers; zero remains a valid setting.
+If `toleranceLimit < tolerance`, the VI wrapper raises the limit to `tolerance` for that run and issues `elara:ToleranceLimitAdjusted`.
 
 `useFirstOrderDissipation = false` uses a trapezoidal dissipation term and is second order even when damping is present. `true` is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.
 

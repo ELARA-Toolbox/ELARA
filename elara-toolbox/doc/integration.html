@@ -100,7 +100,8 @@ simulation <span class="pl-k">=</span> <span class="pl-smi">simulation</span>.si
 </tr>
 </tbody>
 </table>
-<p>The time step and residual tolerances must be positive and finite. <code>maxIterations</code> and <code>JacobianIterationThreshold</code> must be finite, nonnegative integers; zero remains a valid setting.</p>
+<p>The time step and residual tolerances must be positive and finite. <code>maxIterations</code> and <code>JacobianIterationThreshold</code> must be finite, nonnegative integers; zero remains a valid setting.
+If <code>toleranceLimit &lt; tolerance</code>, the VI wrapper raises the limit to <code>tolerance</code> for that run and issues <code>elara:ToleranceLimitAdjusted</code>.</p>
 <p><code>useFirstOrderDissipation = false</code> uses a trapezoidal dissipation term and is second order even when damping is present. <code>true</code> is first order for dissipative systems but is often more robust and permits larger steps. The choice does not change the order for a conservative system.</p>
 <p>The generated time grid is</p>
 <p>$$

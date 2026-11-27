@@ -48,7 +48,7 @@ Optional dependencies:
 - MATLAB Coder and a supported C++ compiler for optional MEX generation
 - Signal Processing Toolbox for standalone SO(3)/SE(3) exponential-map utilities and their differentials, which use `sinc`, and the corresponding tests
 - Symbolic Math Toolbox for tendon-path derivatives
-- Robotics System Toolbox, Optimization Toolbox, and Mapping Toolbox for selected helpers and examples; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
+- Robotics System Toolbox and Optimization Toolbox for selected helpers and examples; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
 
 ### Toolbox Installation
 
@@ -171,7 +171,7 @@ These contributions are marked in the comments.
 
 ## Developer Documentation
 
-- For a release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates the corresponding `.mltbx` file.
+- For a release, the toolbox is packaged with the script `tools/packageToolbox.m`, which creates `elara-toolbox/elara-toolbox.mltbx`.
 The version number in the script must be incremented manually.
 
 - HTML documentation is generated from the markdown source files under `elara-toolbox/doc` using [MATLAB DocMaker](https://github.com/mathworks/docmaker/tree/master) (tested with version 0.8), which must be installed on the system.

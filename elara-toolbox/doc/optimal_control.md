@@ -173,7 +173,7 @@ uDecisionInit = (B \ uNodeGuess.').';
 
 When splines are enabled, `solve` expects an `nInputs`-by-`nInputSplinePoints` matrix of control points. It returns both the evaluated node trajectory `uSol` and the optimized control points `uDecision`. The discretization evaluates the spline at intermediate dynamics stages as required.
 
-Spline input bounds are enforced at the OCP nodes, not continuously between them. When limits are strict, the reconstructed input should therefore be checked for overshoot.
+Spline input bounds are enforced at the OCP nodes, except with implicit midpoint, which checks the midpoints and final node and can miss violations at other nodes. Bounds are not enforced continuously; when limits are strict, check the reconstructed input at the nodes and between them for overshoot.
 
 ## Choosing a Discretization and NLP Solver
 
@@ -223,6 +223,7 @@ For difficult point-to-point problems, `elara.ocp.computeInitialGuessInvDyn` con
 ```
 
 The helper can target `qF`, a final TCP position, or configured TCP waypoints. Its optional higher-resolution trajectory generation and forward-simulation settings are illustrated in the examples and described in the source comments.
+Trajectories are evaluated on the requested grid, so pre- and post-actuation durations need not align with its nodes. A custom inverse-dynamics step `h` must divide the discretized OCP horizon.
 
 The static configuration search has its own objective weights, independent of the trajectory's running and final costs. Set `staticCostWeights` to a three-element vector ordered as `[controls; coordinates; TCP position error]`. The default is `[1; 1e5; 1e8]`. For example:
 
