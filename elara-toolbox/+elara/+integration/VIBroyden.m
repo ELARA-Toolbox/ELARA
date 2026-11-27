@@ -12,7 +12,7 @@ classdef VIBroyden < elara.abstract.Integrator
         % Positive, finite target value for the solver error margin
         tolerance                   (1,1) double {mustBePositive, mustBeFinite} = 1e-8;
 
-        % Accepted solver error limit; must be at least tolerance
+        % Accepted solver error limit; raised to tolerance for the run if smaller
         toleranceLimit              (1,1) double {mustBePositive, mustBeFinite} = 1e-8;
 
         % Maximum number of implicit-solver iterations
@@ -42,6 +42,14 @@ classdef VIBroyden < elara.abstract.Integrator
             arguments
                 obj     (1,1) elara.integration.VIBroyden
                 MBSim   (1,1) elara.Simulation
+            end
+
+            if obj.toleranceLimit < obj.tolerance
+                warning('elara:ToleranceLimitAdjusted', ...
+                    ['toleranceLimit (%.3e) is smaller than tolerance (%.3e). ' ...
+                    'Using toleranceLimit = tolerance for this run.'], ...
+                    obj.toleranceLimit, obj.tolerance);
+                obj.toleranceLimit = obj.tolerance;
             end
 
             % Check if compiled mex files are available
