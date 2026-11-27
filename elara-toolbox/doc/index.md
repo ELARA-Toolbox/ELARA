@@ -14,10 +14,11 @@ The documentation is intentionally task-oriented. Complete argument lists and im
 
 ## Requirements and Setup
 
-Signal Processing Toolbox is required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow. Other components are needed only for the workflows in which they are used:
+MATLAB `R2025b` or later is required. Additional components are needed only for the workflows in which they are used:
 
 * CasADi is required for optimal control and other symbolic optimization workflows.
 * MATLAB Coder and a supported C++ compiler are required to compile the MEX functions of performance-critical simulation functions.
+* Signal Processing Toolbox is used by the standalone SO(3)/SE(3) exponential-map utilities and their differentials (including `exp`, `dexp`, and `dexpInv`) through `sinc`, and by the corresponding tests. The core simulation workflow uses separate screw-exponential and Cayley-map implementations and does not require it.
 * Symbolic Math Toolbox is used by the tendon-path derivative helper, including the supplied continuum-manipulator system definition.
 * Robotics System Toolbox is used for minimum-jerk TCP trajectories and rotated workspace boxes.
 * Optimization Toolbox, Mapping Toolbox, and Robotics System Toolbox are used by the inverse-dynamics initial-guess helpers.

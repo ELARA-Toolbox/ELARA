@@ -41,12 +41,12 @@ It combines Lie-group kinematics on SE(3), rigid multibody dynamics, geometrical
 ## Requirements
 
 - MATLAB `R2025b` or later
-- Signal Processing Toolbox: required by the public SO(3) and SE(3) exponential-map functions used in the core simulation workflow
 
 Optional dependencies:
 
 - CasADi for MATLAB: required for optimal control or other optimization-related tasks (tested with version `3.8.2`)
 - MATLAB Coder and a supported C++ compiler for optional MEX generation
+- Signal Processing Toolbox for standalone SO(3)/SE(3) exponential-map utilities and their differentials, which use `sinc`, and the corresponding tests
 - Symbolic Math Toolbox for tendon-path derivatives
 - Robotics System Toolbox, Optimization Toolbox, and Mapping Toolbox for selected helpers and examples; see the [documentation](elara-toolbox/doc/index.md#requirements-and-setup) for feature-level details
 
