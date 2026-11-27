@@ -179,6 +179,8 @@ Run `tools/buildDocs.m` to build the HTML files.
 The build copies the MathJax `boldsymbol` extension from `elara-toolbox/doc/third-party/mathjax` into the generated documentation resources.
 Commit the generated HTML and resources, including the extension, so users can view the documentation without installing DocMaker or rebuilding it.
 
+- Custom assertions, errors, and warnings use condition-based identifiers under `elara:`. Reuse an existing identifier for the same condition across numeric/symbolic implementations and integrators; the message may provide context for each call site. Keep identifiers as literal strings so code-generated kernels do not require runtime identifier lookups. MATLAB's own validator and warning-control identifiers retain their `MATLAB:` namespace.
+
 ## Contact & Support
 
 For questions, issues, or feature requests:

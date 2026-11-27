@@ -281,7 +281,7 @@ classdef SystemVisualization < handle
                         try
                             animFrame(iStep) = getframe(fig);
                         catch
-                            warning("Failed to get video frame.")
+                            warning('elara:VideoCaptureFailed', "Failed to get video frame.")
                             return;
                         end
                     end
@@ -299,7 +299,8 @@ classdef SystemVisualization < handle
                 for iFrame = 1:length(animFrame)
                     if ~all(size(animFrame(iFrame).cdata) == firstDimension)
                         sizesEqual = false;
-                        warning("Could not save video to file since the video frame size has changed during the animation. The size of the animation figure must be kept constant.");
+                        warning('elara:VideoFrameSizeChanged', ...
+                            "Could not save video to file since the video frame size has changed during the animation. The size of the animation figure must be kept constant.");
                         break;
                     end
                 end

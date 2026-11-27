@@ -22,12 +22,14 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     % Check end time and time step and display warning if the time step is
     % not an even divisor of the end time (important for simulation studies)
     if rem(OCP.tEnd, OCP.h*OCP.nSteps)
-        warning("OCP time step (h=%.3e) is not an even divisor of the end time (%.3f)!", OCP.h, OCP.tEnd);
+        warning('elara:InexactTimeGrid', ...
+            "OCP time step (h=%.3e) is not an even divisor of the end time (%.3f)!", OCP.h, OCP.tEnd);
     end
 
     % Verify that the TCP is defined for the system
     if ~OCP.systemSym.indexTCPFrame
-        warning("No TCP frame defined in the ELARA System object. Using last system frame as the TCP frame.")
+        warning('elara:MissingTCPFrame', ...
+            "No TCP frame defined in the ELARA System object. Using last system frame as the TCP frame.")
         indexTCPFrame = OCP.systemSym.nFrames;
     else
         indexTCPFrame = OCP.systemSym.indexTCPFrame;
@@ -37,8 +39,10 @@ function [NLPSolver, constrDef] = initializeSolver(OCP, opts)
     % active
     if OCP.runningCostActive(5)
         assert(~isempty(OCP.x_TCP_traj), ...
+            'elara:MissingTCPReferenceTrajectory', ...
             "No TCP trajectory specified but TCP tracking cost active.");
         assert(size(OCP.x_TCP_traj,2) == OCP.nSteps+1, ...
+            'elara:InvalidTCPReferenceTrajectoryDimensions', ...
             "TCP trajectory must contain one column per OCP time node.");
     end
 

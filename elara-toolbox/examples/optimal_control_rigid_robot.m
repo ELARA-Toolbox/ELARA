@@ -188,7 +188,7 @@ disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Co
 
 % Solve ODE OCP
 [x_sol, u_sol, u_sol_z, ~, stats_ODE] = OCP_ODE.solve(x_init, u_init_z);
-assert(stats_ODE.success, "RK2 solve failed: %s", stats_ODE.return_status);
+assert(stats_ODE.success, 'elara:OCPSolverFailed', "RK2 solve failed: %s", stats_ODE.return_status);
 
 q_sol = x_sol(1:OCP.systemNum.nDoF,:);
 q_dot_sol = x_sol(OCP.systemNum.nDoF+1:end,:);
@@ -227,7 +227,7 @@ disp(table(J_init, cR_init, cF_init, 'VariableNames', ["Total Cost", "Running Co
 OCP_DEL.plotConstraintResiduals(q_init, u_init_z, "figureName", "Constr. Res. IG");
 
 [q_sol, u_sol, u_sol_z, ~, stats_DEL] = OCP_DEL.solve(q_init, u_init_z);
-assert(stats_DEL.success, "VI solve failed: %s", stats_DEL.return_status);
+assert(stats_DEL.success, 'elara:OCPSolverFailed', "VI solve failed: %s", stats_DEL.return_status);
 
 % Plot solution data
 OCP_DEL.plotConstraintResiduals(q_sol, u_sol_z, "figureName", "Constr. Res. Solution");

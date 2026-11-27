@@ -12,7 +12,8 @@ function XVec = packNodeDecisionVariables(x, u)
     nNodeVariables = size(x,1);
     nInputs = size(u,1);
 
-    assert(size(u,2)==nSteps+1);
+    assert(size(u,2)==nSteps+1, 'elara:InvalidInputSampleCount', ...
+        'The control trajectory must contain one column per state time node.');
 
     nVarsStep  = nNodeVariables + nInputs;
     nVarsTotal = (nSteps+1)*nVarsStep;

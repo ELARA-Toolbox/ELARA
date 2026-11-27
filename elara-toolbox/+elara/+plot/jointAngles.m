@@ -39,7 +39,7 @@ function figHandle = jointAngles(sim, opts)
         % Plot angular velocities
         nexttile;
         if isempty(theta_dot)
-            warning("theta_dot not defined. Using NaN values.")
+            warning('elara:MissingVelocityData', "theta_dot not defined. Using NaN values.")
             theta_dot = nan(size(theta));
         end
 

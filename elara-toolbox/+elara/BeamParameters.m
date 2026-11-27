@@ -41,13 +41,20 @@ classdef BeamParameters
             end
 
             % Assert that the struct has all required fields
-            assert(isfield(baseParameters, "E"));   % Young's modulus (N/m^2)
-            assert(isfield(baseParameters, "nu"));  % Poisson's number
-            assert(isfield(baseParameters, "rho")); % Density (kg/m^3)
-            assert(isfield(baseParameters, "A"));   % Cross-section area (m^2)
-            assert(isfield(baseParameters, "I_x")); % Second moments of inertia (about x axis of the body-fixed coordinate systems)
-            assert(isfield(baseParameters, "I_y")); % Second moments of inertia (about y axis of the body-fixed coordinate systems)
-            assert(isfield(baseParameters, "J_P")); % Polar moment of inertia
+            assert(isfield(baseParameters, "E"), 'elara:MissingBeamParameter', ...
+                'Missing Young''s modulus E (N/m^2).');
+            assert(isfield(baseParameters, "nu"), 'elara:MissingBeamParameter', ...
+                'Missing Poisson''s ratio nu.');
+            assert(isfield(baseParameters, "rho"), 'elara:MissingBeamParameter', ...
+                'Missing density rho (kg/m^3).');
+            assert(isfield(baseParameters, "A"), 'elara:MissingBeamParameter', ...
+                'Missing cross-section area A (m^2).');
+            assert(isfield(baseParameters, "I_x"), 'elara:MissingBeamParameter', ...
+                'Missing second moment of area I_x about the body-fixed x axis.');
+            assert(isfield(baseParameters, "I_y"), 'elara:MissingBeamParameter', ...
+                'Missing second moment of area I_y about the body-fixed y axis.');
+            assert(isfield(baseParameters, "J_P"), 'elara:MissingBeamParameter', ...
+                'Missing polar second moment of area J_P.');
 
             % Shear Modulus
             % [LLA11, p.307], also e.g., [Dem+15, p. 80]

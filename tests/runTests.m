@@ -31,3 +31,7 @@ disp( table(result) );
 %% Simulation Regression Tests
 result = runtests('SimulationRegressionTests');
 disp( table(result) );
+
+%% Shared Diagnostic Identifier Tests
+result = runtests('DiagnosticIdentifierTests');
+disp( table(result) );

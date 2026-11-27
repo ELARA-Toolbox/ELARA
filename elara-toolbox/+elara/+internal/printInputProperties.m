@@ -32,13 +32,15 @@ function tInputs = printInputProperties(system)
 
         % Get link, on which the input acts (should be only 1)
         uLink = unique(system.frames.linkIndex(uFrms));
-        assert(isscalar(uLink), "Input acts on more than one link.");
+        assert(isscalar(uLink), 'elara:InvalidInputAssignment', ...
+            "Input acts on more than one link.");
         inputLink(iInput) = uLink;
 
         % Get joint types of frames, on which the input acts (should be
         % only 1 joint type)
         uType = unique(system.frames.jointType(uFrms));
-        assert(isscalar(uLink), "Input affects multiple joint types.");
+        assert(isscalar(uLink), 'elara:InvalidInputAssignment', ...
+            "Input affects multiple joint types.");
 
         switch uType
             case 1
@@ -48,7 +50,7 @@ function tInputs = printInputProperties(system)
                 inputType(iInput) = "Tendon Actuation";
 
             otherwise
-                error("Joint type not defined.")
+                error('elara:InvalidJointType', "Joint type not defined.")
         end
     end
 

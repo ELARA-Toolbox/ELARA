@@ -18,7 +18,8 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
 
     % Verify that the TCP is defined for the system
     if ~systemSym.indexTCPFrame
-        warning("No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
+        warning('elara:MissingTCPFrame', ...
+            "No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
         indexTCPFrame = systemSym.nFrames;
     else
         indexTCPFrame = systemSym.indexTCPFrame;

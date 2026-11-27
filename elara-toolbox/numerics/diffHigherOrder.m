@@ -25,7 +25,7 @@ function [x_dot, x_ddot] = diffHigherOrder(x, h, order)
         case 4
             [x_dot, x_ddot] = diff4thOrder(x, h);
         otherwise
-            error("Finite difference order not defined.");
+            error('elara:InvalidFiniteDifferenceOrder', "Finite difference order not defined.");
     end
 end
 

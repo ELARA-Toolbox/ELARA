@@ -39,7 +39,8 @@ classdef SystemSym < elara.abstract.System
                 % Vector of joint angles with dimension (nJoints,1)
                 theta      (:,1)
             end
-            assert(size(theta,1) == system.nJoints, "Joint angle vector has incorrect length.");
+            assert(size(theta,1) == system.nJoints, ...
+                'elara:InvalidJointAngleDimensions', "Joint angle vector has incorrect length.");
 
             % Get indices of frames with screw joints
             thetaIndices = system.frames.qIndices(1,system.frames.jointType == 1);
@@ -73,6 +74,7 @@ classdef SystemSym < elara.abstract.System
 
             nSegments = numel(linkFrames);
             assert(size(xi,2) == nSegments, ...
+                'elara:InvalidLinkDeformationDimensions', ...
                 "The deformation matrix xi must have one column per beam segment.")
 
             % Get indices in q belonging to the flexible link
@@ -182,7 +184,7 @@ classdef SystemSym < elara.abstract.System
                         v  = (Ba(4:6,:) * qi + system.frames.xiC(4:6,iFrm));
                         [g_rel(iFrm).R, g_rel(iFrm).x] = f.SE3.cay(om*system.frames.l(iFrm), v*system.frames.l(iFrm));
                     otherwise
-                        error("Invalid joint type specified.");
+                        error('elara:InvalidJointType', "Invalid joint type specified.");
                 end
             end
         end

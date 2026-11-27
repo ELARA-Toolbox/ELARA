@@ -18,6 +18,6 @@ function [A, b, c] = butcherTableau(method)
             c = [0; 0.5; 0.5; 1];
 
         otherwise
-            error("Unknown method: %s", method);
+            error('elara:UnsupportedRungeKuttaMethod', "Unknown method: %s", method);
     end
 end

@@ -45,7 +45,8 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     x_k1Sym = casadi.MX.sym('x_k1', 2*system.nDoF, 1);
 
     if OCP.useSplineInputs
-        assert(size(u,2) == OCP.nSteps+1);
+        assert(size(u,2) == OCP.nSteps+1, 'elara:InvalidInputSampleCount', ...
+            'The control array must contain one column per OCP time node.');
         u_kStageSym = casadi.MX.sym('u_kStage', system.nInputs, size(u,1));
         eq_int = OCP.discretization.getIntegrationStepConstraintSpline(FFun, x_kSym, x_k1Sym, u_kStageSym, h);
         FStep = casadi.Function('FStep', {x_kSym, x_k1Sym, u_kStageSym}, {eq_int});

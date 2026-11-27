@@ -41,7 +41,9 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
             end
 
             % Make sure argument sizes match
-            assert(numel(LTermination) == numel(x_td_funs));
+            assert(numel(LTermination) == numel(x_td_funs), ...
+                'elara:InvalidTendonRoutingDimensions', ...
+                'Provide one termination length per tendon path function.');
 
             obj.x_td_funs = x_td_funs;
             obj.x_td_ds_funs = x_td_ds_funs;
@@ -75,9 +77,15 @@ classdef ContinuousTendonActuation < elara.abstract.TendonActuation
             end
 
             % Make sure function array sizes match
-            assert(length(obj.x_td_funs) == length(obj.x_td_ds_funs));
-            assert(length(obj.x_td_funs) == length(obj.x_td_dds_funs));
-            assert(length(obj.x_td_funs) == length(obj.LTermination));
+            assert(length(obj.x_td_funs) == length(obj.x_td_ds_funs), ...
+                'elara:InvalidTendonRoutingDimensions', ...
+                'Provide one first-derivative function per tendon path function.');
+            assert(length(obj.x_td_funs) == length(obj.x_td_dds_funs), ...
+                'elara:InvalidTendonRoutingDimensions', ...
+                'Provide one second-derivative function per tendon path function.');
+            assert(length(obj.x_td_funs) == length(obj.LTermination), ...
+                'elara:InvalidTendonRoutingDimensions', ...
+                'Provide one termination length per tendon path function.');
 
             nDisks  = length(sDisks);
             nTendons = length(obj.x_td_funs);
