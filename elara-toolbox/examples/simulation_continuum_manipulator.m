@@ -12,6 +12,8 @@ close all
 %% Script settings
 
 % Also simulate the problem with ode15s?
+% This stiff ODE comparison can take several minutes, even with MEX.
+% Set false to run only the faster variational-integrator example.
 RUN_ODE = true;
 
 % Make sure example system folder is on the path

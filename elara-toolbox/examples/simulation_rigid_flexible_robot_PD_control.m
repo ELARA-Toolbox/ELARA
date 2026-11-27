@@ -1,5 +1,5 @@
 %% Example Simulation of a PD-Controlled "Surgical" Rigid-Soft Manipulator
-% With two rigid base links and a flexible "end effector"
+% With three rigid base links and a flexible "end effector"
 %
 % Maximilian Herrmann
 % Chair of Automatic Control
