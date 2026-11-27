@@ -79,6 +79,56 @@ verifyEqual(testCase, sum(system.frames.m(frames)), ...
     beam.L*beam.beamParameters.m, 'AbsTol', 1e-12);
 end
 
+%% Supported beam selection matrices and constitutive inputs
+
+function testSignedAndMixedSelectionMatricesAreRejected(testCase)
+% Use a two-segment cantilever with healthy diagonal material stiffness.
+% Sign flips and the exact orthogonal Hadamard block pass the old basis
+% checks, but are not selections of the physical deformation components.
+beam = makeBeam(2, true, 0);
+signedBa = beam;
+signedBa.Ba(:,1) = -signedBa.Ba(:,1);
+signedBc = beam;
+signedBc.Bc(:,1) = -signedBc.Bc(:,1);
+H = blkdiag([1,1,1,1; 1,-1,1,-1; 1,1,-1,-1; 1,-1,-1,1]/2, eye(2));
+mixed = beam;
+mixed.Ba = H(:,1:3);
+mixed.Bc = H(:,4:6);
+for candidate = {signedBa, signedBc, mixed}
+    verifyError(testCase, @() elara.SystemNum(candidate{1}), ...
+        'elara:InvalidSelectionMatrix');
+end
+end
+
+function testSelectionMatricesAllowReorderedAxes(testCase)
+% Reordering the selected rotational axes is supported. On the cantilever,
+% stiffness and damping must follow that coordinate order for every segment.
+beam = makeBeam(2, true, 0);
+order = [3; 1; 2];
+beam.Ba = beam.Ba(:,order);
+beam.Bc = beam.Bc(:,order);
+beam.beamParameters.d = (1:6).';
+system = elara.SystemNum(beam);
+l = beam.L/beam.nSegments;
+stiffness = diag(beam.beamParameters.Cgen);
+verifyEqual(testCase, system.cSys, repmat(l*stiffness(order), beam.nSegments, 1), ...
+    'AbsTol', 1e-12);
+verifyEqual(testCase, system.dSys, ...
+    repmat(l*beam.beamParameters.d(order), beam.nSegments, 1), 'AbsTol', 1e-12);
+end
+
+function testCoupledBeamStiffnessIsRejected(testCase)
+% Add symmetric coupling between bending modes of the same cantilever.
+% A stiffness vector cannot represent it, so assembly must reject the input
+% rather than silently discarding the material matrix's off-diagonal terms.
+beam = makeBeam(2, true, 0);
+C = beam.beamParameters.Cgen;
+C(1,2) = sqrt(C(1,1)*C(2,2))/4;
+C(2,1) = C(1,2);
+beam.beamParameters.Cgen = C;
+verifyError(testCase, @() elara.SystemNum(beam), 'elara:UnsupportedBeamStiffness');
+end
+
 %% Variational integration: failure reporting and accepted trajectory prefixes
 
 function testInitialStepFailureReturnsStatus(testCase)
