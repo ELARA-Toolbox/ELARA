@@ -234,6 +234,8 @@ The static configuration search has its own objective weights, independent of th
 
 The same weights apply to each static TCP waypoint; they are unused when `qF` is supplied. To solve a static problem directly, use `elara.ocp.computeStaticEquilibriumTCPPos(problem, "costWeights", weights)`. These problems can have multiple local minima, so reducing a regularization weight alone does not guarantee a better initial configuration.
 
+Static-equilibrium solves enforce workspace constraints at all system frames and, when a TCP is defined, at its offset position as well. The clearance from workspace boundaries and obstacles defaults to `0.02` m. Set `"safetyMargin", margin` in `computeStaticEquilibriumTCPPos`, or `"staticSafetyMargin", margin` in `computeInitialGuessInvDyn`, to change it; the margin must be finite and nonnegative. The latter option applies to each static waypoint solve and is unused when `qF` is supplied. It does not impose clearance along the interpolated initial-guess trajectory. When no TCP is defined, both helpers use the final system frame for TCP targets and issue `elara:MissingTCPFrame`, as does `initSolver`.
+
 The returned node input can be converted to the active control parameterization as follows:
 
 ```matlab

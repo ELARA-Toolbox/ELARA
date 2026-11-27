@@ -27,6 +27,10 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
         % Static-equilibrium objective weights used for each TCP waypoint:
         % [controls; coordinates; TCP position error]. Ignored if qF is set.
         opts.staticCostWeights  (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
+
+        % Workspace clearance in meters for the static TCP waypoint solves.
+        % Ignored if qF is set.
+        opts.staticSafetyMargin (1,1) double {mustBeFinite,mustBeNonnegative} = 0.02;
     end
 
     fprintf("\nGenerating initial guess.\n");
@@ -35,6 +39,15 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
     systemNum = OCP.systemNum;
     systemSym = OCP.systemSym;
     simPars = OCP.simPars;
+
+    % Check if a TCP is set for the system
+    if ~systemNum.indexTCPFrame
+        warning('elara:MissingTCPFrame', ...
+            "No TCP frame defined in the ELARA System object. Using last system frame as the TCP frame.")
+        indexTCPFrame = systemNum.nFrames;
+    else
+        indexTCPFrame = systemNum.indexTCPFrame;
+    end
 
     % A simulation object is only needed as a result/visualization
     % container and for the optional forward simulation.
@@ -60,20 +73,15 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
             fprintf("Computing optimal steady-state configuration...\n\n");
 
             [qF, uF] = elara.ocp.computeStaticEquilibriumTCPPos(OCP_stat, ...
-                "costWeights", opts.staticCostWeights);
+                "costWeights", opts.staticCostWeights, ...
+                "safetyMargin", opts.staticSafetyMargin);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
             disp("Computed static controls (N or Nm):")
             disp(uF.');
 
-            % For revolute joints: Remove offsets by 2pi
-            % TODO: This line is only valid for revolute joints! For any other
-            % screw joint (prismatic or screw), it produces wrong values
-            jointIndices = systemSym.frames.qIndices(1, systemSym.frames.jointType==1);
-            qF(jointIndices) = wrapToPi(qF(jointIndices));
-
             gOptStatic = systemNum.computeFwdKin(qF);
-            g_TCP = gOptStatic(:,:,systemNum.indexTCPFrame)*systemNum.g_B_TCP;
+            g_TCP = gOptStatic(:,:,indexTCPFrame)*systemNum.g_B_TCP;
             fprintf("Distance desired TCP position:     %.2e m\n", ...
                 norm(OCP_stat.x_TCP_F - g_TCP(1:3, 4)));
 

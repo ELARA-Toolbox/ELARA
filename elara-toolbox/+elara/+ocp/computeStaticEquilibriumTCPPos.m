@@ -10,6 +10,9 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
         % ordered as in Problem.finalCostWeights:
         % [controls, coordinates, TCP position error]
         opts.costWeights (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
+
+        % Clearance from workspace boundaries and obstacles, in meters.
+        opts.safetyMargin (1,1) double {mustBeFinite,mustBeNonnegative} = 0.02;
     end
 
     %% Get variables
@@ -19,14 +22,17 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
     % Verify that the TCP is defined for the system
     if ~systemSym.indexTCPFrame
         warning('elara:MissingTCPFrame', ...
-            "No TCP frame defined in the elara.abstract.System object. Using last frame as the TCP frame.")
+            "No TCP frame defined in the ELARA System object. Using last system frame as the TCP frame.")
         indexTCPFrame = systemSym.nFrames;
     else
         indexTCPFrame = systemSym.indexTCPFrame;
     end
 
     % CasADi functions for signed workspace distances
-    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(systemSym.nFrames);
+    % Include the TCP position in workspace constraints only when a TCP is
+    % explicitly defined.
+    nFramesWS = systemSym.nFrames + double(systemSym.indexTCPFrame ~= 0);
+    [dIntFun, dExtFun] = OCP.workspace.getSignedDistanceFunctions(nFramesWS);
 
 
     %% Define and solve optimization problem
@@ -40,15 +46,18 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
     opti.subject_to( res_statics == 0 );
 
     % Workspace constraint
-    safetyMargin = 0.02;
-
-    c_WSInt = dIntFun(horzcat(g.x));
-    c_WSExt = dExtFun(horzcat(g.x));
+    g_TCP = g(indexTCPFrame) * elara.SE3.matrix2Element(systemSym.g_B_TCP);
+    x_WS = horzcat(g.x);
+    if systemSym.indexTCPFrame
+        x_WS = [x_WS, g_TCP.x];
+    end
+    c_WSInt = dIntFun(x_WS);
+    c_WSExt = dExtFun(x_WS);
     if length(c_WSInt) %#ok<ISMT>
-        opti.subject_to(c_WSInt > safetyMargin);
+        opti.subject_to(c_WSInt >= opts.safetyMargin);
     end
     if length(c_WSExt) %#ok<ISMT>
-        opti.subject_to(c_WSExt < safetyMargin);
+        opti.subject_to(c_WSExt <= -opts.safetyMargin);
     end
 
     % Control limits
@@ -59,7 +68,6 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
         opti.subject_to(u < OCP.uMax);
     end
     % TCP constraint
-    g_TCP = g(indexTCPFrame) * elara.SE3.Element(systemSym.g_B_TCP(1:3,1:3), systemSym.g_B_TCP(1:3,4));
     if OCP.addTCPFinalTimeConstraint
         opti.subject_to( (g_TCP.x ) ==  OCP.x_TCP_F);
     end
