@@ -160,6 +160,8 @@ simulation.animateSimResults;
 
 If velocities are omitted, `fromStateTrajectory` estimates them using second- or fourth-order finite differences. For an ODE transcription, `qDotSol` can be passed as the fourth argument in the call above.
 
+Finite-difference estimation requires finite, strictly increasing, uniformly spaced sample times. The intervals are compared with their mean `h`, allowing deviations up to `1e-8*abs(h) + 8*eps(max(abs(tout)))` to accommodate small spacing differences and floating-point roundoff. A nonuniform grid raises `elara:NonuniformTimeGrid`. Nonuniform times are supported when velocities are supplied explicitly.
+
 ## Workspace Graphics
 
 Workspace geometry is often useful as a visual reference when inspecting an optimized motion. `problem.workspace.visualize` draws the configured interiors and obstacles as translucent polytopes and can either create a new figure or overlay the current axes:

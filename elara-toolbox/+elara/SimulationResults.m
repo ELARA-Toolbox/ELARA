@@ -48,12 +48,12 @@ classdef SimulationResults
             % results.
             % The velocity matrix is optional; if no velocities are given,
             % they are computed from the configurations via finite
-            % differences.
+            % differences, which require uniformly spaced sample times.
             arguments
                 % Object defining the multibody system
                 system  (1,1) elara.SystemNum
 
-                % Time vector
+                % Time vector; must be uniform when estimating velocities.
                 tout    (:,1) double
 
                 % Configurations at the times in tout, (nDoF, nSteps)
@@ -69,9 +69,26 @@ classdef SimulationResults
                 % the velocities
                 opts.finiteDifferenceOrder (1,1) double {mustBeMember(opts.finiteDifferenceOrder, [2,4])}= 2;
             end
-            % Use finite differences if velocities are not given
-            if isnan(q_dot)
-                [q_dot, ~] = diffHigherOrder(q, tout(2)-tout(1), opts.finiteDifferenceOrder);
+            % Scalar NaN marks omitted velocities. Explicit velocity arrays
+            % may contain NaNs, for example at the final VI time node.
+            if isscalar(q_dot) && isnan(q_dot)
+                assert(numel(tout) >= 2, 'elara:InvalidTimeGrid', ...
+                    'Finite-difference velocities require at least two sample times.');
+                timeSteps = diff(tout);
+                h = mean(timeSteps);
+                assert(isreal(tout) && all(isfinite(tout)) ...
+                    && all(timeSteps > 0) && isfinite(h), ...
+                    'elara:InvalidTimeGrid', ...
+                    'Finite-difference velocities require finite, strictly increasing sample times.');
+
+                % Allow small relative spacing differences and roundoff
+                % from subtracting timestamps with a nonzero time origin.
+                gridTolerance = 1e-8*abs(h) + 8*eps(max(abs(tout)));
+                assert(all(abs(timeSteps-h) <= gridTolerance), ...
+                    'elara:NonuniformTimeGrid', ...
+                    ['Finite-difference velocities require uniformly spaced sample times. ' ...
+                    'Supply q_dot explicitly for a nonuniform time grid.']);
+                [q_dot, ~] = diffHigherOrder(q, h, opts.finiteDifferenceOrder);
             end
 
             % Check if compiled mex files are available

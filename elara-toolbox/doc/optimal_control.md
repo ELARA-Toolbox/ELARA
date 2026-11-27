@@ -316,7 +316,7 @@ sim.drawSnapshots;
 sim.animateSimResults;
 ```
 
-For a variational solution, the first output of `solve` is already `qSol`. When the velocity argument is omitted, it is estimated by `fromStateTrajectory` using finite differences.
+For a variational solution, the first output of `solve` is already `qSol`. When the velocity argument is omitted, it is estimated by `fromStateTrajectory` using finite differences, which require uniformly spaced sample times within the tolerance described under [Visualizing Systems and Results](visualization.md#plotting-optimal-control-data). Supply velocities explicitly for nonuniform trajectories.
 
 > **Note regarding model consistency:** `problem.links`, `problem.systemNum`, and `problem.systemSym` are assembled as separate values and are not synchronized after construction. The `Problem` must therefore be reconstructed after changing link or system parameters.
 

@@ -546,6 +546,98 @@ end
 
 %% Prescribed trajectories: interpolation and single-coordinate display
 
+function testFiniteDifferenceVelocitiesOnUniformGrids(testCase)
+% Quadratic and linear coordinates have exact finite-difference velocities
+% for both supported orders. Cover ordinary, tiny, and large time scales.
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 2));
+s = linspace(0, 1, 9);
+q = [s.^2; 0.2+3*s];
+for scale = [0.8, 8e-10, 8e8]
+    times = scale*s.';
+    expected = [2*s; 3*ones(size(s))]/scale;
+    for order = [2, 4]
+        results = elara.SimulationResults.fromStateTrajectory(system, times, q, ...
+            "finiteDifferenceOrder", order);
+        verifyEqual(testCase, results.q_dot, expected, ...
+            'AbsTol', 1e-10/scale, 'RelTol', 1e-10);
+    end
+end
+end
+
+function testFiniteDifferenceGridTolerance(testCase)
+% Small timestamp perturbations are accepted, while a change large enough
+% to exceed the relative spacing tolerance is rejected for both orders.
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 1));
+for order = [2, 4]
+    times = (0:0.1:0.5).';
+    times(3) = times(3) + 1e-11;
+    results = elara.SimulationResults.fromStateTrajectory(system, times, times.'.^2, ...
+        "finiteDifferenceOrder", order);
+    verifyEqual(testCase, results.q_dot, 2*times.', 'AbsTol', 1e-7);
+
+    times(3) = times(3) + 1e-7;
+    verifyError(testCase, @() elara.SimulationResults.fromStateTrajectory( ...
+        system, times, times.'.^2, "finiteDifferenceOrder", order), ...
+        'elara:NonuniformTimeGrid');
+end
+end
+
+function testFiniteDifferenceGridWithLargeTimeOrigin(testCase)
+% Subtraction of large timestamps introduces more roundoff than a check
+% based only on relative step size would allow. The nominal grid is uniform.
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 1));
+localTimes = (0:0.1:0.5).';
+for origin = [-1e8, 1e8]
+    times = origin + localTimes;
+    for order = [2, 4]
+        results = elara.SimulationResults.fromStateTrajectory( ...
+            system, times, localTimes.', "finiteDifferenceOrder", order);
+        verifyEqual(testCase, results.q_dot, ones(1,numel(times)), 'AbsTol', 1e-12);
+    end
+end
+end
+
+function testFiniteDifferenceRejectsNonuniformTimes(testCase)
+% The original q=t^2 counterexample must fail before returning an incorrect
+% velocity. Very small times must not be hidden by a fixed absolute tolerance.
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 1));
+baseTimes = [0; 0.1; 0.3; 0.6; 1; 1.4];
+for scale = [1, 1e-12, 1e12]
+    times = scale*baseTimes;
+    for order = [2, 4]
+        verifyError(testCase, @() elara.SimulationResults.fromStateTrajectory( ...
+            system, times, baseTimes.'.^2, "finiteDifferenceOrder", order), ...
+            'elara:NonuniformTimeGrid');
+    end
+end
+end
+
+function testNonuniformTimesWithExplicitVelocities(testCase)
+% Supplied velocities bypass finite differences. Preserve finite values and
+% explicitly supplied NaNs, including an array of entirely unknown velocities.
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 2));
+times = [0; 0.1; 0.3; 0.6; 1; 1.4];
+q = [times.'.^2; times.'.^3];
+qDot = [2*times.'; 3*times.'.^2];
+for velocities = {qDot, [qDot(:,1:end-1), nan(2,1)], nan(size(q))}
+    results = elara.SimulationResults.fromStateTrajectory(system, times, q, velocities{1});
+    verifyEqual(testCase, results.tout, times);
+    verifyEqual(testCase, results.q, q);
+    verifyTrue(testCase, isequaln(results.q_dot, velocities{1}));
+end
+end
+
+function testInvalidTimeGridsForFiniteDifferences(testCase)
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 1));
+grids = {[], 0, [0; 0; 0.1; 0.2], [0.3; 0.2; 0.1; 0], ...
+    [0; 0.1; NaN; 0.3], [0; 0.1; 0.2; Inf], 1i*(0:0.1:0.3).'};
+for k = 1:numel(grids)
+    times = grids{k};
+    verifyError(testCase, @() elara.SimulationResults.fromStateTrajectory( ...
+        system, times, zeros(1,numel(times))), 'elara:InvalidTimeGrid');
+end
+end
+
 function testInterpolationOverNonuniformTimes(testCase)
 % Use one- and two-link pendulums for geometry, prescribing q instead of
 % integrating it. Compare against hand-computed linear interpolation on a
