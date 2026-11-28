@@ -9,11 +9,20 @@ function fh = TCPTrajectory(OCP, q_sol)
 
     systemNum = OCP.systemNum;
 
+    % Verify that the TCP is defined for the system
+    if ~systemNum.indexTCPFrame
+        warning('elara:MissingTCPFrame', ...
+            "No TCP frame defined in the ELARA System object. Using last system frame as the TCP frame.")
+        indexTCPFrame = systemNum.nFrames;
+    else
+        indexTCPFrame = systemNum.indexTCPFrame;
+    end
+
     % Compute TCP trajectory
     g_TCP_sol = zeros(4,4, OCP.nSteps+1);
     for iStep = 1:OCP.nSteps+1
         g_k = systemNum.computeFwdKin(q_sol(:,iStep));
-        g_TCP_sol(:,:,iStep) = g_k(:,:,systemNum.indexTCPFrame)*systemNum.g_B_TCP;
+        g_TCP_sol(:,:,iStep) = g_k(:,:,indexTCPFrame)*systemNum.g_B_TCP;
     end
     x_TCP_sol = squeeze(g_TCP_sol(1:3,4,:));
 
