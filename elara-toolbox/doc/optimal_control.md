@@ -25,7 +25,7 @@ $$
 \end{aligned}
 $$
 
-where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running and final costs, and $w$ denotes the numerical quadrature weights that define the costs. The constraints contain the discretized dynamics, boundaries, and bounds.
+where $z$ collects all optimization variables, $\ell$ and $\Phi$ are the running and final costs, and $w$ denotes the user-selected cost weights. The discretization determines the numerical quadrature weights used to integrate the running costs. The constraints contain the discretized dynamics, boundaries, and bounds.
 
 The variational discretization uses only configurations $q_k$ as state variables and imposes discrete Euler-Lagrange equations. ODE discretizations instead use
 
@@ -148,6 +148,7 @@ problem.x_TCP_traj = ...
 ```
 
 `finiteDifferenceOrder`, either `2` or `4`, controls derivatives used in the cost when they are obtained from node values.
+NLP construction requires at least four time nodes for order `2` or six for order `4`; a shorter grid raises `elara:InsufficientSamples`. This requirement also applies when derivative costs are inactive, because their objective components are still constructed for evaluation.
 
 ## Parameterizing the Controls
 
