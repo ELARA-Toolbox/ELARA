@@ -20,6 +20,10 @@ disp( table(result) );
 result = runtests('SystemFunctionTests');
 disp( table(result) );
 
+%% Symbolic Dynamics Regression Tests
+result = runtests('SymbolicDynamicsRegressionTests');
+disp( table(result) );
+
 %% Inverse Dynamics Tests
 result = runtests('InverseDynamicsTests');
 disp( table(result) );

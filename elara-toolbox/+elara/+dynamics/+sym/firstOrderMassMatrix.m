@@ -1,54 +1,22 @@
 function M_fo = firstOrderMassMatrix(t, x, system)
-    %% Compute the overall mass matrix for a multibody system in first-order form
-    % That is, the mass matrix diag(I, M) has size 2*nDoF-by-2*nDoF.
+    %% Compute the first-order mass matrix diag(I, M(q))
     arguments (Input)
-        % Integration time (from ode solver)
-        % Not needed for the function, but "~" is not allowed for codegen
+        % Integration time (unused; retained for the ODE function interface)
         t       (1,1)
 
         % State vector x = [q; q_dot] (2*nDoF, 1)
         x       (:,1)
 
-        system  (1,1) elara.abstract.System
+        system  (1,1) elara.SystemSym
     end
 
-    M_fo = blkdiag( ...
-        eye(system.nDoF), ...
-        computeSystemMassMatrix([], x, system) ...
-        );
-
-end
-function [M, J] = computeSystemMassMatrix(~, x, system)
-    %% Compute the system mass matrix of a multibody system
-    arguments (Input)
-        % Integration time (from ode solver)
-        ~%t
-
-        % State vector x = [q; q_dot] (2*nDoF, 1)
-        x      (:,1)
-
-        system (1,1) elara.abstract.System
-    end
-    arguments (Output)
-        % System mass matrix
-        M   (:,:)
-
-        % Array of frame Jacobian matrices
-        J   (:,1) cell
-    end
-
-    % Get Jacobians
-    J = system.computeGeomJacobian( x(1:numel(x)/2) );
-
-    % Mass matrix
-    if isa(x, "casadi.MX")
-        M = casadi.MX.zeros(system.nDoF);
-    elseif isa(x, "casadi.SX")
-        M = casadi.SX.zeros(system.nDoF);
-    else
-        M = zeros(system.nDoF, class(x));
-    end
+    % Preserve the dimensions of every coordinate block, including the
+    % zero blocks between uncoupled branches.
+    M_C = system.computeMassMatrix(x(1:system.nDoF));
+    M_rows = cell(system.nFrames,1);
     for iFrm = 1:system.nFrames
-        M = M + J{iFrm}.' * system.frames.MGen(:,:,iFrm) * J{iFrm};
+        M_rows{iFrm} = horzcat(M_C{iFrm,:});
     end
+    M = vertcat(M_rows{:});
+    M_fo = blkdiag(eye(system.nDoF), M);
 end

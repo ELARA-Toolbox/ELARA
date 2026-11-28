@@ -548,6 +548,17 @@ classdef SystemSym < elara.abstract.System
                     end
                 end
             end
+
+            % Uncoupled branches have zero mass-matrix blocks. Keep their
+            % dimensions so concatenation preserves every coordinate column.
+            for iRow = 1:system.nFrames
+                for iCol = 1:system.nFrames
+                    if isempty(M{iRow,iCol})
+                        M{iRow,iCol} = zeros(system.frames.nDof(iRow), ...
+                            system.frames.nDof(iCol));
+                    end
+                end
+            end
         end
 
         function [M, J] = computeMassMatrix(system, q)

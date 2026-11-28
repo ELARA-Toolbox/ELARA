@@ -1,5 +1,5 @@
 function f_fo = firstOrderRHS(t, x, system, simPars, u)
-    %% Compute the Right-Hand Side of the EOMs in first-order form
+    %% Compute the first-order RHS for M(x)*x_dot = f(t,x,u)
     arguments (Input)
         % Integration time (from ode solver)
         % Not needed for the function, but "~" is not allowed for codegen
@@ -8,7 +8,7 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
         % State vector x = [q; q_dot] (2*nDoF, 1)
         x           (:,1)
 
-        system      (1,1) elara.abstract.System
+        system      (1,1) elara.SystemSym
 
         simPars     (1,1) elara.SimulationParameters
 
@@ -19,10 +19,11 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
         f_fo        (:,1)
     end
 
+    f = elara.internal.math.getSE3Functions(x);
+
     %% Get configuration and velocity
     q     = x(1:system.nDoF);
     q_dot = x((system.nDoF+1):end);
-
 
     %% Relative Kinematics
 
@@ -31,30 +32,42 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
     J = system.computeGeomJacobianFast(q, g_rel);
 
     % Compute absolute velocities
-    if isa(x, "casadi.MX")
-        eta = casadi.MX.zeros(6,system.nFrames);
-    elseif isa(x, "casadi.SX")
-        eta = casadi.SX.zeros(6,system.nFrames);
-    else
-        eta = zeros(6,system.nFrames, class(x));
-    end
+    eta = cell(system.nFrames,1);
     for iFrm = 1:system.nFrames
-        eta(:,iFrm) = J{iFrm} * q_dot;
+        for iBlock = 1:system.nFrames
+            qIndices = double( system.frames.qIndices(1,iBlock):system.frames.qIndices(2,iBlock));
+            if ~isempty(J{iFrm, iBlock})
+                if isempty(eta{iFrm})
+                    eta{iFrm} = J{iFrm, iBlock} * q_dot(qIndices);
+                else
+                    eta{iFrm} = eta{iFrm} + J{iFrm, iBlock} * q_dot(qIndices);
+                end
+            end
+        end
     end
     % The equations of motion require only J_dot*q_dot, so use the
     % efficient acceleration-bias factorization instead of the full J_dot.
     J_bias = system.computeGeomJacobianAccelerationBiasMatrixFast( ...
         q, q_dot, eta, g_rel);
 
-
     %% Evaluate EOM
 
-    % Generalized forces (stress and dissipation)
+    % Generalized forces (stress, dissipation and system inputs)
     f_gen = system.cSys .* (q - system.qRef) + system.dSys .* q_dot;
 
-    % Actuation (if nonzero)
-    if ~isempty(simPars.uConst)
-        f_gen = f_gen + system.computeInputMatrixFast(q, g_rel) * u;
+    % Input term
+    f_gen_C = cell(system.nFrames, 1);
+    B = system.computeInputMatrixFast(q, g_rel);
+    for iFrm = 1:system.nFrames
+        for iInput = 1:system.nInputs
+            if ~isempty(B{iFrm, iInput})
+                if isempty(f_gen_C{iFrm})
+                    f_gen_C{iFrm} = -B{iFrm, iInput} * u(iInput);
+                else
+                    f_gen_C{iFrm} = f_gen_C{iFrm} - B{iFrm, iInput} * u(iInput);
+                end
+            end
+        end
     end
 
     % Placeholder values for external forces
@@ -63,20 +76,45 @@ function f_fo = firstOrderRHS(t, x, system, simPars, u)
 
     % Get gravity and external spatial forces transformed to the body-fixed
     % frames
-    f_frame_b = -f_frame_b + elara.dynamics.sym.bodyFixedFrameForces(system, g, f_frame_s, simPars.g);
+    f_frame_b_C = elara.dynamics.sym.bodyFixedFrameForces(system, g, f_frame_s, simPars.g);
 
-    % Compute sum of generalized forces
+    % Compute the acceleration-bias product J_dot*q_dot.
+    JdotTerm = cell(system.nFrames,1);
     for iFrm = 1:system.nFrames
-        f_gen = f_gen + J{iFrm}.' * (...
-            ...% Frame forces
-            + f_frame_b(:,iFrm)...
-            ...% Coriolis Term
-            + (system.frames.MGen(:,:,iFrm) * J_bias{iFrm} ...
-            - elara.SE3.smallAd(eta(:,iFrm)).' * system.frames.MGen(:,:,iFrm) * J{iFrm}) * q_dot ...
-            );
+        for iBlock = 1:system.nFrames
+            qIndices = double( system.frames.qIndices(1,iBlock):system.frames.qIndices(2,iBlock));
+            if ~isempty(J_bias{iFrm, iBlock})
+                if isempty(JdotTerm{iFrm})
+                    JdotTerm{iFrm} = J_bias{iFrm, iBlock} * q_dot(qIndices);
+                else
+                    JdotTerm{iFrm} = JdotTerm{iFrm} + J_bias{iFrm, iBlock} * q_dot(qIndices);
+                end
+            end
+        end
     end
+
+    for iFrm = 1:system.nFrames
+        % Overall frame forces
+        f_frame_b_i = ...
+            - f_frame_b(:, iFrm) ...
+            + f_frame_b_C{iFrm} ...
+            ...% Coriolis Term
+            + system.frames.MGen{iFrm} * JdotTerm{iFrm} ...
+            - f.SE3.smallAd(eta{iFrm}(1:3),eta{iFrm}(4:6)).' * system.frames.MGen{iFrm} * eta{iFrm};
+        % Distribute node terms to coordinates
+        for iB = 1:system.nFrames
+            if ~isempty(J{iFrm,iB})
+                if isempty(f_gen_C{iB})
+                    f_gen_C{iB} = J{iFrm,iB}.' * f_frame_b_i;
+                else
+                    f_gen_C{iB} = f_gen_C{iB} + J{iFrm,iB}.' * f_frame_b_i;
+                end
+            end
+        end
+    end
+
+    f_gen = vertcat(f_gen_C{:}) + f_gen;
 
     %% Assemble first-order RHS
     f_fo = [q_dot; -f_gen];
-
 end
