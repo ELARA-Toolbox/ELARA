@@ -1,8 +1,8 @@
 function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
     %% Compute a static equilibrium for the problem's desired TCP position
     % The equilibrium satisfies the static force balance, workspace
-    % constraints, coordinate and control bounds, and configured final TCP
-    % objective or constraint of the optimal-control problem.
+    % constraints, coordinate and control bounds, and any configured final
+    % TCP constraint. The TCP objective is controlled by useTCPObjective.
     arguments
         OCP (1,1) elara.ocp.Problem
 
@@ -10,6 +10,11 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
         % ordered as in Problem.finalCostWeights:
         % [controls, coordinates, TCP position error]
         opts.costWeights (3,1) double {mustBeFinite,mustBeNonnegative} = [1; 1e5; 1e8];
+
+        % Include the TCP position error in the static objective,
+        % independently of the OCP's cost activation flags. This does not
+        % disable a configured final TCP position constraint.
+        opts.useTCPObjective (1,1) logical = true;
 
         % Clearance from workspace boundaries and obstacles, in meters.
         opts.safetyMargin (1,1) double {mustBeFinite,mustBeNonnegative} = 0.02;
@@ -84,7 +89,7 @@ function [qOpt, uOpt] = computeStaticEquilibriumTCPPos(OCP, opts)
     J = opts.costWeights(1) * 1/2*sumsqr(u) ...
         + opts.costWeights(2) * 1/2 * sumsqr(q);
 
-    if OCP.finalCostActive(end) || OCP.runningCostActive(end)
+    if opts.useTCPObjective
         J = J + opts.costWeights(3) * 1/2*sumsqr((OCP.x_TCP_F - g_TCP.x));
     end
 

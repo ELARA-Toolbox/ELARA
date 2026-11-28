@@ -56,6 +56,9 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
     if isempty(OCP.qF)
         OCP_stat = OCP;
 
+        % Match the static TCP objective to the OCP's active TCP cost terms.
+        useTCPObjective = OCP.finalCostActive(end) || OCP.runningCostActive(end);
+
         if ~isempty(OCP.x_TCP_waypoints)
             nWPts = size(OCP.x_TCP_waypoints,2);
             x_TCP_waypoints = OCP.x_TCP_waypoints;
@@ -74,6 +77,7 @@ function [q_init, q_dot_init, u_init, MBSim, qF, uF] = computeInitialGuessInvDyn
 
             [qF, uF] = elara.ocp.computeStaticEquilibriumTCPPos(OCP_stat, ...
                 "costWeights", opts.staticCostWeights, ...
+                "useTCPObjective", useTCPObjective, ...
                 "safetyMargin", opts.staticSafetyMargin);
 
             fprintf("\nComputation time static optimization: %f s\n\n", toc(tIGStart));
