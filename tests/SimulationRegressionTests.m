@@ -578,6 +578,44 @@ for scale = [0.8, 8e-10, 8e8]
 end
 end
 
+function testFiniteDifferenceMinimumSampleCounts(testCase)
+% Stencil boundaries must raise a useful error instead of indexing beyond
+% the trajectory. At the exact minimum, quadratic derivatives remain exact.
+system = elara.SystemNum(systemDef_planarNLinkPendulum("nLinks", 1));
+functions = {@diff2ndOrder, @diff4thOrder};
+orders = [2, 4];
+for iOrder = 1:numel(orders)
+    order = orders(iOrder);
+    minimumSamples = order + 2;
+    for nTimes = 2:minimumSamples-1
+        times = linspace(0, 1, nTimes).';
+        q = times.'.^2;
+        h = times(2)-times(1);
+        verifyError(testCase, @() elara.SimulationResults.fromStateTrajectory( ...
+            system, times, q, "finiteDifferenceOrder", order), ...
+            'elara:InsufficientSamples');
+        verifyError(testCase, @() functions{iOrder}(q, h), ...
+            'elara:InsufficientSamples');
+        verifyError(testCase, @() diffHigherOrder(q, h, order), ...
+            'elara:InsufficientSamples');
+    end
+    times = linspace(0, 1, minimumSamples).';
+    q = times.'.^2;
+    results = elara.SimulationResults.fromStateTrajectory( ...
+        system, times, q, "finiteDifferenceOrder", order);
+    verifyEqual(testCase, results.q_dot, 2*times.', 'AbsTol', 1e-12);
+    [qDot, qDDot] = diffHigherOrder(q, times(2)-times(1), order);
+    verifyEqual(testCase, qDot, 2*times.', 'AbsTol', 1e-12);
+    verifyEqual(testCase, qDDot, 2*ones(size(q)), 'AbsTol', 1e-12);
+end
+verifyError(testCase, @() diffHigherOrder([0, 1], 1, 1), ...
+    'elara:InsufficientSamples');
+
+% Explicit velocities remain valid for a two-sample trajectory.
+results = elara.SimulationResults.fromStateTrajectory(system, [0; 1], [0, 1], [0, 2]);
+verifyEqual(testCase, results.q_dot, [0, 2]);
+end
+
 function testFiniteDifferenceGridTolerance(testCase)
 % Small timestamp perturbations are accepted, while a change large enough
 % to exceed the relative spacing tolerance is rejected for both orders.

@@ -14,6 +14,9 @@ function [x_dot, x_ddot] = diff4thOrder(x, h)
         h (1,1)
     end
 
+    assert(size(x,2) >= 6, 'elara:InsufficientSamples', ...
+        'Fourth-order finite differences require at least six time samples.');
+
     % Finite-difference coefficients can be generated with the algorithm in
     % B. Fornberg, Mathematics of Computation 51 (1988), pp. 699-706:
     % https://doi.org/10.1090/S0025-5718-1988-0935077-0
