@@ -14,6 +14,9 @@ function [x_dot, x_ddot] = diff2ndOrder(x, h)
         h (1,1)
     end
 
+    assert(size(x,2) >= 4, 'elara:InsufficientSamples', ...
+        'Second-order finite differences require at least four time samples.');
+
     % First step: Forward difference quotient
     x_dot_1  = (-3*x(:,1) + 4*x(:,2) - x(:,3)) / (2*h);
     x_ddot_1 = (2*x(:,1) - 5*x(:,2) + 4*x(:,3) - x(:,4)) / (h^2);

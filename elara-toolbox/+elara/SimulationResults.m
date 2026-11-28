@@ -48,7 +48,8 @@ classdef SimulationResults
             % results.
             % The velocity matrix is optional; if no velocities are given,
             % they are computed from the configurations via finite
-            % differences, which require uniformly spaced sample times.
+            % differences, which require uniformly spaced sample times and
+            % at least four samples for order 2 or six samples for order 4.
             arguments
                 % Object defining the multibody system
                 system  (1,1) elara.SystemNum
@@ -88,6 +89,10 @@ classdef SimulationResults
                     'elara:NonuniformTimeGrid', ...
                     ['Finite-difference velocities require uniformly spaced sample times. ' ...
                     'Supply q_dot explicitly for a nonuniform time grid.']);
+                assert(numel(tout) >= opts.finiteDifferenceOrder + 2, ...
+                    'elara:InsufficientSamples', ...
+                    ['Finite-difference velocities require four samples for order 2 or six for order 4. ' ...
+                    'Supply q_dot explicitly for a shorter trajectory.']);
                 [q_dot, ~] = diffHigherOrder(q, h, opts.finiteDifferenceOrder);
             end
 

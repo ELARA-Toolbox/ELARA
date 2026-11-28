@@ -7,7 +7,7 @@ function [x_dot, x_ddot] = diffHigherOrder(x, h, order)
     % Technical University of Munich
     arguments
         % Matrix of function values with size (n,N), where N is the number
-        % of time nodes (minimum N depends on the requested order)
+        % of time nodes: at least 3, 4, or 6 for order 1, 2, or 4.
         x (:,:)
 
         % Time step
@@ -39,6 +39,9 @@ function [x_dot, x_ddot] = diff1stOrder(x, h)
         % Time step
         h (1,1)
     end
+
+    assert(size(x,2) >= 3, 'elara:InsufficientSamples', ...
+        'First-order finite differences require at least three time samples.');
 
     % First step: Forward difference quotient
     x_dot_1  = (x(:,2) - x(:,1)) / h;
