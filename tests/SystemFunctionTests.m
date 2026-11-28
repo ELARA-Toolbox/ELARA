@@ -359,7 +359,7 @@ for iSystem = 1:numel(systemDefinitions)
     rhsNum = elara.dynamics.num.firstOrderDerivative( ...
         0, x, systemNum, parameters);
     rhsSym = full(elara.dynamics.sym.firstOrderDerivative( ...
-        0, casadi.DM(x), u, systemSym, parameters));
+        casadi.DM(x), u, systemSym, parameters));
 
     errorContinuous = max(abs(rhsNum(:) - rhsSym(:)));
     scaleContinuous = max(norm(rhsNum, inf), norm(rhsSym, inf));

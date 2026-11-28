@@ -38,7 +38,7 @@ function [c, lb_c, ub_c, g, c_dyn, c_WS] = constraintFunODE(OCP, x, u)
     % Define the CasADi right-hand-side function
     xSym = casadi.MX.sym('x', 2*system.nDoF, 1);
     uSym = casadi.MX.sym('u', system.nInputs, 1);
-    Fsym = elara.dynamics.sym.firstOrderDerivative(0, xSym, uSym, system, simPars);
+    Fsym = elara.dynamics.sym.firstOrderDerivative(xSym, uSym, system, simPars);
     FFun = casadi.Function('FFun', {xSym, uSym}, {Fsym});
 
     x_kSym  = casadi.MX.sym('x_k', 2*system.nDoF, 1);

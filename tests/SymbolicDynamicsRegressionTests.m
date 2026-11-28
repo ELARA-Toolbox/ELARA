@@ -60,11 +60,11 @@ for iSystem = 1:numel(definitions)
                 xArgument = casadi.SX.sym('x', 2*n, 1);
                 uArgument = casadi.SX.sym('u', m, 1);
         end
-        mass = elara.dynamics.sym.firstOrderMassMatrix(0, xArgument, symbolicSystem);
+        mass = elara.dynamics.sym.firstOrderMassMatrix(xArgument, symbolicSystem);
         rhs = elara.dynamics.sym.firstOrderRHS( ...
-            0, xArgument, symbolicSystem, parameters, uArgument);
+            xArgument, symbolicSystem, parameters, uArgument);
         derivative = elara.dynamics.sym.firstOrderDerivative( ...
-            0, xArgument, uArgument, symbolicSystem, parameters);
+            xArgument, uArgument, symbolicSystem, parameters);
         if type == "MX" || type == "SX"
             % Expansion is also required by OCP solvers using expand=true.
             evaluate = casadi.Function('ode_helpers', ...

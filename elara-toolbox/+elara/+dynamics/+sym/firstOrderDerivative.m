@@ -1,9 +1,6 @@
-function f_fo = firstOrderDerivative(t, x, u, system, simPars)
+function f_fo = firstOrderDerivative(x, u, system, simPars)
     %% Compute the Right-Hand Side of the EOMs in first-order form (with inverted Mass Matrix)
     arguments (Input)
-        % Integration time (from ode solver)
-        t       (1,1)
-
         % State vector x = [q; q_dot] (2*nDoF, 1)
         x       (:,1)
 
@@ -19,7 +16,7 @@ function f_fo = firstOrderDerivative(t, x, u, system, simPars)
     end
 
     % Get right-hand side of the mass-matrix form of the equations
-    rhs = elara.dynamics.sym.firstOrderRHS(t, x, system, simPars, u);
+    rhs = elara.dynamics.sym.firstOrderRHS(x, system, simPars, u);
 
     M_C = system.computeMassMatrix(x(1:system.nDoF));
     M_rows = cell(system.nFrames,1);

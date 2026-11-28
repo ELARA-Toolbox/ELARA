@@ -1,9 +1,6 @@
-function M_fo = firstOrderMassMatrix(t, x, system)
+function M_fo = firstOrderMassMatrix(x, system)
     %% Compute the first-order mass matrix diag(I, M(q))
     arguments (Input)
-        % Integration time (unused; retained for the ODE function interface)
-        t       (1,1)
-
         % State vector x = [q; q_dot] (2*nDoF, 1)
         x       (:,1)
 

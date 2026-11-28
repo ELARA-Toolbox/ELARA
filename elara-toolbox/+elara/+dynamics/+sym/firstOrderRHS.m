@@ -1,10 +1,6 @@
-function f_fo = firstOrderRHS(t, x, system, simPars, u)
-    %% Compute the first-order RHS for M(x)*x_dot = f(t,x,u)
+function f_fo = firstOrderRHS(x, system, simPars, u)
+    %% Compute the first-order RHS for M(x)*x_dot = f(x,u)
     arguments (Input)
-        % Integration time (from ode solver)
-        % Not needed for the function, but "~" is not allowed for codegen
-        t           (1,1)
-
         % State vector x = [q; q_dot] (2*nDoF, 1)
         x           (:,1)
 
